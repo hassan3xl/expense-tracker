@@ -30,6 +30,7 @@ export async function proxy(request: NextRequest) {
     pathname.startsWith('/dashboard') ||
     pathname.startsWith('/transactions') ||
     pathname.startsWith('/debts') ||
+    pathname.startsWith('/evaluation') ||
     pathname === '/'
   ) {
     const token = request.cookies.get(COOKIE_NAME)?.value;

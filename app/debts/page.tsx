@@ -1,15 +1,15 @@
-import React from 'react';
-import { getSessionUser, getCurrentProject } from '@/lib/auth';
-import { sql } from '@/lib/db';
-import Navbar from '@/components/layout/Navbar';
-import DebtFilters from '@/components/debts/DebtFilters';
-import ActiveDebts from '@/components/dashboard/ActiveDebts';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Landmark, ArrowUpRight, ArrowDownRight, Activity } from 'lucide-react';
-import { Toaster } from 'sonner';
-import { formatNaira } from '@/lib/utils';
+import React, { Suspense } from "react";
+import { getSessionUser, getCurrentProject } from "@/lib/auth";
+import { sql } from "@/lib/db";
+import Navbar from "@/components/layout/Navbar";
+import DebtFilters from "@/components/debts/DebtFilters";
+import ActiveDebts from "@/components/dashboard/ActiveDebts";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Landmark, ArrowUpRight, ArrowDownRight, Activity } from "lucide-react";
+import { Toaster } from "sonner";
+import { formatNaira } from "@/lib/utils";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 interface DebtsPageProps {
   searchParams: Promise<{
@@ -25,16 +25,16 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
 
   // Resolve search parameters (Next.js 15+ searchParams is a Promise)
   const resolvedParams = await searchParams;
-  const q = resolvedParams.q || '';
-  const type = resolvedParams.type || '';
-  const status = resolvedParams.status || '';
+  const q = resolvedParams.q || "";
+  const type = resolvedParams.type || "";
+  const status = resolvedParams.status || "";
 
   // Get active project and list of all projects
   const currentProj = await getCurrentProject(user.userId);
   const projectsData = await sql`
     SELECT id, name FROM projects WHERE user_id = ${user.userId} ORDER BY name ASC
   `;
-  const projects = (projectsData || []).map(p => ({
+  const projects = (projectsData || []).map((p) => ({
     id: Number(p.id),
     name: String(p.name),
   }));
@@ -52,13 +52,13 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
   `;
 
   // Cast type results properly
-  const debts = (debtsData || []).map(d => ({
+  const debts = (debtsData || []).map((d) => ({
     id: Number(d.id),
     person: String(d.person),
     type: String(d.type),
     amount: String(d.amount),
     remaining_amount: String(d.remaining_amount),
-    description: String(d.description || ''),
+    description: String(d.description || ""),
     due_date: d.due_date ? String(d.due_date) : null,
     status: String(d.status),
     created_at: String(d.created_at),
@@ -69,24 +69,20 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
   let totalBorrowed = 0;
 
   debts.forEach((d) => {
-    if (d.status === 'active') {
+    if (d.status === "active") {
       const remaining = parseFloat(d.remaining_amount);
-      if (d.type === 'owed_to_me') totalLent += remaining;
-      else if (d.type === 'owed_by_me') totalBorrowed += remaining;
+      if (d.type === "owed_to_me") totalLent += remaining;
+      else if (d.type === "owed_by_me") totalBorrowed += remaining;
     }
   });
 
   return (
     <div className="min-h-screen bg-black text-slate-100 flex flex-col font-sans">
-      <Navbar 
-        username={user.username} 
-        initialProjects={projects} 
-        currentProject={currentProj} 
+      <Navbar
+        username={user.username}
+        initialProjects={projects}
+        currentProject={currentProj}
       />
-
-      <Toaster position="top-right" theme="dark" toastOptions={{
-        style: { background: '#0f172a', border: '1px solid #1e293b', color: '#f8fafc' }
-      }} />
 
       <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 space-y-6 max-w-4xl">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
@@ -95,7 +91,8 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
               Debts & Loans Management
             </h2>
             <p className="text-slate-400 text-sm mt-1">
-              View, record payments, and track history of borrow and lend amounts.
+              View, record payments, and track history of borrow and lend
+              amounts.
             </p>
           </div>
           <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs font-semibold text-slate-300">
@@ -104,9 +101,14 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
           </div>
         </div>
 
-        {/* Filters */}
         <div className="animate-in fade-in duration-500 delay-100">
-          <DebtFilters />
+          <Suspense
+            fallback={
+              <div className="h-10 bg-slate-900/30 border border-slate-800 rounded-xl animate-pulse" />
+            }
+          >
+            <DebtFilters />
+          </Suspense>
         </div>
 
         {/* Aggregates */}
@@ -114,7 +116,9 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
           <Card className="border border-slate-800 bg-slate-900/10">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Outstanding Receivable</span>
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                  Total Outstanding Receivable
+                </span>
                 <h4 className="text-lg font-black text-violet-400 mt-0.5">
                   {formatNaira(totalLent)}
                 </h4>
@@ -128,7 +132,9 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
           <Card className="border border-slate-800 bg-slate-900/10">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Total Outstanding Payable</span>
+                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                  Total Outstanding Payable
+                </span>
                 <h4 className="text-lg font-black text-amber-400 mt-0.5">
                   {formatNaira(totalBorrowed)}
                 </h4>

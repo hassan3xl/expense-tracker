@@ -18,9 +18,10 @@ interface Transaction {
 
 interface RecentTransactionsProps {
   transactions: Transaction[];
+  limit?: number;
 }
 
-export default function RecentTransactions({ transactions }: RecentTransactionsProps) {
+export default function RecentTransactions({ transactions, limit }: RecentTransactionsProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = (id: number) => {
@@ -46,9 +47,11 @@ export default function RecentTransactions({ transactions }: RecentTransactionsP
     );
   }
 
+  const displayTransactions = limit ? transactions.slice(0, limit) : transactions;
+
   return (
     <div className="space-y-3">
-      {transactions.slice(0, 5).map((tx) => {
+      {displayTransactions.map((tx) => {
         const isIncome = tx.type === 'income';
         const amount = parseFloat(tx.amount);
         const formattedDate = new Date(tx.date).toLocaleDateString(undefined, {

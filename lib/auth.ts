@@ -135,10 +135,6 @@ export async function getCurrentProject(userId: number): Promise<{ id: number; n
     
     if (projs && projs.length > 0) {
       const activeProj = projs[0];
-      cookieStore.set('finance_tracker_project_id', activeProj.id.toString(), {
-        path: '/',
-        maxAge: 60 * 60 * 24 * 365,
-      });
       return { id: Number(activeProj.id), name: String(activeProj.name) };
     }
     
@@ -163,11 +159,6 @@ export async function getCurrentProject(userId: number): Promise<{ id: number; n
       SET project_id = ${defaultProjId}
       WHERE user_id = ${userId} AND project_id IS NULL
     `;
-    
-    cookieStore.set('finance_tracker_project_id', defaultProjId.toString(), {
-      path: '/',
-      maxAge: 60 * 60 * 24 * 365,
-    });
     
     return { id: defaultProjId, name: String(defaultProj.name) };
   } catch (error) {

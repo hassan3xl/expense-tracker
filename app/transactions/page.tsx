@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Suspense } from 'react';
 import { getSessionUser, getCurrentProject } from '@/lib/auth';
 import { sql } from '@/lib/db';
 import Navbar from '@/components/layout/Navbar';
@@ -65,10 +65,17 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
   let totalIncome = 0;
   let totalExpense = 0;
 
+  const DEBT_CATEGORIES = ['Loan Borrowed', 'Debt Repayment', 'Loan Lent', 'Debt Payment'];
+
   transactions.forEach((tx) => {
     const val = parseFloat(tx.amount);
-    if (tx.type === 'income') totalIncome += val;
-    else if (tx.type === 'expense') totalExpense += val;
+    const isDebt = DEBT_CATEGORIES.includes(tx.category);
+    const shouldExclude = isDebt && !category;
+
+    if (!shouldExclude) {
+      if (tx.type === 'income') totalIncome += val;
+      else if (tx.type === 'expense') totalExpense += val;
+    }
   });
 
   return (
@@ -99,9 +106,10 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
           </div>
         </div>
 
-        {/* Filter Section */}
         <div className="animate-in fade-in duration-500 delay-100">
-          <TransactionFilters />
+          <Suspense fallback={<div className="h-10 bg-slate-900/30 border border-slate-800 rounded-xl animate-pulse" />}>
+            <TransactionFilters />
+          </Suspense>
         </div>
 
         {/* Aggregate Info for current filter */}
