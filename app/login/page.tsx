@@ -1,12 +1,26 @@
-'use client';
+"use client";
 
-import React, { useActionState, startTransition } from 'react';
-import Link from 'next/link';
-import { loginAction } from '@/app/actions';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Wallet, LogIn, Lock, User, AlertCircle, ArrowRight } from 'lucide-react';
+import React, { useActionState, startTransition } from "react";
+import Link from "next/link";
+import { loginAction } from "@/app/actions";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
+import {
+  Wallet,
+  LogIn,
+  Lock,
+  User,
+  AlertCircle,
+  ArrowRight,
+} from "lucide-react";
 
 export default function LoginPage() {
   const [state, formAction, isPending] = useActionState(loginAction, undefined);
@@ -24,7 +38,7 @@ export default function LoginPage() {
       {/* Background decoration */}
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none" />
-      
+
       <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
         {/* Logo/Brand Header */}
         <div className="flex flex-col items-center mb-6">
@@ -32,14 +46,18 @@ export default function LoginPage() {
             <Wallet className="size-6 text-indigo-400" />
           </div>
           <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-slate-100 to-indigo-200">
-            AuraFinance
+            Expense Tracker
           </h1>
-          <p className="text-slate-400 text-sm mt-1">Take control of your money</p>
+          <p className="text-slate-400 text-sm mt-1">
+            Take control of your money
+          </p>
         </div>
 
         <Card className="border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-2xl shadow-black/40 rounded-3xl overflow-hidden">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl font-semibold text-slate-100">Welcome Back</CardTitle>
+            <CardTitle className="text-xl font-semibold text-slate-100">
+              Welcome Back
+            </CardTitle>
             <CardDescription className="text-slate-400">
               Enter your credentials to access your finance dashboard.
             </CardDescription>
@@ -54,7 +72,10 @@ export default function LoginPage() {
               )}
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block ml-1" htmlFor="username">
+                <label
+                  className="text-xs font-semibold uppercase tracking-wider text-slate-400 block ml-1"
+                  htmlFor="username"
+                >
                   Username
                 </label>
                 <div className="relative">
@@ -73,7 +94,10 @@ export default function LoginPage() {
               </div>
 
               <div className="space-y-2">
-                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400 block ml-1" htmlFor="password">
+                <label
+                  className="text-xs font-semibold uppercase tracking-wider text-slate-400 block ml-1"
+                  htmlFor="password"
+                >
                   Password
                 </label>
                 <div className="relative">
@@ -109,7 +133,7 @@ export default function LoginPage() {
           </CardContent>
           <CardFooter className="flex flex-col space-y-2 pt-2 pb-6 border-t border-slate-800/40 text-center">
             <p className="text-sm text-slate-400">
-              Don&apos;t have an account?{' '}
+              Don&apos;t have an account?{" "}
               <Link
                 href="/register"
                 className="text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1 group/link transition-colors"
