@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
+import { useSearchParams } from "next/navigation";
+
 const INCOME_CATEGORIES = [
   "Salary",
   "Freelance",
@@ -38,11 +40,14 @@ const EXPENSE_CATEGORIES = [
 ];
 
 export default function TransactionForm() {
+  const searchParams = useSearchParams();
+  const selectedDate = searchParams.get("date") || new Date().toISOString().split("T")[0];
+
   const [type, setType] = useState<"income" | "expense">("income");
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [date, setDate] = useState(selectedDate);
   const [isPending, startTransition] = useTransition();
 
   const categories = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
@@ -51,6 +56,11 @@ export default function TransactionForm() {
   React.useEffect(() => {
     setCategory(categories[0]);
   }, [type]);
+
+  // Keep form date in sync when active day switcher date changes
+  React.useEffect(() => {
+    setDate(selectedDate);
+  }, [selectedDate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -77,7 +87,7 @@ export default function TransactionForm() {
         );
         setAmount("");
         setDescription("");
-        setDate(new Date().toISOString().split("T")[0]);
+        setDate(selectedDate);
       } catch (err: any) {
         toast.error(err.message || "Failed to save transaction");
       }
@@ -138,7 +148,7 @@ export default function TransactionForm() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 h-10 rounded-xl text-slate-200 font-medium"
+                className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 text-slate-200 font-medium"
               />
             </div>
           </div>
@@ -150,13 +160,14 @@ export default function TransactionForm() {
                 Category
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 z-10 pointer-events-none">
                   <Tag className="size-4" />
                 </span>
-                <select
+                <Input
+                  as="select"
                   value={category}
                   onChange={(e) => setCategory(e.target.value)}
-                  className="h-10 w-full rounded-xl border border-slate-800 bg-black/45 pl-9 pr-3 text-sm text-slate-200 outline-none focus:border-indigo-500/50 focus:ring-3 focus:ring-indigo-500/10 transition-all duration-200 appearance-none"
+                  className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 text-slate-200"
                 >
                   {categories.map((cat) => (
                     <option
@@ -167,7 +178,7 @@ export default function TransactionForm() {
                       {cat}
                     </option>
                   ))}
-                </select>
+                </Input>
               </div>
             </div>
 
@@ -177,7 +188,7 @@ export default function TransactionForm() {
                 Date
               </label>
               <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 pointer-events-none">
                   <Calendar className="size-4" />
                 </span>
                 <Input
@@ -185,7 +196,7 @@ export default function TransactionForm() {
                   required
                   value={date}
                   onChange={(e) => setDate(e.target.value)}
-                  className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 h-10 rounded-xl text-slate-200"
+                  className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 text-slate-200"
                 />
               </div>
             </div>
@@ -197,7 +208,7 @@ export default function TransactionForm() {
               Description (Optional)
             </label>
             <div className="relative">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+              <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 pointer-events-none">
                 <FileText className="size-4" />
               </span>
               <Input
@@ -205,7 +216,7 @@ export default function TransactionForm() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="e.g., Grocery store purchase"
-                className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 h-10 rounded-xl text-slate-200"
+                className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 text-slate-200"
               />
             </div>
           </div>
@@ -213,7 +224,7 @@ export default function TransactionForm() {
           <Button
             type="submit"
             disabled={isPending}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold h-10 rounded-xl shadow-lg shadow-indigo-600/20 transition-all duration-300 mt-2"
+            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold h-14 rounded-2xl shadow-lg shadow-indigo-600/20 transition-all duration-300 mt-2"
           >
             {isPending ? "Saving..." : "Add Transaction"}
           </Button>

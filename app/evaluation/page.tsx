@@ -88,17 +88,16 @@ export default async function EvaluationPage({ searchParams }: EvaluationPagePro
   }));
 
   // Calculations
-  let totalIncome = 0; // Regular earnings (excl. debts)
-  let totalExpense = 0; // Regular expenses (excl. debts)
-  let allIncome = 0; // All cash inflows (incl. loans/repayments)
-  let allExpense = 0; // All cash outflows (incl. loans/payments)
+  let totalIncome = 0; // Total earnings (including loans/debts)
+  let totalExpense = 0; // Total expenses (including loans/debts)
+  let allIncome = 0; // All cash inflows
+  let allExpense = 0; // All cash outflows
 
   let totalBorrowed = 0;
   let totalLent = 0;
   let totalDebtPayments = 0;
   let totalDebtRepayments = 0;
 
-  const DEBT_CATEGORIES = ['Loan Borrowed', 'Debt Repayment', 'Loan Lent', 'Debt Payment'];
   const categoryTotals: Record<string, { type: string; amount: number }> = {};
 
   transactions.forEach((tx) => {
@@ -114,17 +113,15 @@ export default async function EvaluationPage({ searchParams }: EvaluationPagePro
     else if (tx.category === 'Debt Payment') totalDebtPayments += val;
     else if (tx.category === 'Debt Repayment') totalDebtRepayments += val;
 
-    // Regular earnings and expenses (excl. debts)
-    if (!DEBT_CATEGORIES.includes(tx.category)) {
-      if (tx.type === 'income') totalIncome += val;
-      else if (tx.type === 'expense') totalExpense += val;
+    // Include everything in total income & expense
+    if (tx.type === 'income') totalIncome += val;
+    else if (tx.type === 'expense') totalExpense += val;
 
-      // Group regular transactions for breakdown
-      if (!categoryTotals[tx.category]) {
-        categoryTotals[tx.category] = { type: tx.type, amount: 0 };
-      }
-      categoryTotals[tx.category].amount += val;
+    // Group transactions for breakdown
+    if (!categoryTotals[tx.category]) {
+      categoryTotals[tx.category] = { type: tx.type, amount: 0 };
     }
+    categoryTotals[tx.category].amount += val;
   });
 
   const netBalance = totalIncome - totalExpense;

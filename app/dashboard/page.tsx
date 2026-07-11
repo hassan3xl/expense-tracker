@@ -20,12 +20,21 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { formatNaira } from "@/lib/utils";
+import DateSwitcher from "@/components/dashboard/DateSwitcher";
 
 export const dynamic = "force-dynamic";
 
-export default async function DashboardPage() {
+interface DashboardPageProps {
+  searchParams: Promise<{
+    date?: string;
+  }>;
+}
+
+export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const user = await getSessionUser();
   if (!user) return null;
+
+  const resolvedParams = await searchParams;
 
   // Get active project and list of all projects
   const currentProj = await getCurrentProject(user.userId);
@@ -37,11 +46,20 @@ export default async function DashboardPage() {
     name: String(p.name),
   }));
 
-  // Fetch transactions for the active project
+  // Calculate default timezone-safe local date string for today
+  const todayDate = new Date();
+  const offset = todayDate.getTimezoneOffset();
+  const localTodayStr = new Date(todayDate.getTime() - offset * 60 * 1000).toISOString().split("T")[0];
+  const selectedDateStr = resolvedParams.date || localTodayStr;
+
+  // Fetch transactions for the active project on the selected day
   const transactionsData = await sql`
     SELECT id, type, category, amount, description, date 
     FROM transactions 
-    WHERE user_id = ${user.userId} AND project_id = ${currentProj.id}
+    WHERE user_id = ${user.userId} 
+      AND project_id = ${currentProj.id}
+      AND date >= ${selectedDateStr + " 00:00:00"}
+      AND date <= ${selectedDateStr + " 23:59:59"}
     ORDER BY date DESC
   `;
 
@@ -76,17 +94,10 @@ export default async function DashboardPage() {
   }));
 
   // Calculations
-  let totalIncome = 0; // Regular earnings
-  let totalExpense = 0; // Regular expenses
-  let allIncome = 0; // All cash inflows (incl. loans/repayments)
-  let allExpense = 0; // All cash outflows (incl. loans/payments)
-
-  const DEBT_CATEGORIES = [
-    "Loan Borrowed",
-    "Debt Repayment",
-    "Loan Lent",
-    "Debt Payment",
-  ];
+  let totalIncome = 0; // Total earnings (including loans/debts)
+  let totalExpense = 0; // Total expenses (including loans/debts)
+  let allIncome = 0; // All cash inflows
+  let allExpense = 0; // All cash outflows
 
   transactions.forEach((tx) => {
     const val = parseFloat(tx.amount);
@@ -95,11 +106,9 @@ export default async function DashboardPage() {
     if (tx.type === "income") allIncome += val;
     else if (tx.type === "expense") allExpense += val;
 
-    // Regular earnings and expenses (excl. debts)
-    if (!DEBT_CATEGORIES.includes(tx.category)) {
-      if (tx.type === "income") totalIncome += val;
-      else if (tx.type === "expense") totalExpense += val;
-    }
+    // Include everything in total income & expense
+    if (tx.type === "income") totalIncome += val;
+    else if (tx.type === "expense") totalExpense += val;
   });
 
   const netBalance = totalIncome - totalExpense;
@@ -116,12 +125,12 @@ export default async function DashboardPage() {
     }
   });
 
-  // Current Date Welcome Message
-  const today = new Date().toLocaleDateString(undefined, {
-    weekday: "long",
-    month: "short",
-    day: "numeric",
-  });
+  // Dynamic Date Display Label
+  const selectedDateObj = new Date(selectedDateStr);
+  const isSelectedToday = selectedDateStr === localTodayStr;
+  const dateLabel = isSelectedToday
+    ? "today"
+    : selectedDateObj.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
 
   return (
     <div className="min-h-screen bg-black text-slate-100 flex flex-col font-sans">
@@ -152,11 +161,11 @@ export default async function DashboardPage() {
               Welcome back, {user.username}
             </h2>
             <p className="text-slate-400 text-sm mt-1">
-              Here is your financial status overview for today.
+              Here is your financial status overview for {dateLabel}.
             </p>
           </div>
-          <div className="px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs sm:text-sm font-semibold text-slate-300 self-start sm:self-center">
-            {today}
+          <div className="self-start sm:self-center">
+            <DateSwitcher />
           </div>
         </div>
 
@@ -283,9 +292,9 @@ export default async function DashboardPage() {
           {/* Right Column: Feeds & Lists (lg:span-7) */}
           <div className="lg:col-span-7 space-y-6 animate-in fade-in duration-500 delay-300">
             {/* Recent Transactions Feed */}
-            <div className="border border-slate-800/60 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5">
+            <div className="border-t sm:border border-slate-800/60 bg-slate-900/20 backdrop-blur-xl rounded-3xl py-5 sm:p-6 shadow-xl shadow-black/5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                <h3 className="text-md sm:text-lg font-bold text-slate-200 flex items-center gap-2">
                   <Activity className="size-5 text-indigo-400" />
                   Recent Transactions
                 </h3>
@@ -299,11 +308,12 @@ export default async function DashboardPage() {
               </div>
               <RecentTransactions transactions={transactions} limit={5} />
             </div>
+            <hr />
 
             {/* Active Debts & Loans Feed */}
-            <div className="border border-slate-800/60 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5">
+            <div className="borde sm:border border-slate-800/60 bg-slate-900/20 backdrop-blur-xl rounded-3xl py-5 sm:p-6 shadow-xl shadow-black/5">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                <h3 className="text-md sm:text-lg font-bold text-slate-200 flex items-center gap-2">
                   <Landmark className="size-5 text-indigo-400" />
                   Active Debts & Loans
                 </h3>

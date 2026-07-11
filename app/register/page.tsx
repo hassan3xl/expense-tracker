@@ -82,7 +82,7 @@ export default function RegisterPage() {
                   Username
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 z-10 pointer-events-none">
                     <User className="size-4" />
                   </span>
                   <Input
@@ -91,7 +91,7 @@ export default function RegisterPage() {
                     type="text"
                     required
                     placeholder="Choose a username"
-                    className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 h-10 rounded-xl text-slate-200"
+                    className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 text-slate-200"
                   />
                 </div>
               </div>
@@ -104,7 +104,7 @@ export default function RegisterPage() {
                   Password
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 z-10 pointer-events-none">
                     <Lock className="size-4" />
                   </span>
                   <Input
@@ -113,7 +113,7 @@ export default function RegisterPage() {
                     type="password"
                     required
                     placeholder="Create a password (min. 6 chars)"
-                    className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 h-10 rounded-xl text-slate-200"
+                    className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 text-slate-200"
                   />
                 </div>
               </div>
@@ -121,7 +121,7 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium h-10 rounded-xl shadow-lg shadow-indigo-600/20 transition-all duration-300 flex items-center justify-center gap-2 group mt-2"
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium h-14 rounded-2xl shadow-lg shadow-indigo-600/20 transition-all duration-300 flex items-center justify-center gap-2 group mt-2"
               >
                 {isPending ? (
                   <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

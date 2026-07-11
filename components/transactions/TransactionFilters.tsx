@@ -66,7 +66,7 @@ export default function TransactionFilters() {
       <div className="flex flex-col sm:flex-row gap-4">
         {/* Search Bar */}
         <div className="relative flex-1">
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 pointer-events-none">
             <Search className="size-4" />
           </span>
           <Input
@@ -74,15 +74,15 @@ export default function TransactionFilters() {
             placeholder="Search by description or notes..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 h-10 rounded-xl text-slate-200"
+            className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 text-slate-200"
           />
         </div>
 
         {/* Type Filter Buttons */}
-        <div className="flex p-1 rounded-xl bg-black/60 border border-slate-800/60 self-start sm:self-auto shrink-0">
+        <div className="flex p-1 rounded-2xl bg-black/60 border border-slate-800/60 self-start sm:self-auto shrink-0 items-center">
           <button
             onClick={() => handleTypeChange('')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all ${
               type === ''
                 ? 'bg-slate-800 text-slate-200 border border-slate-700/50'
                 : 'text-slate-500 hover:text-slate-300'
@@ -92,7 +92,7 @@ export default function TransactionFilters() {
           </button>
           <button
             onClick={() => handleTypeChange('income')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all ${
               type === 'income'
                 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                 : 'text-slate-500 hover:text-slate-300'
@@ -102,7 +102,7 @@ export default function TransactionFilters() {
           </button>
           <button
             onClick={() => handleTypeChange('expense')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold uppercase tracking-wider transition-all ${
+            className={`px-4 py-2.5 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all ${
               type === 'expense'
                 ? 'bg-rose-500/10 text-rose-400 border border-rose-500/20'
                 : 'text-slate-500 hover:text-slate-300'
@@ -115,18 +115,19 @@ export default function TransactionFilters() {
 
       <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-800/40">
         {/* Category Dropdown */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
+          <span className="text-xs text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1.5 shrink-0">
             <Filter className="size-3.5" /> Filter Category:
           </span>
-          <div className="relative">
-            <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-500">
+          <div className="relative flex-1 sm:w-64">
+            <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-slate-500 z-10 pointer-events-none">
               <Tag className="size-3.5" />
             </span>
-            <select
+            <Input
+              as="select"
               value={category}
               onChange={(e) => handleCategoryChange(e.target.value)}
-              className="h-8 rounded-lg border border-slate-800 bg-black/45 pl-8 pr-6 text-xs text-slate-300 outline-none focus:border-indigo-500/50 transition-all appearance-none"
+              className="pl-8 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 text-slate-200 h-10 rounded-xl text-xs"
             >
               <option value="" className="bg-slate-900 text-slate-400">All Categories</option>
               {CATEGORIES.map((cat) => (
@@ -134,7 +135,7 @@ export default function TransactionFilters() {
                   {cat}
                 </option>
               ))}
-            </select>
+            </Input>
           </div>
         </div>
 

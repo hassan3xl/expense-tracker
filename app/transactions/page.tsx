@@ -65,17 +65,10 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
   let totalIncome = 0;
   let totalExpense = 0;
 
-  const DEBT_CATEGORIES = ['Loan Borrowed', 'Debt Repayment', 'Loan Lent', 'Debt Payment'];
-
   transactions.forEach((tx) => {
     const val = parseFloat(tx.amount);
-    const isDebt = DEBT_CATEGORIES.includes(tx.category);
-    const shouldExclude = isDebt && !category;
-
-    if (!shouldExclude) {
-      if (tx.type === 'income') totalIncome += val;
-      else if (tx.type === 'expense') totalExpense += val;
-    }
+    if (tx.type === 'income') totalIncome += val;
+    else if (tx.type === 'expense') totalExpense += val;
   });
 
   return (
