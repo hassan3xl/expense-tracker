@@ -87,6 +87,19 @@ async function main() {
     `;
     console.log("- Added project_id columns to existing transactions and debts tables if needed.");
 
+    // 6. Create project_members table
+    await sql`
+      CREATE TABLE IF NOT EXISTS project_members (
+        id SERIAL PRIMARY KEY,
+        project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE,
+        user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+        role VARCHAR(50) NOT NULL DEFAULT 'editor', -- 'editor', 'viewer'
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(project_id, user_id)
+      );
+    `;
+    console.log("- 'project_members' table checked/created.");
+
     console.log("Database schema initialized successfully!");
   } catch (error) {
     console.error("Error initializing database:", error);

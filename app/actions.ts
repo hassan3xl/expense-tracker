@@ -5,6 +5,23 @@ import { revalidatePath } from 'next/cache';
 import { sql } from '@/lib/db';
 import { hashPassword, generateSalt, createSession, destroySession, getSessionUser, getCurrentProject } from '@/lib/auth';
 
+/**
+ * Check if the user has write access ('owner' or 'editor') to a project.
+ * Viewers are read-only and will fail this check.
+ */
+async function checkProjectWriteAccess(projectId: number, userId: number) {
+  const result = await sql`
+    SELECT p.id 
+    FROM projects p
+    LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ${userId}
+    WHERE p.id = ${projectId} AND (p.user_id = ${userId} OR pm.role = 'editor')
+    LIMIT 1
+  `;
+  if (!result || result.length === 0) {
+    throw new Error('Unauthorized: You do not have write permissions for this project');
+  }
+}
+
 // --- AUTH ACTIONS ---
 
 export async function registerAction(prevState: any, formData: FormData) {
@@ -117,13 +134,15 @@ export async function addTransactionAction(data: {
 
   try {
     const currentProj = await getCurrentProject(user.userId);
+    await checkProjectWriteAccess(currentProj.id, user.userId);
+
     await sql`
       INSERT INTO transactions (user_id, project_id, type, category, amount, description, date)
       VALUES (${user.userId}, ${currentProj.id}, ${type}, ${category}, ${amount}, ${description}, ${date ? new Date(date) : new Date()})
     `;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to add transaction:', error);
-    throw new Error('Failed to save transaction');
+    throw new Error(error.message || 'Failed to save transaction');
   }
 
   revalidatePath('/dashboard');
@@ -135,13 +154,17 @@ export async function deleteTransactionAction(id: number) {
   if (!user) throw new Error('Unauthorized');
 
   try {
+    const txResult = await sql`SELECT project_id FROM transactions WHERE id = ${id} LIMIT 1`;
+    if (!txResult || txResult.length === 0) throw new Error('Transaction not found');
+    await checkProjectWriteAccess(Number(txResult[0].project_id), user.userId);
+
     await sql`
       DELETE FROM transactions 
-      WHERE id = ${id} AND user_id = ${user.userId}
+      WHERE id = ${id}
     `;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to delete transaction:', error);
-    throw new Error('Failed to delete transaction');
+    throw new Error(error.message || 'Failed to delete transaction');
   }
 
   revalidatePath('/dashboard');
@@ -167,6 +190,8 @@ export async function addDebtAction(data: {
 
   try {
     const currentProj = await getCurrentProject(user.userId);
+    await checkProjectWriteAccess(currentProj.id, user.userId);
+
     const formattedDueDate = due_date ? new Date(due_date) : null;
 
     // Insert the debt
@@ -188,9 +213,9 @@ export async function addDebtAction(data: {
       INSERT INTO transactions (user_id, project_id, type, category, amount, description, date)
       VALUES (${user.userId}, ${currentProj.id}, ${transType}, ${transCategory}, ${amount}, ${transDesc}, CURRENT_TIMESTAMP)
     `;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to add debt:', error);
-    throw new Error('Failed to save debt record');
+    throw new Error(error.message || 'Failed to save debt record');
   }
 
   revalidatePath('/dashboard');
@@ -202,13 +227,17 @@ export async function deleteDebtAction(id: number) {
   if (!user) throw new Error('Unauthorized');
 
   try {
+    const debtResult = await sql`SELECT project_id FROM debts WHERE id = ${id} LIMIT 1`;
+    if (!debtResult || debtResult.length === 0) throw new Error('Debt record not found');
+    await checkProjectWriteAccess(Number(debtResult[0].project_id), user.userId);
+
     await sql`
       DELETE FROM debts 
-      WHERE id = ${id} AND user_id = ${user.userId}
+      WHERE id = ${id}
     `;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Failed to delete debt:', error);
-    throw new Error('Failed to delete debt record');
+    throw new Error(error.message || 'Failed to delete debt record');
   }
 
   revalidatePath('/dashboard');
@@ -232,7 +261,7 @@ export async function addDebtPaymentAction(data: {
     const result = await sql`
       SELECT id, person, type, amount, remaining_amount, project_id 
       FROM debts 
-      WHERE id = ${debtId} AND user_id = ${user.userId}
+      WHERE id = ${debtId}
       LIMIT 1
     `;
 
@@ -241,10 +270,12 @@ export async function addDebtPaymentAction(data: {
     }
 
     const debt = result[0];
+    await checkProjectWriteAccess(Number(debt.project_id), user.userId);
+
     const currentRemaining = parseFloat(debt.remaining_amount);
     
     if (paymentAmount > currentRemaining) {
-      throw new Error(`Payment cannot exceed remaining debt balance of $${currentRemaining.toFixed(2)}`);
+      throw new Error(`Payment cannot exceed remaining debt balance of ${currentRemaining}`);
     }
 
     const newRemaining = Math.max(0, currentRemaining - paymentAmount);
@@ -263,8 +294,8 @@ export async function addDebtPaymentAction(data: {
     const transType = debt.type === 'owed_by_me' ? 'expense' : 'income';
     const transCategory = debt.type === 'owed_by_me' ? 'Debt Payment' : 'Debt Repayment';
     const transDesc = debt.type === 'owed_by_me'
-      ? `Paid $${paymentAmount.toFixed(2)} towards debt to ${debt.person}. ${description}`
-      : `Received $${paymentAmount.toFixed(2)} repayment from ${debt.person}. ${description}`;
+      ? `Paid ₦${paymentAmount} towards debt to ${debt.person}. ${description}`
+      : `Received ₦${paymentAmount} repayment from ${debt.person}. ${description}`;
 
     await sql`
       INSERT INTO transactions (user_id, project_id, type, category, amount, description, date)
@@ -287,7 +318,10 @@ export async function getProjectsAction() {
   if (!user) return [];
   try {
     return await sql`
-      SELECT id, name FROM projects WHERE user_id = ${user.userId} ORDER BY name ASC
+      SELECT DISTINCT p.id, p.name FROM projects p
+      LEFT JOIN project_members pm ON pm.project_id = p.id
+      WHERE p.user_id = ${user.userId} OR pm.user_id = ${user.userId}
+      ORDER BY p.name ASC
     `;
   } catch (error) {
     console.error('Failed to fetch projects:', error);
@@ -342,9 +376,12 @@ export async function switchProjectAction(projectId: number) {
   if (!user) throw new Error('Unauthorized');
   
   try {
-    // Verify the project exists and belongs to the user
+    // Verify the project exists and belongs to the user or user is a member
     const projResult = await sql`
-      SELECT id FROM projects WHERE id = ${projectId} AND user_id = ${user.userId} LIMIT 1
+      SELECT p.id FROM projects p
+      LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ${user.userId}
+      WHERE p.id = ${projectId} AND (p.user_id = ${user.userId} OR pm.user_id = ${user.userId})
+      LIMIT 1
     `;
     if (!projResult || projResult.length === 0) {
       throw new Error('Project not found or access denied');
@@ -364,4 +401,153 @@ export async function switchProjectAction(projectId: number) {
     console.error('Failed to switch project:', error);
     throw new Error(error.message || 'Failed to switch project');
   }
+}
+
+// --- PROJECT COLLABORATION ACTIONS ---
+
+export async function getProjectMembersAction(projectId: number) {
+  const user = await getSessionUser();
+  if (!user) throw new Error('Unauthorized');
+  
+  // Verify user has access to the project
+  const accessResult = await sql`
+    SELECT p.id, p.user_id FROM projects p
+    LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ${user.userId}
+    WHERE p.id = ${projectId} AND (p.user_id = ${user.userId} OR pm.user_id = ${user.userId})
+    LIMIT 1
+  `;
+  if (!accessResult || accessResult.length === 0) {
+    throw new Error('Project not found or access denied');
+  }
+
+  // Get project owner
+  const ownerResult = await sql`
+    SELECT u.id, u.username FROM users u
+    JOIN projects p ON p.user_id = u.id
+    WHERE p.id = ${projectId}
+    LIMIT 1
+  `;
+  const owner = ownerResult[0] ? { id: Number(ownerResult[0].id), username: String(ownerResult[0].username), role: 'owner' } : null;
+
+  // Get other members
+  const members = await sql`
+    SELECT pm.id, u.id as user_id, u.username, pm.role 
+    FROM project_members pm
+    JOIN users u ON pm.user_id = u.id
+    WHERE pm.project_id = ${projectId}
+    ORDER BY u.username ASC
+  `;
+
+  const formattedMembers = members.map(m => ({
+    id: Number(m.id),
+    userId: Number(m.user_id),
+    username: String(m.username),
+    role: String(m.role)
+  }));
+
+  return {
+    owner,
+    members: formattedMembers
+  };
+}
+
+export async function addProjectMemberAction(projectId: number, username: string, role: 'editor' | 'viewer') {
+  const user = await getSessionUser();
+  if (!user) throw new Error('Unauthorized');
+
+  // Verify the current user is the owner of the project
+  const project = await sql`
+    SELECT id, user_id FROM projects WHERE id = ${projectId} LIMIT 1
+  `;
+  if (!project || project.length === 0) throw new Error('Project not found');
+  if (Number(project[0].user_id) !== user.userId) {
+    throw new Error('Only the project owner can add members');
+  }
+
+  const targetUsername = username.trim();
+  if (!targetUsername) throw new Error('Username is required');
+
+  // Find the target user by username
+  const targetUserResult = await sql`
+    SELECT id, username FROM users WHERE username = ${targetUsername} LIMIT 1
+  `;
+  if (!targetUserResult || targetUserResult.length === 0) {
+    throw new Error(`User "${targetUsername}" does not exist`);
+  }
+
+  const targetUser = targetUserResult[0];
+  const targetUserId = Number(targetUser.id);
+
+  if (targetUserId === user.userId) {
+    throw new Error('You are already the owner of this project');
+  }
+
+  // Check if they are already a member
+  const existingMember = await sql`
+    SELECT id FROM project_members 
+    WHERE project_id = ${projectId} AND user_id = ${targetUserId} 
+    LIMIT 1
+  `;
+  if (existingMember && existingMember.length > 0) {
+    throw new Error('This user is already a member of this project');
+  }
+
+  // Insert member
+  await sql`
+    INSERT INTO project_members (project_id, user_id, role)
+    VALUES (${projectId}, ${targetUserId}, ${role})
+  `;
+
+  revalidatePath('/dashboard');
+  revalidatePath('/transactions');
+  revalidatePath('/debts');
+}
+
+export async function removeProjectMemberAction(projectId: number, memberUserId: number) {
+  const user = await getSessionUser();
+  if (!user) throw new Error('Unauthorized');
+
+  // Verify the current user is the owner of the project
+  const project = await sql`
+    SELECT id, user_id FROM projects WHERE id = ${projectId} LIMIT 1
+  `;
+  if (!project || project.length === 0) throw new Error('Project not found');
+  if (Number(project[0].user_id) !== user.userId) {
+    throw new Error('Only the project owner can remove members');
+  }
+
+  // Delete member
+  await sql`
+    DELETE FROM project_members 
+    WHERE project_id = ${projectId} AND user_id = ${memberUserId}
+  `;
+
+  revalidatePath('/dashboard');
+  revalidatePath('/transactions');
+  revalidatePath('/debts');
+}
+
+export async function updateProjectMemberRoleAction(projectId: number, memberUserId: number, role: 'editor' | 'viewer') {
+  const user = await getSessionUser();
+  if (!user) throw new Error('Unauthorized');
+
+  // Verify the current user is the owner of the project
+  const project = await sql`
+    SELECT id, user_id FROM projects WHERE id = ${projectId} LIMIT 1
+  `;
+  if (!project || project.length === 0) throw new Error('Project not found');
+  if (Number(project[0].user_id) !== user.userId) {
+    throw new Error('Only the project owner can update member roles');
+  }
+
+  // Update role
+  await sql`
+    UPDATE project_members 
+    SET role = ${role} 
+    WHERE project_id = ${projectId} AND user_id = ${memberUserId}
+  `;
+
+  revalidatePath('/dashboard');
+  revalidatePath('/transactions');
+  revalidatePath('/debts');
 }

@@ -1,8 +1,16 @@
 "use client";
 
-import React, { useTransition } from "react";
+import React, { useState, useTransition } from "react";
 import { deleteTransactionAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Trash2,
   ArrowUpRight,
@@ -26,21 +34,29 @@ interface Transaction {
 interface RecentTransactionsProps {
   transactions: Transaction[];
   limit?: number;
+  readOnly?: boolean;
 }
 
 export default function RecentTransactions({
   transactions,
   limit,
+  readOnly = false,
 }: RecentTransactionsProps) {
   const [isPending, startTransition] = useTransition();
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this transaction?")) return;
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteId) return;
 
     startTransition(async () => {
       try {
-        await deleteTransactionAction(id);
+        await deleteTransactionAction(deleteId);
         toast.success("Transaction deleted successfully!");
+        setDeleteId(null);
       } catch (err: any) {
         toast.error(err.message || "Failed to delete transaction");
       }
@@ -125,20 +141,55 @@ export default function RecentTransactions({
                   {formattedDate}
                 </span>
               </div>
-              <Button
-                variant="ghost"
-                size="icon-xs"
-                onClick={() => handleDelete(tx.id)}
-                disabled={isPending}
-                className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
-                title="Delete Transaction"
-              >
-                <Trash2 className="size-4" />
-              </Button>
+              {!readOnly && (
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  onClick={() => handleDelete(tx.id)}
+                  disabled={isPending}
+                  className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
+                  title="Delete Transaction"
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+              )}
             </div>
           </div>
         );
       })}
+
+      <Dialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
+        <DialogContent className="border border-slate-800 bg-slate-950/95 text-slate-100 max-w-sm rounded-3xl p-6">
+          <DialogHeader className="flex flex-col items-center text-center gap-3">
+            <div className="flex items-center justify-center size-12 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 mb-1">
+              <Trash2 className="size-6" />
+            </div>
+            <DialogTitle className="text-xl font-bold text-slate-100">
+              Delete Transaction
+            </DialogTitle>
+            <DialogDescription className="text-sm text-slate-400">
+              Are you sure you want to delete this transaction? This action is permanent and cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex flex-col-reverse sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteId(null)}
+              className="w-full sm:w-auto border-slate-800 hover:bg-slate-900 text-slate-300 hover:text-white rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isPending}
+              className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-xl"
+            >
+              {isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

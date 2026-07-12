@@ -103,11 +103,18 @@ export async function getSessionUser(): Promise<SessionUser | null> {
   }
 }
 
+export interface CurrentProject {
+  id: number;
+  name: string;
+  role: 'owner' | 'editor' | 'viewer';
+  ownerId: number;
+}
+
 /**
  * Get the user's active/current project.
  * If not set or invalid, resolves to the first project or creates a default "Personal" project.
  */
-export async function getCurrentProject(userId: number): Promise<{ id: number; name: string }> {
+export async function getCurrentProject(userId: number): Promise<CurrentProject> {
   const { sql } = await import('@/lib/db');
   const cookieStore = await cookies();
   const projectIdStr = cookieStore.get('finance_tracker_project_id')?.value;
@@ -117,10 +124,23 @@ export async function getCurrentProject(userId: number): Promise<{ id: number; n
   if (projectId) {
     try {
       const projResult = await sql`
-        SELECT id, name FROM projects WHERE id = ${projectId} AND user_id = ${userId} LIMIT 1
+        SELECT p.id, p.name, p.user_id as owner_id,
+               CASE 
+                 WHEN p.user_id = ${userId} THEN 'owner'
+                 ELSE COALESCE(pm.role, 'viewer')
+               END as role
+        FROM projects p
+        LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ${userId}
+        WHERE p.id = ${projectId} AND (p.user_id = ${userId} OR pm.user_id = ${userId})
+        LIMIT 1
       `;
       if (projResult && projResult.length > 0) {
-        return { id: Number(projResult[0].id), name: String(projResult[0].name) };
+        return { 
+          id: Number(projResult[0].id), 
+          name: String(projResult[0].name),
+          role: projResult[0].role as 'owner' | 'editor' | 'viewer',
+          ownerId: Number(projResult[0].owner_id)
+        };
       }
     } catch (e) {
       console.error('Error verifying project:', e);
@@ -128,21 +148,34 @@ export async function getCurrentProject(userId: number): Promise<{ id: number; n
   }
   
   try {
-    // If not found or invalid, check if they have any projects
+    // If not found or invalid, check if they have any projects (owned or member)
     const projs = await sql`
-      SELECT id, name FROM projects WHERE user_id = ${userId} ORDER BY id ASC
+      SELECT p.id, p.name, p.user_id as owner_id,
+             CASE 
+               WHEN p.user_id = ${userId} THEN 'owner'
+               ELSE COALESCE(pm.role, 'viewer')
+             END as role
+      FROM projects p
+      LEFT JOIN project_members pm ON pm.project_id = p.id AND pm.user_id = ${userId}
+      WHERE p.user_id = ${userId} OR pm.user_id = ${userId}
+      ORDER BY p.id ASC
     `;
     
     if (projs && projs.length > 0) {
       const activeProj = projs[0];
-      return { id: Number(activeProj.id), name: String(activeProj.name) };
+      return { 
+        id: Number(activeProj.id), 
+        name: String(activeProj.name),
+        role: activeProj.role as 'owner' | 'editor' | 'viewer',
+        ownerId: Number(activeProj.owner_id)
+      };
     }
     
     // Create default "Personal" project
     const newProjResult = await sql`
       INSERT INTO projects (user_id, name)
       VALUES (${userId}, 'Personal')
-      RETURNING id, name
+      RETURNING id, name, user_id as owner_id
     `;
     
     const defaultProj = newProjResult[0];
@@ -160,10 +193,15 @@ export async function getCurrentProject(userId: number): Promise<{ id: number; n
       WHERE user_id = ${userId} AND project_id IS NULL
     `;
     
-    return { id: defaultProjId, name: String(defaultProj.name) };
+    return { 
+      id: defaultProjId, 
+      name: String(defaultProj.name),
+      role: 'owner',
+      ownerId: userId
+    };
   } catch (error) {
     console.error('Database error in getCurrentProject:', error);
     // Return fallback project if database fails
-    return { id: 0, name: 'Personal' };
+    return { id: 0, name: 'Personal', role: 'owner', ownerId: userId };
   }
 }

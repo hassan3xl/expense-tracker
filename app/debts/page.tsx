@@ -32,7 +32,10 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
   // Get active project and list of all projects
   const currentProj = await getCurrentProject(user.userId);
   const projectsData = await sql`
-    SELECT id, name FROM projects WHERE user_id = ${user.userId} ORDER BY name ASC
+    SELECT DISTINCT p.id, p.name FROM projects p
+    LEFT JOIN project_members pm ON pm.project_id = p.id
+    WHERE p.user_id = ${user.userId} OR pm.user_id = ${user.userId}
+    ORDER BY p.name ASC
   `;
   const projects = (projectsData || []).map((p) => ({
     id: Number(p.id),
@@ -43,8 +46,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
   const debtsData = await sql`
     SELECT id, person, type, amount, remaining_amount, description, due_date, status, created_at 
     FROM debts 
-    WHERE user_id = ${user.userId} 
-      AND project_id = ${currentProj.id}
+    WHERE project_id = ${currentProj.id}
       AND (${q} = '' OR person ILIKE ${ilikePattern} OR description ILIKE ${ilikePattern})
       AND (${type} = '' OR type = ${type})
       AND (${status} = '' OR status = ${status})
@@ -155,7 +157,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
             </CardTitle>
           </CardHeader>
           <CardContent className="px-0 pb-0">
-            <ActiveDebts debts={debts} />
+            <ActiveDebts debts={debts} readOnly={currentProj.role === 'viewer'} />
           </CardContent>
         </Card>
       </main>

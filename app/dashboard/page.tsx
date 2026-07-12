@@ -39,7 +39,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   // Get active project and list of all projects
   const currentProj = await getCurrentProject(user.userId);
   const projectsData = await sql`
-    SELECT id, name FROM projects WHERE user_id = ${user.userId} ORDER BY name ASC
+    SELECT DISTINCT p.id, p.name FROM projects p
+    LEFT JOIN project_members pm ON pm.project_id = p.id
+    WHERE p.user_id = ${user.userId} OR pm.user_id = ${user.userId}
+    ORDER BY p.name ASC
   `;
   const projects = (projectsData || []).map((p) => ({
     id: Number(p.id),
@@ -56,8 +59,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const transactionsData = await sql`
     SELECT id, type, category, amount, description, date 
     FROM transactions 
-    WHERE user_id = ${user.userId} 
-      AND project_id = ${currentProj.id}
+    WHERE project_id = ${currentProj.id}
       AND date >= ${selectedDateStr + " 00:00:00"}
       AND date <= ${selectedDateStr + " 23:59:59"}
     ORDER BY date DESC
@@ -67,7 +69,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const debtsData = await sql`
     SELECT id, person, type, amount, remaining_amount, description, due_date, status, created_at 
     FROM debts 
-    WHERE user_id = ${user.userId} AND project_id = ${currentProj.id}
+    WHERE project_id = ${currentProj.id}
     ORDER BY created_at DESC
   `;
 
@@ -285,8 +287,20 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* Left Column: Input Forms (lg:span-5) */}
           <div className="lg:col-span-5 space-y-6 animate-in fade-in duration-500 delay-200">
-            <TransactionForm />
-            <DebtForm />
+            {currentProj.role === "viewer" ? (
+              <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/10 min-h-[300px]">
+                <Activity className="size-10 text-indigo-400/60 mb-3 animate-pulse" />
+                <h4 className="text-base font-bold text-slate-200">Read-Only Access</h4>
+                <p className="text-slate-400 text-sm mt-1.5 max-w-sm leading-relaxed">
+                  You are a viewer on this project. You can inspect logs, metrics, and trends but cannot record transactions, log payments, or delete records.
+                </p>
+              </div>
+            ) : (
+              <>
+                <TransactionForm />
+                <DebtForm />
+              </>
+            )}
           </div>
 
           {/* Right Column: Feeds & Lists (lg:span-7) */}
@@ -306,9 +320,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                   <ArrowRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </div>
-              <RecentTransactions transactions={transactions} limit={5} />
+              <RecentTransactions transactions={transactions} limit={5} readOnly={currentProj.role === "viewer"} />
             </div>
-            <hr />
+            <hr className="border-slate-800/60" />
 
             {/* Active Debts & Loans Feed */}
             <div className="borde sm:border border-slate-800/60 bg-slate-900/20 backdrop-blur-xl rounded-3xl py-5 sm:p-6 shadow-xl shadow-black/5">
@@ -325,7 +339,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                   <ArrowRight className="size-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </div>
-              <ActiveDebts debts={debts} />
+              <ActiveDebts debts={debts} readOnly={currentProj.role === "viewer"} />
             </div>
           </div>
         </div>

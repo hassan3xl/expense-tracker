@@ -5,6 +5,14 @@ import { addDebtPaymentAction, deleteDebtAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Landmark,
   Trash2,
   CheckCircle2,
@@ -30,9 +38,10 @@ interface Debt {
 
 interface ActiveDebtsProps {
   debts: Debt[];
+  readOnly?: boolean;
 }
 
-export default function ActiveDebts({ debts }: ActiveDebtsProps) {
+export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProps) {
   const [activePaymentId, setActivePaymentId] = useState<number | null>(null);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentNote, setPaymentNote] = useState("");
@@ -74,18 +83,20 @@ export default function ActiveDebts({ debts }: ActiveDebtsProps) {
     });
   };
 
+  const [deleteId, setDeleteId] = useState<number | null>(null);
+
   const handleDelete = (id: number) => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this debt record? This does not delete associated transaction logs.",
-      )
-    )
-      return;
+    setDeleteId(id);
+  };
+
+  const confirmDelete = () => {
+    if (!deleteId) return;
 
     startTransition(async () => {
       try {
-        await deleteDebtAction(id);
+        await deleteDebtAction(deleteId);
         toast.success("Debt record deleted successfully!");
+        setDeleteId(null);
       } catch (err: any) {
         toast.error(err.message || "Failed to delete debt record");
       }
@@ -168,16 +179,18 @@ export default function ActiveDebts({ debts }: ActiveDebtsProps) {
                   {isOwedToMe ? "Lent" : "Borrowed"}
                 </span>
 
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  onClick={() => handleDelete(debt.id)}
-                  disabled={isPending}
-                  className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
-                  title="Delete Record"
-                >
-                  <Trash2 className="size-3.5" />
-                </Button>
+                {!readOnly && (
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => handleDelete(debt.id)}
+                    disabled={isPending}
+                    className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
+                    title="Delete Record"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -223,6 +236,10 @@ export default function ActiveDebts({ debts }: ActiveDebtsProps) {
               {isPaid ? (
                 <span className="flex items-center gap-1 text-xs font-bold text-emerald-400 px-1 py-0.5 rounded-md bg-emerald-500/5 border border-emerald-500/15">
                   <CheckCircle2 className="size-3.5" /> Paid & Settled
+                </span>
+              ) : readOnly ? (
+                <span className="text-[11px] text-slate-500 font-semibold italic">
+                  Active
                 </span>
               ) : (
                 <Button
@@ -287,6 +304,39 @@ export default function ActiveDebts({ debts }: ActiveDebtsProps) {
           </div>
         );
       })}
+
+      <Dialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
+        <DialogContent className="border border-slate-800 bg-slate-950/95 text-slate-100 max-w-sm rounded-3xl p-6">
+          <DialogHeader className="flex flex-col items-center text-center gap-3">
+            <div className="flex items-center justify-center size-12 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 mb-1">
+              <Trash2 className="size-6" />
+            </div>
+            <DialogTitle className="text-xl font-bold text-slate-100">
+              Delete Debt Record
+            </DialogTitle>
+            <DialogDescription className="text-sm text-slate-400">
+              Are you sure you want to delete this debt record? This action is permanent and does not delete associated transaction logs.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 flex flex-col-reverse sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setDeleteId(null)}
+              className="w-full sm:w-auto border-slate-800 hover:bg-slate-900 text-slate-300 hover:text-white rounded-xl"
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDelete}
+              disabled={isPending}
+              className="w-full sm:w-auto bg-rose-600 hover:bg-rose-500 text-white rounded-xl"
+            >
+              {isPending ? "Deleting..." : "Delete"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

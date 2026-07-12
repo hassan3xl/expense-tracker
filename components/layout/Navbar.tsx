@@ -16,11 +16,18 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import ProjectSwitcher from "./ProjectSwitcher";
+import { Users } from "lucide-react";
+import ManageMembersDialog from "./ManageMembersDialog";
 
 interface NavbarProps {
   username: string;
   initialProjects: { id: number; name: string }[];
-  currentProject: { id: number; name: string };
+  currentProject: { 
+    id: number; 
+    name: string;
+    role?: 'owner' | 'editor' | 'viewer';
+    ownerId?: number;
+  };
 }
 
 export default function Navbar({
@@ -47,12 +54,25 @@ export default function Navbar({
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-800/40 bg-black/70 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
-        {/* Left Side: Brand Logo & Project Switcher */}
-        <div className="flex items-center gap-3">
+        {/* Left Side: Brand Logo, Project Switcher & Invite/Share button */}
+        <div className="flex items-center gap-2">
           <ProjectSwitcher
             initialProjects={initialProjects}
             currentProject={currentProject}
           />
+          {currentProject.role === 'owner' && (
+            <ManageMembersDialog projectId={currentProject.id} projectName={currentProject.name}>
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-slate-800 bg-black text-indigo-400 hover:text-indigo-300 hover:bg-slate-900 rounded-xl flex items-center gap-1.5 h-9"
+                title="Share Project"
+              >
+                <Users className="size-4" />
+                <span className="hidden sm:inline text-xs">Share</span>
+              </Button>
+            </ManageMembersDialog>
+          )}
         </div>
 
         {/* Center: Navigation Links */}

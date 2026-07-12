@@ -39,7 +39,10 @@ export default async function EvaluationPage({ searchParams }: EvaluationPagePro
   // Get active project and list of all projects
   const currentProj = await getCurrentProject(user.userId);
   const projectsData = await sql`
-    SELECT id, name FROM projects WHERE user_id = ${user.userId} ORDER BY name ASC
+    SELECT DISTINCT p.id, p.name FROM projects p
+    LEFT JOIN project_members pm ON pm.project_id = p.id
+    WHERE p.user_id = ${user.userId} OR pm.user_id = ${user.userId}
+    ORDER BY p.name ASC
   `;
   const projects = (projectsData || []).map(p => ({
     id: Number(p.id),
@@ -71,8 +74,7 @@ export default async function EvaluationPage({ searchParams }: EvaluationPagePro
   const transactionsData = await sql`
     SELECT id, type, category, amount, description, date 
     FROM transactions 
-    WHERE user_id = ${user.userId} 
-      AND project_id = ${currentProj.id}
+    WHERE project_id = ${currentProj.id}
       AND date >= ${startDate + ' 00:00:00'}
       AND date <= ${endDate + ' 23:59:59'}
     ORDER BY date DESC
