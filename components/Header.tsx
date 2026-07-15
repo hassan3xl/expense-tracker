@@ -3,7 +3,6 @@
 import React from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "./ui/button";
-import { motion } from "framer-motion";
 
 interface StatCardData {
   title: string;
@@ -37,9 +36,8 @@ const StatCard = ({
   description,
 }: StatCardData) => {
   return (
-    <motion.div
-      whileHover={{ y: -4, transition: { duration: 0.2 } }}
-      className={`group relative p-4 sm:p-6 rounded-3xl border backdrop-blur-xl shadow-xl shadow-black/20 hover:shadow-black/35 transition-all duration-300 ${
+    <div
+      className={`group relative p-4 sm:p-6 rounded-3xl border ${
         cardBg || "bg-zinc-900/30 border-slate-800/80"
       }`}
     >
@@ -71,7 +69,7 @@ const StatCard = ({
           {description}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
@@ -84,12 +82,7 @@ export const Header: React.FC<HeaderProps> = ({
   actions,
 }) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className="mb-8"
-    >
+    <div className="mb-8">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         {/* Left side - title/subtitle */}
@@ -135,7 +128,7 @@ export const Header: React.FC<HeaderProps> = ({
           ))}
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
