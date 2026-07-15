@@ -2,6 +2,7 @@ import React from 'react';
 import { getSessionUser, getCurrentProject } from '@/lib/auth';
 import { sql } from '@/lib/db';
 import Navbar from '@/components/layout/Navbar';
+import Header from '@/components/Header';
 import EvaluationFilters from '@/components/evaluation/EvaluationFilters';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
@@ -225,20 +226,47 @@ export default async function EvaluationPage({ searchParams }: EvaluationPagePro
       />
 
       <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 space-y-8 max-w-6xl">
-        {/* Welcome / Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-50 via-slate-100 to-indigo-200">
-              Financial Evaluation
-            </h2>
-            <p className="text-slate-400 text-sm mt-1">
-              Evaluate your income, expenses, cashflows and loans from {formatDateDisplay(startDate)} to {formatDateDisplay(endDate)}.
-            </p>
-          </div>
-          <div className="px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs sm:text-sm font-semibold text-slate-300 self-start sm:self-center">
-            {formatDateDisplay(startDate)} — {formatDateDisplay(endDate)}
-          </div>
-        </div>
+        <Header
+          title="Financial Evaluation"
+          subtitle={`Evaluate your income, expenses, cashflows and loans from ${formatDateDisplay(startDate)} to ${formatDateDisplay(endDate)}.`}
+          showRefresh={false}
+          actions={
+            <div className="px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs sm:text-sm font-semibold text-slate-300 self-start sm:self-center">
+              {formatDateDisplay(startDate)} — {formatDateDisplay(endDate)}
+            </div>
+          }
+          stats={transactions.length > 0 ? [
+            {
+              title: "Cash Flow Change",
+              value: `${cashOnHandChange >= 0 ? '+' : '-'}${formatNaira(Math.abs(cashOnHandChange))}`,
+              icon: <Wallet className="size-5" />,
+              iconBg: cashOnHandChange >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400',
+              cardBg: 'border-indigo-500/20 bg-indigo-950/20',
+              description: 'Net physical cash added/spent',
+            },
+            {
+              title: "Net Balance (Earnings)",
+              value: `${netBalance >= 0 ? '+' : '-'}${formatNaira(Math.abs(netBalance))}`,
+              icon: netBalance >= 0 ? <TrendingUp className="size-5" /> : <TrendingDown className="size-5" />,
+              iconBg: netBalance >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400',
+              description: 'Earnings minus Expenses',
+            },
+            {
+              title: "Total Earned",
+              value: formatNaira(totalIncome),
+              icon: <ArrowUpRight className="size-5" />,
+              iconBg: 'bg-indigo-500/10 text-indigo-400',
+              description: 'Total incoming earnings',
+            },
+            {
+              title: "Total Spent",
+              value: formatNaira(totalExpense),
+              icon: <ArrowDownRight className="size-5" />,
+              iconBg: 'bg-rose-500/10 text-rose-400',
+              description: 'Total outgoing expenses',
+            },
+          ] : undefined}
+        />
 
         {/* Date Filter Component */}
         <div className="animate-in fade-in duration-500 delay-100">
@@ -255,74 +283,7 @@ export default async function EvaluationPage({ searchParams }: EvaluationPagePro
           </div>
         ) : (
           <>
-            {/* Cashflow Metrics Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-in fade-in duration-500 delay-200">
-              
-              {/* Cash on Hand Change Card */}
-              <Card className="border border-indigo-500/20 bg-gradient-to-br from-indigo-950/20 via-zinc-900/60 to-black/40 backdrop-blur-xl rounded-3xl shadow-xl shadow-black/10">
-                <CardContent className="p-5 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-400">Cash Flow Change</span>
-                    <h3 className={`text-2xl font-black mt-1.5 tracking-tight ${cashOnHandChange >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {cashOnHandChange >= 0 ? '+' : '-'}{formatNaira(Math.abs(cashOnHandChange))}
-                    </h3>
-                    <p className="text-[9px] text-slate-500 mt-1">Net physical cash added/spent</p>
-                  </div>
-                  <div className={`p-3 rounded-2xl ${cashOnHandChange >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
-                    <Wallet className="size-5" />
-                  </div>
-                </CardContent>
-              </Card>
 
-              {/* Net Balance Card */}
-              <Card className="border border-slate-800/80 bg-gradient-to-br from-zinc-900/60 to-black/40 backdrop-blur-xl rounded-3xl shadow-xl shadow-black/10">
-                <CardContent className="p-5 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Net Balance (Earnings)</span>
-                    <h3 className={`text-2xl font-black mt-1.5 tracking-tight ${netBalance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-                      {netBalance >= 0 ? '+' : '-'}{formatNaira(Math.abs(netBalance))}
-                    </h3>
-                    <p className="text-[9px] text-slate-500 mt-1">Earnings minus Expenses</p>
-                  </div>
-                  <div className={`p-3 rounded-2xl ${netBalance >= 0 ? 'bg-emerald-500/10 text-emerald-400' : 'bg-rose-500/10 text-rose-400'}`}>
-                    {netBalance >= 0 ? <TrendingUp className="size-5" /> : <TrendingDown className="size-5" />}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Total Earned Card */}
-              <Card className="border border-slate-800/80 bg-gradient-to-br from-zinc-900/60 to-black/40 backdrop-blur-xl rounded-3xl shadow-xl shadow-black/10">
-                <CardContent className="p-5 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Earned</span>
-                    <h3 className="text-2xl font-black mt-1.5 text-slate-100 tracking-tight">
-                      {formatNaira(totalIncome)}
-                    </h3>
-                    <p className="text-[9px] text-slate-500 mt-1">Total incoming earnings</p>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-indigo-500/10 text-indigo-400">
-                    <ArrowUpRight className="size-5" />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Total Spent Card */}
-              <Card className="border border-slate-800/80 bg-gradient-to-br from-zinc-900/60 to-black/40 backdrop-blur-xl rounded-3xl shadow-xl shadow-black/10">
-                <CardContent className="p-5 flex items-center justify-between">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Total Spent</span>
-                    <h3 className="text-2xl font-black mt-1.5 text-slate-100 tracking-tight">
-                      {formatNaira(totalExpense)}
-                    </h3>
-                    <p className="text-[9px] text-slate-500 mt-1">Total outgoing expenses</p>
-                  </div>
-                  <div className="p-3 rounded-2xl bg-rose-500/10 text-rose-400">
-                    <ArrowDownRight className="size-5" />
-                  </div>
-                </CardContent>
-              </Card>
-
-            </div>
 
             {/* Debts & Loans Summary Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-in fade-in duration-500 delay-300">

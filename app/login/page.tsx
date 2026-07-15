@@ -118,7 +118,7 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium h-14 rounded-2xl shadow-lg shadow-indigo-600/20 transition-all duration-300 flex items-center justify-center gap-2 group mt-2"
+                className="w-full bg-indigo-700 hover:bg-indigo-600 text-slate-100 font-medium h-14 rounded-2xl shadow-lg shadow-indigo-950/20 transition-all duration-300 flex items-center justify-center gap-2 group mt-2"
               >
                 {isPending ? (
                   <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

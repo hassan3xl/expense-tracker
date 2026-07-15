@@ -185,7 +185,7 @@ export default function ManageMembersDialog({
             <Button
               type="submit"
               disabled={inviting || !username}
-              className="h-10 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl flex items-center justify-center gap-1.5 px-4 font-semibold text-sm shrink-0"
+              className="h-10 bg-indigo-700 hover:bg-indigo-600 text-slate-100 rounded-xl flex items-center justify-center gap-1.5 px-4 font-semibold text-sm shrink-0"
             >
               {inviting ? (
                 <Loader2 className="size-4 animate-spin" />

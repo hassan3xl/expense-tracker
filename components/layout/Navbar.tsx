@@ -22,10 +22,10 @@ import ManageMembersDialog from "./ManageMembersDialog";
 interface NavbarProps {
   username: string;
   initialProjects: { id: number; name: string }[];
-  currentProject: { 
-    id: number; 
+  currentProject: {
+    id: number;
     name: string;
-    role?: 'owner' | 'editor' | 'viewer';
+    role?: "owner" | "editor" | "viewer";
     ownerId?: number;
   };
 }
@@ -36,6 +36,20 @@ export default function Navbar({
   currentProject,
 }: NavbarProps) {
   const pathname = usePathname();
+  const [profileOpen, setProfileOpen] = React.useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -60,8 +74,11 @@ export default function Navbar({
             initialProjects={initialProjects}
             currentProject={currentProject}
           />
-          {currentProject.role === 'owner' && (
-            <ManageMembersDialog projectId={currentProject.id} projectName={currentProject.name}>
+          {currentProject.role === "owner" && (
+            <ManageMembersDialog
+              projectId={currentProject.id}
+              projectName={currentProject.name}
+            >
               <Button
                 variant="outline"
                 size="sm"
@@ -98,32 +115,40 @@ export default function Navbar({
           })}
         </nav>
 
-        {/* Right Side: User & Logout */}
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800/50 text-slate-300 text-sm">
+        {/* Right Side: User Dropdown */}
+        <div className="relative animate-in fade-in duration-300" ref={dropdownRef}>
+          <button
+            onClick={() => setProfileOpen(!profileOpen)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800/50 hover:bg-slate-800/50 hover:border-slate-700/50 text-slate-350 text-sm font-semibold transition-all duration-200 cursor-pointer select-none"
+            title="Profile menu"
+          >
             <User className="size-4 text-slate-400" />
-            <span className="font-medium hidden sm:inline max-w-[120px] truncate">
+            <span className="max-w-[120px] truncate">
               {username}
             </span>
-          </div>
+          </button>
 
-          <form onSubmit={handleLogout}>
-            <Button
-              type="submit"
-              variant="outline"
-              size="sm"
-              className="border-slate-800 bg-black text-slate-400 hover:text-slate-200 hover:bg-slate-900 rounded-xl"
-              title="Sign Out"
-            >
-              <LogOut className="size-4" />
-              <span className="hidden sm:inline">Logout</span>
-            </Button>
-          </form>
+          {profileOpen && (
+            <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-slate-855 bg-zinc-950/95 backdrop-blur-md p-1.5 shadow-xl shadow-black/85 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
+              <div className="px-3 py-2 border-b border-slate-900 text-[10px] text-slate-500 font-bold uppercase tracking-wider select-none">
+                Signed in as <span className="text-slate-200 font-extrabold normal-case block mt-0.5">{username}</span>
+              </div>
+              <form onSubmit={handleLogout} className="mt-1">
+                <button
+                  type="submit"
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold uppercase tracking-wider text-rose-400 hover:bg-rose-500/10 hover:text-rose-350 transition-all text-left cursor-pointer"
+                >
+                  <LogOut className="size-3.5" />
+                  <span>Logout</span>
+                </button>
+              </form>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Mobile Navigation Bar */}
-      <div className="md:hidden border-t border-slate-900/60 bg-black/80 px-4 py-2 flex items-center justify-around">
+      <div className="md:hidden border-t border-slate-900/60 bg-black/80 px-2 py-2 flex items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;

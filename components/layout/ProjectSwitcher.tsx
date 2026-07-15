@@ -131,7 +131,7 @@ export default function ProjectSwitcher({ initialProjects, currentProject }: Pro
               <button
                 type="submit"
                 disabled={isPending || !newProjectName.trim()}
-                className="p-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-800/50 disabled:text-slate-600 text-white transition-colors"
+                className="p-1.5 rounded-lg bg-indigo-700 hover:bg-indigo-600 disabled:bg-slate-800/50 disabled:text-slate-600 text-slate-100 transition-colors"
               >
                 {isPending ? (
                   <Loader2 className="size-3.5 animate-spin" />

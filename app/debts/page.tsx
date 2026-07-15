@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { getSessionUser, getCurrentProject } from "@/lib/auth";
 import { sql } from "@/lib/db";
 import Navbar from "@/components/layout/Navbar";
+import Header from "@/components/Header";
 import DebtFilters from "@/components/debts/DebtFilters";
 import ActiveDebts from "@/components/dashboard/ActiveDebts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
@@ -87,21 +88,31 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
       />
 
       <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 space-y-6 max-w-4xl">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-slate-50 via-slate-100 to-indigo-200">
-              Debts & Loans Management
-            </h2>
-            <p className="text-slate-400 text-sm mt-1">
-              View, record payments, and track history of borrow and lend
-              amounts.
-            </p>
-          </div>
-          <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs font-semibold text-slate-300">
-            <Landmark className="size-4 text-indigo-400" />
-            <span>Total Loan records: {debts.length}</span>
-          </div>
-        </div>
+        <Header
+          title="Debts & Loans Management"
+          subtitle="View, record payments, and track history of borrow and lend amounts."
+          showRefresh={false}
+          actions={
+            <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs font-semibold text-slate-300">
+              <Landmark className="size-4 text-indigo-400" />
+              <span>Total Loan records: {debts.length}</span>
+            </div>
+          }
+          stats={[
+            {
+              title: "Total Outstanding Receivable",
+              value: formatNaira(totalLent),
+              icon: <ArrowUpRight className="size-4" />,
+              iconBg: "bg-violet-500/10 text-violet-400",
+            },
+            {
+              title: "Total Outstanding Payable",
+              value: formatNaira(totalBorrowed),
+              icon: <ArrowDownRight className="size-4" />,
+              iconBg: "bg-amber-500/10 text-amber-400",
+            },
+          ]}
+        />
 
         <div className="animate-in fade-in duration-500 delay-100">
           <Suspense
@@ -113,53 +124,34 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
           </Suspense>
         </div>
 
-        {/* Aggregates */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in fade-in duration-500 delay-150">
-          <Card className="border border-slate-800 bg-slate-900/10">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                  Total Outstanding Receivable
-                </span>
-                <h4 className="text-lg font-black text-violet-400 mt-0.5">
-                  {formatNaira(totalLent)}
-                </h4>
-              </div>
-              <div className="p-2 rounded-xl bg-violet-500/10 text-violet-400">
-                <ArrowUpRight className="size-4" />
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card className="border border-slate-800 bg-slate-900/10">
-            <CardContent className="p-4 flex items-center justify-between">
-              <div>
-                <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">
-                  Total Outstanding Payable
-                </span>
-                <h4 className="text-lg font-black text-amber-400 mt-0.5">
-                  {formatNaira(totalBorrowed)}
-                </h4>
-              </div>
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
-                <ArrowDownRight className="size-4" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
 
         {/* Debts List Card */}
-        <Card className="border border-slate-800/80 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 animate-in fade-in duration-500 delay-200">
-          <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-slate-200 flex items-center gap-2">
-              <Landmark className="size-5 text-indigo-400" />
-              Loans & Debts History
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="px-0 pb-0">
-            <ActiveDebts debts={debts} readOnly={currentProj.role === 'viewer'} />
-          </CardContent>
-        </Card>
+        <div>
+          <Card className="hidden md:block border border-slate-800/80 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 animate-in fade-in duration-500 delay-200">
+            <CardHeader className="px-0 pt-0 pb-4">
+              <CardTitle className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                <Landmark className="size-5 text-indigo-400" />
+                Loans & Debts History
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="px-0 pb-0">
+              <ActiveDebts
+                debts={debts}
+                readOnly={currentProj.role === "viewer"}
+              />
+            </CardContent>
+          </Card>
+
+          {/* mobile view */}
+          <div className="md:hidden">
+            <h2 className="text-2xl font-bold mb-4">Debts & Loans</h2>
+            <ActiveDebts
+              debts={debts}
+              readOnly={currentProj.role === "viewer"}
+            />
+          </div>
+        </div>
       </main>
     </div>
   );

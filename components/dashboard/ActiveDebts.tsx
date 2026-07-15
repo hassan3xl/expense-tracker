@@ -294,7 +294,7 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
                     size="sm"
                     disabled={isPending}
                     onClick={() => handleRecordPayment(debt.id, remaining)}
-                    className="bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg h-8 px-3 text-xs shrink-0 font-semibold"
+                    className="bg-indigo-700 hover:bg-indigo-600 text-slate-100 rounded-lg h-8 px-3 text-xs shrink-0 font-semibold"
                   >
                     Submit
                   </Button>

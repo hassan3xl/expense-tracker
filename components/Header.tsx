@@ -1,0 +1,142 @@
+"use client";
+
+import React from "react";
+import { RefreshCw } from "lucide-react";
+import { Button } from "./ui/button";
+import { motion } from "framer-motion";
+
+interface StatCardData {
+  title: string;
+  value: React.ReactNode;
+  icon?: React.ReactNode;
+  trend?: {
+    value: string;
+    isPositive: boolean;
+  };
+  iconBg?: string;
+  cardBg?: string;
+  description?: React.ReactNode;
+}
+
+interface HeaderProps {
+  title: string;
+  subtitle?: string;
+  onRefresh?: () => void;
+  showRefresh?: boolean;
+  stats?: StatCardData[];
+  actions?: React.ReactNode;
+}
+
+const StatCard = ({
+  title,
+  value,
+  icon,
+  trend,
+  iconBg,
+  cardBg,
+  description,
+}: StatCardData) => {
+  return (
+    <motion.div
+      whileHover={{ y: -4, transition: { duration: 0.2 } }}
+      className={`group relative p-4 sm:p-6 rounded-3xl border backdrop-blur-xl shadow-xl shadow-black/20 hover:shadow-black/35 transition-all duration-300 ${
+        cardBg || "bg-zinc-900/30 border-slate-800/80"
+      }`}
+    >
+      <div className="flex justify-between items-center mb-3 sm:mb-4">
+        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 truncate max-w-[70%] select-none">
+          {title}
+        </span>
+        <div className={`p-1.5 sm:p-2.5 rounded-xl shrink-0 ${iconBg || "bg-muted"}`}>{icon}</div>
+      </div>
+
+      <div className="flex items-baseline justify-between mt-2">
+        <div className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-100 truncate">
+          {value}
+        </div>
+        {trend && (
+          <div
+            className={`flex items-center gap-0.5 text-[8px] sm:text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ${
+              trend.isPositive
+                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/10"
+                : "bg-amber-500/10 text-amber-400 border border-amber-500/10"
+            }`}
+          >
+            {trend.value}
+          </div>
+        )}
+      </div>
+      {description && (
+        <div className="text-[10px] text-slate-400 mt-1 select-none font-medium">
+          {description}
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+export const Header: React.FC<HeaderProps> = ({
+  title,
+  subtitle,
+  onRefresh,
+  showRefresh = true,
+  stats,
+  actions,
+}) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      className="mb-8"
+    >
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        {/* Left side - title/subtitle */}
+        <div>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-100">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        {/* Right side - actions */}
+        <div className="flex items-center gap-2">
+          {actions && <div className="flex items-center gap-2">{actions}</div>}
+          {showRefresh && onRefresh && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={onRefresh}
+              title="Refresh"
+              className="hover:bg-accent hover:text-foreground transition-colors rounded-lg"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      {stats && stats.length > 0 && (
+        <div
+          className={`grid grid-cols-2 sm:grid-cols-2 ${
+            stats.length > 2
+              ? "lg:grid-cols-2 xl:grid-cols-4"
+              : "lg:grid-cols-" + stats.length
+          } gap-4 sm:gap-6`}
+        >
+          {stats.map((stat, index) => (
+            <StatCard key={index} {...stat} />
+          ))}
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+export default Header;
