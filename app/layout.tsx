@@ -35,18 +35,24 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const user = await getSessionUser();
-  if (!user) return null;
-  const currentProj = await getCurrentProject(user.userId);
-  const projectsData = await sql`
+  
+  let currentProj = null;
+  let projects: { id: number; name: string }[] = [];
+
+  if (user) {
+    currentProj = await getCurrentProject(user.userId);
+    const projectsData = await sql`
       SELECT DISTINCT p.id, p.name FROM projects p
       LEFT JOIN project_members pm ON pm.project_id = p.id
       WHERE p.user_id = ${user.userId} OR pm.user_id = ${user.userId}
       ORDER BY p.name ASC
     `;
-  const projects = (projectsData || []).map((p) => ({
-    id: Number(p.id),
-    name: String(p.name),
-  }));
+    projects = (projectsData || []).map((p) => ({
+      id: Number(p.id),
+      name: String(p.name),
+    }));
+  }
+
   return (
     <html
       lang="en"
@@ -63,11 +69,13 @@ export default async function RootLayout({
       )}
     >
       <body className="min-h-full bg-background text-foreground flex flex-col font-sans">
-        <Navbar
-          username={user.username}
-          initialProjects={projects}
-          currentProject={currentProj}
-        />
+        {user && currentProj && (
+          <Navbar
+            username={user.username}
+            initialProjects={projects}
+            currentProject={currentProj}
+          />
+        )}
         <div className="flex-1 container mx-auto px-4 sm:px-6 py-8 space-y-8 max-w-7xl">
           {children}
         </div>
