@@ -8,6 +8,8 @@ import { Landmark, User, FileText, Calendar, Handshake } from "lucide-react";
 import { toast } from "sonner";
 import { FilterInput } from "@/components/ui/FilterCard";
 
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 export default function DebtForm() {
   const [type, setType] = useState<"owed_to_me" | "owed_by_me">("owed_by_me");
   const [person, setPerson] = useState("");
@@ -58,30 +60,26 @@ export default function DebtForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type Toggle */}
-          <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-background border border-border h-11 items-center">
-            <button
-              type="button"
-              onClick={() => setType("owed_by_me")}
-              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 cursor-pointer ${
-                type === "owed_by_me"
-                  ? "bg-amber-500/10 text-amber-400 border border-amber-500/20 shadow-xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
-              }`}
-            >
-              <Landmark className="size-4" />I Borrowed
-            </button>
-            <button
-              type="button"
-              onClick={() => setType("owed_to_me")}
-              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 cursor-pointer ${
-                type === "owed_to_me"
-                  ? "bg-violet-500/10 text-violet-400 border border-violet-500/20 shadow-xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
-              }`}
-            >
-              <Landmark className="size-4" />I Lent
-            </button>
-          </div>
+          <Tabs
+            value={type}
+            onValueChange={(val) => setType(val as "owed_to_me" | "owed_by_me")}
+            className="w-full"
+          >
+            <TabsList className="grid grid-cols-2 w-full h-11 p-1 rounded-xl bg-background border border-border">
+              <TabsTrigger
+                value="owed_by_me"
+                className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 cursor-pointer data-[active]:bg-amber-500/10 data-[active]:text-amber-400 data-[active]:border-amber-500/20"
+              >
+                <Landmark className="size-4" />I Borrowed
+              </TabsTrigger>
+              <TabsTrigger
+                value="owed_to_me"
+                className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 cursor-pointer data-[active]:bg-violet-500/10 data-[active]:text-violet-400 data-[active]:border-violet-500/20"
+              >
+                <Landmark className="size-4" />I Lent
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {/* Person Name */}

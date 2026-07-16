@@ -16,6 +16,8 @@ import { toast } from "sonner";
 import { useSearchParams } from "next/navigation";
 import { FilterInput, FilterSelect } from "@/components/ui/FilterCard";
 
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 const INCOME_CATEGORIES = [
   "Salary",
   "Freelance",
@@ -104,32 +106,28 @@ export default function TransactionForm() {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Type Toggle */}
-          <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-background border border-border h-11 items-center">
-            <button
-              type="button"
-              onClick={() => setType("income")}
-              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 cursor-pointer ${
-                type === "income"
-                  ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
-              }`}
-            >
-              <ArrowUpRight className="size-4" />
-              Income
-            </button>
-            <button
-              type="button"
-              onClick={() => setType("expense")}
-              className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 cursor-pointer ${
-                type === "expense"
-                  ? "bg-rose-500/10 text-rose-400 border border-rose-500/20 shadow-xs"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted border border-transparent"
-              }`}
-            >
-              <ArrowDownRight className="size-4" />
-              Expense
-            </button>
-          </div>
+          <Tabs
+            value={type}
+            onValueChange={(val) => setType(val as "income" | "expense")}
+            className="w-full"
+          >
+            <TabsList className="grid grid-cols-2 w-full h-11 p-1 rounded-xl bg-background border border-border">
+              <TabsTrigger
+                value="income"
+                className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 cursor-pointer data-[active]:bg-emerald-500/10 data-[active]:text-emerald-400 data-[active]:border-emerald-500/20"
+              >
+                <ArrowUpRight className="size-4" />
+                Income
+              </TabsTrigger>
+              <TabsTrigger
+                value="expense"
+                className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 cursor-pointer data-[active]:bg-rose-500/10 data-[active]:text-rose-400 data-[active]:border-rose-500/20"
+              >
+                <ArrowDownRight className="size-4" />
+                Expense
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
 
           {/* Amount Input */}
           <div className="space-y-1.5">
