@@ -4,7 +4,11 @@ import React, { useRef, useState, useEffect, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Calendar, RotateCcw } from "lucide-react";
 
-export default function DateSwitcher() {
+interface DateSwitcherProps {
+  initialDate: string;
+}
+
+export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isPending, startTransition] = useTransition();
@@ -22,8 +26,8 @@ export default function DateSwitcher() {
     return localDate.toISOString().split("T")[0];
   };
 
-  const todayStr = mounted ? getLocalDateString(new Date()) : "";
-  const selectedDateStr = searchParams.get("date") || todayStr;
+  const todayStr = mounted ? getLocalDateString(new Date()) : initialDate;
+  const selectedDateStr = searchParams.get("date") || initialDate;
 
   const navigateToDate = (dateStr: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -32,6 +36,12 @@ export default function DateSwitcher() {
       router.push(`/dashboard?${params.toString()}`);
     });
   };
+
+  if (!mounted) {
+    return (
+      <div className="h-10 w-48 bg-zinc-900/60 border border-slate-800/80 rounded-2xl animate-pulse shrink-0" />
+    );
+  }
 
   const handlePrevDay = () => {
     if (!selectedDateStr) return;

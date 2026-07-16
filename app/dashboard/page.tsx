@@ -149,7 +149,7 @@ export default async function DashboardPage({
         title={`Welcome back, ${user.username}`}
         subtitle={`Here is your financial status overview for ${dateLabel}.`}
         showRefresh={false}
-        actions={<DateSwitcher />}
+        actions={<DateSwitcher initialDate={selectedDateStr} />}
         stats={[
           {
             title: "Net Balance",
