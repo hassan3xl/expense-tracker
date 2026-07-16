@@ -136,7 +136,7 @@ export default async function TransactionsPage({
 
       <div>
         {/* desktop view */}
-        <Card className="hidden md:block border border-slate-800/80 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 animate-in fade-in duration-500 delay-200">
+        <Card className="hidden md:block border border-slate-800/80 bg-slate-900/50 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5">
           <CardHeader className="px-0 pt-0 pb-4">
             <CardTitle className="text-lg font-bold text-slate-200 flex items-center gap-2">
               <ReceiptText className="size-5 text-indigo-400" />

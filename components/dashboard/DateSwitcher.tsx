@@ -126,7 +126,7 @@ export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Date Switcher Container */}
-      <div className="flex items-center rounded-2xl bg-zinc-900/60 border border-slate-800/80 p-1 shadow-lg backdrop-blur-md">
+      <div className="flex items-center rounded-2xl bg-zinc-900/90 border border-slate-800/80 p-1 shadow-lg">
         {/* Prev Day Button */}
         <button
           onClick={handlePrevDay}

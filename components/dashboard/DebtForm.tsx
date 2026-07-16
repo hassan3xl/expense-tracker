@@ -48,7 +48,7 @@ export default function DebtForm() {
   };
 
   return (
-    <Card className="border border-slate-800/80 bg-zinc-900/30 backdrop-blur-xl rounded-3xl overflow-hidden shadow-xl shadow-black/20">
+    <Card className="border border-slate-800/80 bg-zinc-900/70 rounded-3xl overflow-hidden shadow-xl shadow-black/20">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg font-semibold text-slate-200 flex items-center gap-2">
           <Handshake className="size-5 text-indigo-400" />

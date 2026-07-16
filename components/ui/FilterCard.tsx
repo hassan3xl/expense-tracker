@@ -10,7 +10,7 @@ export function FilterCard({ className, children, ...props }: FilterCardProps) {
   return (
     <div
       className={cn(
-        "p-5 sm:p-6 rounded-3xl border border-slate-800/80 bg-zinc-900/30 backdrop-blur-xl shadow-xl shadow-black/20 space-y-4",
+        "p-5 sm:p-6 rounded-3xl border border-slate-800/80 bg-zinc-900/70 shadow-xl shadow-black/20 space-y-4",
         className
       )}
       {...props}

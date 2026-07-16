@@ -380,7 +380,7 @@ export default async function EvaluationPage({
             <div className="lg:col-span-8 space-y-6 animate-in fade-in duration-500 delay-300">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {/* Income Breakdown */}
-                <div className="border border-slate-800/60 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
+                <div className="border border-slate-800/60 bg-slate-900/50 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
                   <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
                     <ArrowUpRight className="size-5 text-indigo-400" />
                     Income Breakdown
@@ -422,7 +422,7 @@ export default async function EvaluationPage({
                 </div>
 
                 {/* Expense Breakdown */}
-                <div className="border border-slate-800/60 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
+                <div className="border border-slate-800/60 bg-slate-900/50 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
                   <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
                     <ArrowDownRight className="size-5 text-rose-400" />
                     Expense Breakdown
@@ -467,7 +467,7 @@ export default async function EvaluationPage({
 
             {/* Smart Insights & Evaluation (lg:span-4) */}
             <div className="lg:col-span-4 space-y-6 animate-in fade-in duration-500 delay-400">
-              <div className="border border-slate-800/60 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
+              <div className="border border-slate-800/60 bg-slate-900/50 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
                 <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
                   <Sparkles className="size-5 text-amber-400 animate-pulse" />
                   Smart Evaluation Insights
