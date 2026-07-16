@@ -95,7 +95,8 @@ export default function RecentTransactions({
         return (
           <div
             key={tx.id}
-            className="flex items-center justify-between p-3.5 rounded-2xl border border-border bg-card"
+            className="flex items-center justify-between p-3.5 rounded-2xl border border-border bg-card overflow-hidden"
+            style={{ transform: "translateZ(0)" }}
           >
             {/* Left: Icon and Details */}
             <div className="flex items-center gap-3">
