@@ -92,12 +92,12 @@ export default function TransactionFilters() {
             {
               label: 'Income',
               value: 'income',
-              activeColor: 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-xs',
+              activeColor: 'bg-emerald-950 text-emerald-400 border border-emerald-900 shadow-xs',
             },
             {
               label: 'Expense',
               value: 'expense',
-              activeColor: 'bg-rose-500/10 text-rose-400 border border-rose-500/20 shadow-xs',
+              activeColor: 'bg-rose-950 text-rose-400 border border-rose-900 shadow-xs',
             },
           ]}
         />

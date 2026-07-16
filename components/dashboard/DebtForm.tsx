@@ -109,7 +109,11 @@ export default function DebtForm() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 placeholder="0.00"
-                icon={<span className="text-sm font-bold text-muted-foreground select-none">₦</span>}
+                icon={
+                  <span className="text-sm font-bold text-muted-foreground select-none">
+                    ₦
+                  </span>
+                }
               />
             </div>
           </div>

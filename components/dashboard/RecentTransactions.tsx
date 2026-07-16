@@ -65,7 +65,7 @@ export default function RecentTransactions({
 
   if (transactions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-border rounded-3xl bg-card/10">
+      <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-border rounded-3xl">
         <ReceiptText className="size-8 text-muted-foreground/60 mb-2" />
         <p className="text-muted-foreground text-sm font-medium">
           No transactions recorded yet.
@@ -95,15 +95,15 @@ export default function RecentTransactions({
         return (
           <div
             key={tx.id}
-            className="flex items-center justify-between p-3.5 rounded-2xl border border-border bg-card/40 hover:bg-muted/50 hover:border-border transition-all duration-300 group"
+            className="flex items-center justify-between p-3.5 rounded-2xl border border-border bg-card"
           >
             {/* Left: Icon and Details */}
             <div className="flex items-center gap-3">
               <div
                 className={`flex items-center justify-center size-10 rounded-xl ${
                   isIncome
-                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                    : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                    ? "bg-emerald-950 text-emerald-400 border border-emerald-900"
+                    : "bg-rose-950 text-rose-400 border border-rose-900"
                 }`}
               >
                 {isIncome ? (
@@ -136,7 +136,10 @@ export default function RecentTransactions({
                   {isIncome ? "+" : "-"}
                   {formatNaira(amount)}
                 </span>
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground/80" suppressHydrationWarning>
+                <span
+                  className="flex items-center gap-1 text-[11px] text-muted-foreground/80"
+                  suppressHydrationWarning
+                >
                   <Calendar size={16} />
                   {formattedDate}
                 </span>
@@ -147,7 +150,7 @@ export default function RecentTransactions({
                   size="icon-xs"
                   onClick={() => handleDelete(tx.id)}
                   disabled={isPending}
-                  className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
+                  className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-muted-foreground hover:text-rose-400 hover:bg-rose-950 rounded-lg"
                   title="Delete Transaction"
                 >
                   <Trash2 className="size-4" />
@@ -158,7 +161,12 @@ export default function RecentTransactions({
         );
       })}
 
-      <Dialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
+      <Dialog
+        open={deleteId !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteId(null);
+        }}
+      >
         <DialogContent className="border border-border bg-popover text-popover-foreground max-w-sm rounded-3xl p-6">
           <DialogHeader className="flex flex-col items-center text-center gap-3">
             <div className="flex items-center justify-center size-12 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 mb-1">
@@ -168,7 +176,8 @@ export default function RecentTransactions({
               Delete Transaction
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground">
-              Are you sure you want to delete this transaction? This action is permanent and cannot be undone.
+              Are you sure you want to delete this transaction? This action is
+              permanent and cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="mt-4 flex flex-col-reverse sm:flex-row gap-2">

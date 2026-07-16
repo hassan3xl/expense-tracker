@@ -96,19 +96,13 @@ export default async function TransactionsPage({
         }
       />
 
-      <div className="animate-in fade-in duration-500 delay-100">
-        <Suspense
-          fallback={
-            <div className="h-10 bg-muted/30 border border-border rounded-xl animate-pulse" />
-          }
-        >
-          <TransactionFilters />
-        </Suspense>
+      <div className="">
+        <TransactionFilters />
       </div>
 
       {/* Aggregate Info for current filter */}
       {(type || category || q) && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-3xl border border-border bg-card/10 text-sm font-semibold animate-in fade-in duration-300">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-3xl border border-border bg-card text-sm font-semibold">
           <div className="text-muted-foreground">
             Filtered Earnings:{" "}
             <span className="text-emerald-400 font-bold block sm:inline mt-0.5 sm:mt-0">
@@ -147,7 +141,9 @@ export default async function TransactionsPage({
 
         {/* mobile view */}
         <div className="md:hidden px-0 pb-0">
-          <h2 className="text-2xl font-bold mb-4 text-foreground">Transactions</h2>
+          <h2 className="text-2xl font-bold mb-4 text-foreground">
+            Transactions
+          </h2>
           <RecentTransactions
             transactions={transactions}
             readOnly={currentProj.role === "viewer"}

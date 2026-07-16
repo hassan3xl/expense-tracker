@@ -47,7 +47,11 @@ const StatCard = ({
           <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-[70%] select-none">
             {title}
           </span>
-          <div className={`p-1.5 sm:p-2.5 rounded-xl shrink-0 ${iconBg || "bg-muted"}`}>{icon}</div>
+          <div
+            className={`p-1.5 sm:p-2.5 rounded-xl shrink-0 ${iconBg || "bg-muted"}`}
+          >
+            {icon}
+          </div>
         </div>
 
         <div className="flex items-baseline justify-between mt-2">
