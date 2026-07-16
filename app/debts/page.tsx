@@ -80,79 +80,66 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-black text-slate-100 flex flex-col font-sans">
-      <Navbar
-        username={user.username}
-        initialProjects={projects}
-        currentProject={currentProj}
+    <main className="">
+      <Header
+        title="Debts & Loans Management"
+        subtitle="View, record payments, and track history of borrow and lend amounts."
+        showRefresh={false}
+        actions={
+          <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs font-semibold text-slate-300">
+            <Landmark className="size-4 text-indigo-400" />
+            <span>Total Loan records: {debts.length}</span>
+          </div>
+        }
+        stats={[
+          {
+            title: "Total Outstanding Receivable",
+            value: formatNaira(totalLent),
+            icon: <ArrowUpRight className="size-4" />,
+            iconBg: "bg-violet-500/10 text-violet-400",
+          },
+          {
+            title: "Total Outstanding Payable",
+            value: formatNaira(totalBorrowed),
+            icon: <ArrowDownRight className="size-4" />,
+            iconBg: "bg-amber-500/10 text-amber-400",
+          },
+        ]}
       />
 
-      <main className="flex-1 container mx-auto px-4 sm:px-6 py-8 space-y-6 max-w-4xl">
-        <Header
-          title="Debts & Loans Management"
-          subtitle="View, record payments, and track history of borrow and lend amounts."
-          showRefresh={false}
-          actions={
-            <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs font-semibold text-slate-300">
-              <Landmark className="size-4 text-indigo-400" />
-              <span>Total Loan records: {debts.length}</span>
-            </div>
+      <div className="animate-in fade-in duration-500 delay-100">
+        <Suspense
+          fallback={
+            <div className="h-10 bg-slate-900/30 border border-slate-800 rounded-xl animate-pulse" />
           }
-          stats={[
-            {
-              title: "Total Outstanding Receivable",
-              value: formatNaira(totalLent),
-              icon: <ArrowUpRight className="size-4" />,
-              iconBg: "bg-violet-500/10 text-violet-400",
-            },
-            {
-              title: "Total Outstanding Payable",
-              value: formatNaira(totalBorrowed),
-              icon: <ArrowDownRight className="size-4" />,
-              iconBg: "bg-amber-500/10 text-amber-400",
-            },
-          ]}
-        />
+        >
+          <DebtFilters />
+        </Suspense>
+      </div>
 
-        <div className="animate-in fade-in duration-500 delay-100">
-          <Suspense
-            fallback={
-              <div className="h-10 bg-slate-900/30 border border-slate-800 rounded-xl animate-pulse" />
-            }
-          >
-            <DebtFilters />
-          </Suspense>
-        </div>
-
-
-
-        {/* Debts List Card */}
-        <div>
-          <Card className="hidden md:block border border-slate-800/80 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 animate-in fade-in duration-500 delay-200">
-            <CardHeader className="px-0 pt-0 pb-4">
-              <CardTitle className="text-lg font-bold text-slate-200 flex items-center gap-2">
-                <Landmark className="size-5 text-indigo-400" />
-                Loans & Debts History
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="px-0 pb-0">
-              <ActiveDebts
-                debts={debts}
-                readOnly={currentProj.role === "viewer"}
-              />
-            </CardContent>
-          </Card>
-
-          {/* mobile view */}
-          <div className="md:hidden">
-            <h2 className="text-2xl font-bold mb-4">Debts & Loans</h2>
+      {/* Debts List Card */}
+      <div>
+        <Card className="hidden md:block border border-slate-800/80 bg-slate-900/20 backdrop-blur-xl rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 animate-in fade-in duration-500 delay-200">
+          <CardHeader className="px-0 pt-0 pb-4">
+            <CardTitle className="text-lg font-bold text-slate-200 flex items-center gap-2">
+              <Landmark className="size-5 text-indigo-400" />
+              Loans & Debts History
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="px-0 pb-0">
             <ActiveDebts
               debts={debts}
               readOnly={currentProj.role === "viewer"}
             />
-          </div>
+          </CardContent>
+        </Card>
+
+        {/* mobile view */}
+        <div className="md:hidden">
+          <h2 className="text-2xl font-bold mb-4">Debts & Loans</h2>
+          <ActiveDebts debts={debts} readOnly={currentProj.role === "viewer"} />
         </div>
-      </main>
-    </div>
+      </div>
+    </main>
   );
 }
