@@ -136,7 +136,7 @@ export default function RecentTransactions({
                   {isIncome ? "+" : "-"}
                   {formatNaira(amount)}
                 </span>
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground/80">
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground/80" suppressHydrationWarning>
                   <Calendar size={16} />
                   {formattedDate}
                 </span>

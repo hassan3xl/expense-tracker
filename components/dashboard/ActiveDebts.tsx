@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useTransition } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { addDebtPaymentAction, deleteDebtAction } from "@/app/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +42,11 @@ interface ActiveDebtsProps {
 }
 
 export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [activePaymentId, setActivePaymentId] = useState<number | null>(null);
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentNote, setPaymentNote] = useState("");
@@ -139,7 +144,7 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
           : null;
 
         const isOverdue =
-          !isPaid && debt.due_date && new Date(debt.due_date) < new Date();
+          mounted && !isPaid && debt.due_date && new Date(debt.due_date) < new Date();
 
         return (
           <div
@@ -220,6 +225,7 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
             <div className="flex items-center justify-between gap-4 pt-1 border-t border-border/40">
               {formattedDueDate ? (
                 <span
+                  suppressHydrationWarning
                   className={`flex items-center gap-1 text-[11px] font-medium ${
                     isOverdue
                       ? "text-rose-400 font-semibold animate-pulse"

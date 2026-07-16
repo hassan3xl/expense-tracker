@@ -54,6 +54,11 @@ export default function ManageMembersDialog({
   projectName,
   children,
 }: ManageMembersDialogProps) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<number | null>(null); // holds userId being edited/removed
@@ -246,12 +251,14 @@ export default function ManageMembersDialog({
                       <span className="text-sm font-semibold text-foreground">
                         {member.username}
                       </span>
-                      <span className="text-[10px] text-muted-foreground block">
+                      <span className="text-[10px] text-muted-foreground block" suppressHydrationWarning>
                         Added{" "}
-                        {new Date().toLocaleDateString(undefined, {
-                          month: "short",
-                          day: "numeric",
-                        })}
+                        {mounted
+                          ? new Date().toLocaleDateString(undefined, {
+                              month: "short",
+                              day: "numeric",
+                            })
+                          : ""}
                       </span>
                     </div>
                   </div>

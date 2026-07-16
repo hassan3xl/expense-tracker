@@ -48,7 +48,7 @@ export default function TransactionForm() {
   const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
-  const [date, setDate] = useState(selectedDate);
+  const [date, setDate] = useState("");
   const [isPending, startTransition] = useTransition();
 
   const categories = type === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;

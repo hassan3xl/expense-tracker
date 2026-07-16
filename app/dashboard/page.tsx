@@ -7,8 +7,6 @@ import TransactionForm from "@/components/dashboard/TransactionForm";
 import DebtForm from "@/components/dashboard/DebtForm";
 import RecentTransactions from "@/components/dashboard/RecentTransactions";
 import ActiveDebts from "@/components/dashboard/ActiveDebts";
-import { Card, CardContent } from "@/components/ui/card";
-import { Toaster } from "sonner";
 import {
   ArrowUpRight,
   ArrowDownRight,
