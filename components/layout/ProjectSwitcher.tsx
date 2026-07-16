@@ -1,9 +1,18 @@
-'use client';
+"use client";
 
-import React, { useState, useRef, useEffect } from 'react';
-import { addProjectAction, switchProjectAction } from '@/app/actions';
-import { ChevronDown, Plus, Check, Briefcase, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import React, { useState, useRef, useEffect } from "react";
+import { addProjectAction, switchProjectAction } from "@/app/actions";
+import {
+  ChevronDown,
+  Plus,
+  Check,
+  Briefcase,
+  Loader2,
+  Users,
+} from "lucide-react";
+import { toast } from "sonner";
+import ManageMembersDialog from "./ManageMembersDialog";
+import { Button } from "../ui/button";
 
 interface Project {
   id: number;
@@ -12,27 +21,38 @@ interface Project {
 
 interface ProjectSwitcherProps {
   initialProjects: Project[];
-  currentProject: Project;
+  currentProject: {
+    id: number;
+    name: string;
+    role?: "owner" | "editor" | "viewer";
+    ownerId?: number;
+  };
 }
 
-export default function ProjectSwitcher({ initialProjects, currentProject }: ProjectSwitcherProps) {
+export default function ProjectSwitcher({
+  initialProjects,
+  currentProject,
+}: ProjectSwitcherProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [projects, setProjects] = useState<Project[]>(initialProjects);
-  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectName, setNewProjectName] = useState("");
   const [isPending, setIsPending] = useState(false);
   const [switchingId, setSwitchingId] = useState<number | null>(null);
-  
+
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const handleSwitchProject = async (id: number, name: string) => {
@@ -43,7 +63,7 @@ export default function ProjectSwitcher({ initialProjects, currentProject }: Pro
       toast.success(`Switched to project: ${name}`);
       setIsOpen(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to switch project');
+      toast.error(err.message || "Failed to switch project");
     } finally {
       setSwitchingId(null);
     }
@@ -57,12 +77,14 @@ export default function ProjectSwitcher({ initialProjects, currentProject }: Pro
     try {
       setIsPending(true);
       const newProj = await addProjectAction(name);
-      setProjects((prev) => [...prev, newProj].sort((a, b) => a.name.localeCompare(b.name)));
-      setNewProjectName('');
+      setProjects((prev) =>
+        [...prev, newProj].sort((a, b) => a.name.localeCompare(b.name)),
+      );
+      setNewProjectName("");
       toast.success(`Project "${name}" created!`);
       setIsOpen(false);
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create project');
+      toast.error(err.message || "Failed to create project");
     } finally {
       setIsPending(false);
     }
@@ -76,7 +98,9 @@ export default function ProjectSwitcher({ initialProjects, currentProject }: Pro
       >
         <Briefcase className="size-4 text-primary shrink-0" />
         <span className="truncate">{currentProject.name}</span>
-        <ChevronDown className={`size-3.5 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`size-3.5 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
       </button>
 
       {isOpen && (
@@ -84,30 +108,31 @@ export default function ProjectSwitcher({ initialProjects, currentProject }: Pro
           <div className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-2.5 py-1.5">
             Switch Project
           </div>
-          
+
           <div className="max-h-48 overflow-y-auto space-y-1 my-1">
             {projects.map((proj) => {
               const isSelected = proj.id === currentProject.id;
               const isSwitching = switchingId === proj.id;
-              
+
               return (
-                <button
-                  key={proj.id}
-                  onClick={() => handleSwitchProject(proj.id, proj.name)}
-                  className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-left transition-all ${
-                    isSelected
-                      ? 'bg-primary/15 text-primary font-medium'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                  }`}
-                  disabled={isSwitching}
-                >
-                  <span className="truncate pr-2">{proj.name}</span>
-                  {isSwitching ? (
-                    <Loader2 className="size-3.5 animate-spin text-primary" />
-                  ) : isSelected ? (
-                    <Check className="size-3.5 text-primary shrink-0" />
-                  ) : null}
-                </button>
+                <div key={proj.id} className="flex gap-2">
+                  <button
+                    onClick={() => handleSwitchProject(proj.id, proj.name)}
+                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs text-left transition-all ${
+                      isSelected
+                        ? "bg-primary/15 text-primary font-medium"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
+                    disabled={isSwitching}
+                  >
+                    <span className="truncate pr-2">{proj.name}</span>
+                    {isSwitching ? (
+                      <Loader2 className="size-3.5 animate-spin text-primary" />
+                    ) : isSelected ? (
+                      <Check className="size-3.5 text-primary shrink-0" />
+                    ) : null}
+                  </button>
+                </div>
               );
             })}
           </div>

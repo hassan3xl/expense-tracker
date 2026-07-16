@@ -112,7 +112,7 @@ export default function TransactionForm() {
             onValueChange={(val) => setType(val as "income" | "expense")}
             className="w-full"
           >
-            <TabsList className="grid grid-cols-2 w-full h-11 p-1 rounded-xl bg-background border border-border">
+            <TabsList className="grid grid-cols-2 w-full h-14 p-1 rounded-xl bg-background border border-border">
               <TabsTrigger
                 value="income"
                 className="flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 cursor-pointer data-[active]:bg-emerald-500/10 data-[active]:text-emerald-400 data-[active]:border-emerald-500/20"

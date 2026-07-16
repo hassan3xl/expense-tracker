@@ -58,9 +58,8 @@ export default function Navbar({
   const navItems = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Transactions", href: "/transactions", icon: ReceiptText },
-    { name: "Debts & Loans", href: "/debts", icon: Landmark },
+    { name: "Loans", href: "/debts", icon: Landmark },
     { name: "Evaluation", href: "/evaluation", icon: TrendingUp },
-    { name: "Settings", href: "/settings", icon: Settings },
   ];
 
   const handleLogout = (e: React.FormEvent) => {
@@ -95,6 +94,9 @@ export default function Navbar({
               </Button>
             </ManageMembersDialog>
           )}
+          <Link href={`settings`}>
+            <Settings />
+          </Link>
         </div>
 
         {/* Center: Navigation Links */}
@@ -131,7 +133,7 @@ export default function Navbar({
             title="Profile menu"
           >
             <User className="size-4 text-muted-foreground" />
-            <span className="max-w-[120px] truncate">{username}</span>
+            {/* <span className="max-w-[120px] truncate">{username}</span> */}
           </button>
 
           {profileOpen && (

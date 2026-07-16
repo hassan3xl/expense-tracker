@@ -82,73 +82,42 @@ export default async function TransactionsPage({
     else if (tx.type === "expense") totalExpense += val;
   });
 
+  // Generate 50 dummy transaction items to populate a long scrollable list
+  const dummyTransactions = Array.from({ length: 50 }, (_, i) => ({
+    id: 9999 + i,
+    type: i % 2 === 0 ? "income" : "expense",
+    category: i % 3 === 0 ? "Salary" : i % 3 === 1 ? "Food" : "Entertainment",
+    amount: (1500 + i * 120).toString(),
+    description: `Dummy transaction record number ${i + 1}`,
+    date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString(),
+  }));
+
   return (
     <main>
       <Header
         title="Transactions History"
-        subtitle="Search and filter your entire transaction logs below."
+        subtitle="Scrolling test page with 50 dummy transactions to diagnose mobile render issues."
         showRefresh={false}
         actions={
           <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-card border border-border text-xs font-semibold text-muted-foreground">
             <ReceiptText className="size-4 text-primary" />
-            <span>Total Record count: {transactions.length}</span>
+            <span>Test Records: {dummyTransactions.length}</span>
           </div>
         }
       />
 
-      <div className="">
+      <div className="mb-6">
         <TransactionFilters />
       </div>
 
-      {/* Aggregate Info for current filter */}
-      {(type || category || q) && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-3xl border border-border bg-card text-sm font-semibold">
-          <div className="text-muted-foreground">
-            Filtered Earnings:{" "}
-            <span className="text-emerald-400 font-bold block sm:inline mt-0.5 sm:mt-0">
-              {formatNaira(totalIncome)}
-            </span>
-          </div>
-          <div className="text-muted-foreground">
-            Filtered Expenses:{" "}
-            <span className="text-rose-400 font-bold block sm:inline mt-0.5 sm:mt-0">
-              {formatNaira(totalExpense)}
-            </span>
-          </div>
-          <div className="col-span-2 sm:col-span-1 text-muted-foreground border-t sm:border-t-0 sm:border-l border-border pt-2 sm:pt-0 sm:pl-4">
-            Net Result:{" "}
-            <span
-              className={`font-bold block sm:inline mt-0.5 sm:mt-0 ${totalIncome - totalExpense >= 0 ? "text-emerald-400" : "text-rose-400"}`}
-            >
-              {formatNaira(totalIncome - totalExpense)}
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* Transactions Table/List Card */}
-
-      <div>
-        {/* desktop view */}
-        <Card className="hidden md:block border border-border bg-card text-card-foreground rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5">
-          <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
-              <ReceiptText className="size-5 text-primary" />
-              Transactions Logs
-            </CardTitle>
-          </CardHeader>
-        </Card>
-
-        {/* mobile view */}
-        <div className="md:hidden px-0 pb-0">
-          <h2 className="text-2xl font-bold mb-4 text-foreground">
-            Transactions
-          </h2>
-          <RecentTransactions
-            transactions={transactions}
-            readOnly={currentProj.role === "viewer"}
-          />
-        </div>
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-foreground">
+          Scroll Test List
+        </h2>
+        <RecentTransactions
+          transactions={dummyTransactions}
+          readOnly={true}
+        />
       </div>
     </main>
   );
