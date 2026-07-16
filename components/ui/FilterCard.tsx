@@ -11,7 +11,7 @@ export function FilterCard({ className, children, ...props }: FilterCardProps) {
     <div
       className={cn(
         "p-5 sm:p-6 rounded-3xl border border-border bg-card text-card-foreground shadow-xl shadow-black/20 space-y-4",
-        className
+        className,
       )}
       {...props}
     >
@@ -20,7 +20,13 @@ export function FilterCard({ className, children, ...props }: FilterCardProps) {
   );
 }
 
-export function FilterGrid({ className, children }: { className?: string; children: React.ReactNode }) {
+export function FilterGrid({
+  className,
+  children,
+}: {
+  className?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className={cn("flex flex-col sm:flex-row gap-4 items-end", className)}>
       {children}
@@ -44,14 +50,15 @@ export function FilterField({
           {label}
         </label>
       )}
-      <div className="relative w-full flex items-center">
-        {children}
-      </div>
+      <div className="relative w-full flex items-center">{children}</div>
     </div>
   );
 }
 
-export interface FilterInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> {
+export interface FilterInputProps extends Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  "size"
+> {
   icon?: React.ReactNode;
 }
 
@@ -67,15 +74,15 @@ export const FilterInput = React.forwardRef<HTMLInputElement, FilterInputProps>(
         <input
           ref={ref}
           className={cn(
-            "h-11 w-full rounded-xl border border-border bg-background px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary",
+            "h-11 w-full rounded-xl border border-border bg-background px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5",
             icon && "pl-10",
-            className
+            className,
           )}
           {...props}
         />
       </div>
     );
-  }
+  },
 );
 FilterInput.displayName = "FilterInput";
 
@@ -83,31 +90,32 @@ export interface FilterSelectProps extends React.SelectHTMLAttributes<HTMLSelect
   icon?: React.ReactNode;
 }
 
-export const FilterSelect = React.forwardRef<HTMLSelectElement, FilterSelectProps>(
-  ({ className, icon, children, ...props }, ref) => {
-    return (
-      <div className="relative w-full">
-        {icon && (
-          <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground pointer-events-none">
-            {icon}
-          </span>
+export const FilterSelect = React.forwardRef<
+  HTMLSelectElement,
+  FilterSelectProps
+>(({ className, icon, children, ...props }, ref) => {
+  return (
+    <div className="relative w-full">
+      {icon && (
+        <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-muted-foreground pointer-events-none">
+          {icon}
+        </span>
+      )}
+      <select
+        ref={ref}
+        className={cn(
+          "h-11 w-full appearance-none rounded-xl border border-border bg-background px-3.5 py-2 pr-10 text-sm text-foreground cursor-pointer transition-all outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5",
+          icon && "pl-10",
+          className,
         )}
-        <select
-          ref={ref}
-          className={cn(
-            "h-11 w-full appearance-none rounded-xl border border-border bg-background px-3.5 py-2 pr-10 text-sm text-foreground cursor-pointer outline-none focus:border-primary",
-            icon && "pl-10",
-            className
-          )}
-          {...props}
-        >
-          {children}
-        </select>
-        <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground select-none opacity-80" />
-      </div>
-    );
-  }
-);
+        {...props}
+      >
+        {children}
+      </select>
+      <ChevronDown className="pointer-events-none absolute right-3.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground select-none opacity-80" />
+    </div>
+  );
+});
 FilterSelect.displayName = "FilterSelect";
 
 export interface FilterSegmentProps {
@@ -127,7 +135,7 @@ export function FilterSegment({
     <div
       className={cn(
         "flex p-1 rounded-xl bg-background border border-border items-center w-full sm:w-auto h-11 shrink-0",
-        className
+        className,
       )}
     >
       {options.map((opt) => {
@@ -140,8 +148,9 @@ export function FilterSegment({
             className={cn(
               "px-4 py-1.5 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-wider transition-all duration-200 h-9 flex items-center justify-center cursor-pointer",
               isActive
-                ? opt.activeColor || "bg-muted text-foreground border border-border shadow-xs"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                ? opt.activeColor ||
+                    "bg-muted text-foreground border border-border shadow-xs"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted",
             )}
           >
             {opt.label}
@@ -165,14 +174,14 @@ export function FilterButton({
   return (
     <button
       className={cn(
-        "h-11 px-5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-xs cursor-pointer select-none",
+        "h-11 px-5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer select-none",
         variant === "primary" &&
-          "bg-primary text-primary-foreground border border-primary hover:bg-primary/90 active:translate-y-px",
+          "bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/40 text-primary active:translate-y-px",
         variant === "secondary" &&
           "bg-card border border-border hover:bg-muted text-foreground active:translate-y-px",
         variant === "danger" &&
-          "bg-rose-950 border border-rose-900 text-rose-400 hover:bg-rose-900 active:translate-y-px",
-        className
+          "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 hover:border-rose-500/35 text-rose-400 active:translate-y-px",
+        className,
       )}
       {...props}
     >

@@ -85,7 +85,10 @@ async function main() {
     await sql`
       ALTER TABLE debts ADD COLUMN IF NOT EXISTS project_id INTEGER REFERENCES projects(id) ON DELETE CASCADE;
     `;
-    console.log("- Added project_id columns to existing transactions and debts tables if needed.");
+    await sql`
+      ALTER TABLE projects ADD COLUMN IF NOT EXISTS auto_log_debt_transaction BOOLEAN DEFAULT TRUE;
+    `;
+    console.log("- Added project_id columns and projects setting columns to existing tables if needed.");
 
     // 6. Create project_members table
     await sql`

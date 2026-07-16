@@ -12,11 +12,12 @@ import {
   LogOut,
   User,
   TrendingUp,
+  Settings,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import ProjectSwitcher from "./ProjectSwitcher";
-import { Users } from "lucide-react";
 import ManageMembersDialog from "./ManageMembersDialog";
 
 interface NavbarProps {
@@ -41,7 +42,10 @@ export default function Navbar({
 
   React.useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setProfileOpen(false);
       }
     }
@@ -56,6 +60,7 @@ export default function Navbar({
     { name: "Transactions", href: "/transactions", icon: ReceiptText },
     { name: "Debts & Loans", href: "/debts", icon: Landmark },
     { name: "Evaluation", href: "/evaluation", icon: TrendingUp },
+    { name: "Settings", href: "/settings", icon: Settings },
   ];
 
   const handleLogout = (e: React.FormEvent) => {
@@ -66,7 +71,7 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md transform-gpu [transform:translateZ(0)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
         {/* Left Side: Brand Logo, Project Switcher & Invite/Share button */}
         <div className="flex items-center gap-2">
@@ -116,22 +121,26 @@ export default function Navbar({
         </nav>
 
         {/* Right Side: User Dropdown */}
-        <div className="relative animate-in fade-in duration-300" ref={dropdownRef}>
+        <div
+          className="relative animate-in fade-in duration-300"
+          ref={dropdownRef}
+        >
           <button
             onClick={() => setProfileOpen(!profileOpen)}
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card border border-border hover:bg-muted/50 text-foreground text-sm font-semibold transition-all duration-200 cursor-pointer select-none"
             title="Profile menu"
           >
             <User className="size-4 text-muted-foreground" />
-            <span className="max-w-[120px] truncate">
-              {username}
-            </span>
+            <span className="max-w-[120px] truncate">{username}</span>
           </button>
 
           {profileOpen && (
             <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-border bg-popover text-popover-foreground p-1.5 shadow-xl shadow-black/85 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
               <div className="px-3 py-2 border-b border-border/50 text-[10px] text-muted-foreground font-bold uppercase tracking-wider select-none">
-                Signed in as <span className="text-foreground font-extrabold normal-case block mt-0.5">{username}</span>
+                Signed in as{" "}
+                <span className="text-foreground font-extrabold normal-case block mt-0.5">
+                  {username}
+                </span>
               </div>
               <form onSubmit={handleLogout} className="mt-1">
                 <button

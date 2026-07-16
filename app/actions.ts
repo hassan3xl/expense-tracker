@@ -200,19 +200,21 @@ export async function addDebtAction(data: {
       VALUES (${user.userId}, ${currentProj.id}, ${person}, ${type}, ${amount}, ${amount}, ${description}, ${formattedDueDate}, 'active')
     `;
 
-    // Also log this as an initial transaction (optional, but let's log the loan transaction)
-    // Owed to me (I loaned someone money) -> This is an expense from my current wallet.
-    // Owed by me (I borrowed from someone) -> This is income to my current wallet.
-    const transType = type === 'owed_to_me' ? 'expense' : 'income';
-    const transCategory = type === 'owed_to_me' ? 'Loan Lent' : 'Loan Borrowed';
-    const transDesc = type === 'owed_to_me' 
-      ? `Lent money to ${person}. Total debt recorded.` 
-      : `Borrowed money from ${person}. Total debt recorded.`;
+    if (currentProj.autoLogDebtTransaction) {
+      // Also log this as an initial transaction (optional, but let's log the loan transaction)
+      // Owed to me (I loaned someone money) -> This is an expense from my current wallet.
+      // Owed by me (I borrowed from someone) -> This is income to my current wallet.
+      const transType = type === 'owed_to_me' ? 'expense' : 'income';
+      const transCategory = type === 'owed_to_me' ? 'Loan Lent' : 'Loan Borrowed';
+      const transDesc = type === 'owed_to_me' 
+        ? `Lent money to ${person}. Total debt recorded.` 
+        : `Borrowed money from ${person}. Total debt recorded.`;
 
-    await sql`
-      INSERT INTO transactions (user_id, project_id, type, category, amount, description, date)
-      VALUES (${user.userId}, ${currentProj.id}, ${transType}, ${transCategory}, ${amount}, ${transDesc}, CURRENT_TIMESTAMP)
-    `;
+      await sql`
+        INSERT INTO transactions (user_id, project_id, type, category, amount, description, date)
+        VALUES (${user.userId}, ${currentProj.id}, ${transType}, ${transCategory}, ${amount}, ${transDesc}, CURRENT_TIMESTAMP)
+      `;
+    }
   } catch (error: any) {
     console.error('Failed to add debt:', error);
     throw new Error(error.message || 'Failed to save debt record');
@@ -546,6 +548,36 @@ export async function updateProjectMemberRoleAction(projectId: number, memberUse
     SET role = ${role} 
     WHERE project_id = ${projectId} AND user_id = ${memberUserId}
   `;
+
+  revalidatePath('/dashboard');
+  revalidatePath('/transactions');
+  revalidatePath('/debts');
+}
+
+export async function updateProjectSettingsAction(data: {
+  autoLogDebtTransaction: boolean;
+}) {
+  const user = await getSessionUser();
+  if (!user) throw new Error('Unauthorized');
+
+  const { autoLogDebtTransaction } = data;
+
+  try {
+    const currentProj = await getCurrentProject(user.userId);
+    // Only owner can update settings
+    if (currentProj.role !== 'owner') {
+      throw new Error('Only the project owner can update project settings');
+    }
+
+    await sql`
+      UPDATE projects 
+      SET auto_log_debt_transaction = ${autoLogDebtTransaction}
+      WHERE id = ${currentProj.id}
+    `;
+  } catch (error: any) {
+    console.error('Failed to update project settings:', error);
+    throw new Error(error.message || 'Failed to update project settings');
+  }
 
   revalidatePath('/dashboard');
   revalidatePath('/transactions');

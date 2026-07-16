@@ -108,6 +108,7 @@ export interface CurrentProject {
   name: string;
   role: 'owner' | 'editor' | 'viewer';
   ownerId: number;
+  autoLogDebtTransaction: boolean;
 }
 
 /**
@@ -124,7 +125,7 @@ export async function getCurrentProject(userId: number): Promise<CurrentProject>
   if (projectId) {
     try {
       const projResult = await sql`
-        SELECT p.id, p.name, p.user_id as owner_id,
+        SELECT p.id, p.name, p.user_id as owner_id, p.auto_log_debt_transaction,
                CASE 
                  WHEN p.user_id = ${userId} THEN 'owner'
                  ELSE COALESCE(pm.role, 'viewer')
@@ -139,7 +140,8 @@ export async function getCurrentProject(userId: number): Promise<CurrentProject>
           id: Number(projResult[0].id), 
           name: String(projResult[0].name),
           role: projResult[0].role as 'owner' | 'editor' | 'viewer',
-          ownerId: Number(projResult[0].owner_id)
+          ownerId: Number(projResult[0].owner_id),
+          autoLogDebtTransaction: Boolean(projResult[0].auto_log_debt_transaction)
         };
       }
     } catch (e) {
@@ -150,7 +152,7 @@ export async function getCurrentProject(userId: number): Promise<CurrentProject>
   try {
     // If not found or invalid, check if they have any projects (owned or member)
     const projs = await sql`
-      SELECT p.id, p.name, p.user_id as owner_id,
+      SELECT p.id, p.name, p.user_id as owner_id, p.auto_log_debt_transaction,
              CASE 
                WHEN p.user_id = ${userId} THEN 'owner'
                ELSE COALESCE(pm.role, 'viewer')
@@ -167,7 +169,8 @@ export async function getCurrentProject(userId: number): Promise<CurrentProject>
         id: Number(activeProj.id), 
         name: String(activeProj.name),
         role: activeProj.role as 'owner' | 'editor' | 'viewer',
-        ownerId: Number(activeProj.owner_id)
+        ownerId: Number(activeProj.owner_id),
+        autoLogDebtTransaction: Boolean(activeProj.auto_log_debt_transaction)
       };
     }
     
@@ -175,7 +178,7 @@ export async function getCurrentProject(userId: number): Promise<CurrentProject>
     const newProjResult = await sql`
       INSERT INTO projects (user_id, name)
       VALUES (${userId}, 'Personal')
-      RETURNING id, name, user_id as owner_id
+      RETURNING id, name, user_id as owner_id, auto_log_debt_transaction
     `;
     
     const defaultProj = newProjResult[0];
@@ -197,11 +200,12 @@ export async function getCurrentProject(userId: number): Promise<CurrentProject>
       id: defaultProjId, 
       name: String(defaultProj.name),
       role: 'owner',
-      ownerId: userId
+      ownerId: userId,
+      autoLogDebtTransaction: Boolean(defaultProj.auto_log_debt_transaction)
     };
   } catch (error) {
     console.error('Database error in getCurrentProject:', error);
     // Return fallback project if database fails
-    return { id: 0, name: 'Personal', role: 'owner', ownerId: userId };
+    return { id: 0, name: 'Personal', role: 'owner', ownerId: userId, autoLogDebtTransaction: true };
   }
 }
