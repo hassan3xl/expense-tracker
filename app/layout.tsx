@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Geist, Geist_Mono, Inter, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import Navbar from "@/components/layout/Navbar";
 import { getCurrentProject, getSessionUser } from "@/lib/auth";
 import sql from "@/lib/db";
+
+const notoSansHeading = Noto_Sans({
+  subsets: ["latin"],
+  variable: "--font-heading",
+});
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -53,9 +58,10 @@ export default async function RootLayout({
         geistMono.variable,
         "font-sans",
         inter.variable,
+        notoSansHeading.variable,
       )}
     >
-      <body className="min-h-full bg-black text-slate-100 flex flex-col font-sans">
+      <body className="min-h-full bg-background text-foreground flex flex-col font-sans">
         <Navbar
           username={user.username}
           initialProjects={projects}
@@ -69,9 +75,9 @@ export default async function RootLayout({
           theme="dark"
           toastOptions={{
             style: {
-              background: "#0f172a",
-              border: "1px solid #1e293b",
-              color: "#f8fafc",
+              background: "var(--card)",
+              border: "1px solid var(--border)",
+              color: "var(--card-foreground)",
             },
           }}
         />

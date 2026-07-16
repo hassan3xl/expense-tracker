@@ -89,8 +89,8 @@ export default async function TransactionsPage({
         subtitle="Search and filter your entire transaction logs below."
         showRefresh={false}
         actions={
-          <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs font-semibold text-slate-300">
-            <ReceiptText className="size-4 text-indigo-400" />
+          <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-card border border-border text-xs font-semibold text-muted-foreground">
+            <ReceiptText className="size-4 text-primary" />
             <span>Total Record count: {transactions.length}</span>
           </div>
         }
@@ -99,7 +99,7 @@ export default async function TransactionsPage({
       <div className="animate-in fade-in duration-500 delay-100">
         <Suspense
           fallback={
-            <div className="h-10 bg-slate-900/30 border border-slate-800 rounded-xl animate-pulse" />
+            <div className="h-10 bg-muted/30 border border-border rounded-xl animate-pulse" />
           }
         >
           <TransactionFilters />
@@ -108,20 +108,20 @@ export default async function TransactionsPage({
 
       {/* Aggregate Info for current filter */}
       {(type || category || q) && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-3xl border border-slate-800 bg-slate-900/10 text-sm font-semibold animate-in fade-in duration-300">
-          <div className="text-slate-400">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-3xl border border-border bg-card/10 text-sm font-semibold animate-in fade-in duration-300">
+          <div className="text-muted-foreground">
             Filtered Earnings:{" "}
             <span className="text-emerald-400 font-bold block sm:inline mt-0.5 sm:mt-0">
               {formatNaira(totalIncome)}
             </span>
           </div>
-          <div className="text-slate-400">
+          <div className="text-muted-foreground">
             Filtered Expenses:{" "}
             <span className="text-rose-400 font-bold block sm:inline mt-0.5 sm:mt-0">
               {formatNaira(totalExpense)}
             </span>
           </div>
-          <div className="col-span-2 sm:col-span-1 text-slate-400 border-t sm:border-t-0 sm:border-l border-slate-850 pt-2 sm:pt-0 sm:pl-4">
+          <div className="col-span-2 sm:col-span-1 text-muted-foreground border-t sm:border-t-0 sm:border-l border-border pt-2 sm:pt-0 sm:pl-4">
             Net Result:{" "}
             <span
               className={`font-bold block sm:inline mt-0.5 sm:mt-0 ${totalIncome - totalExpense >= 0 ? "text-emerald-400" : "text-rose-400"}`}
@@ -136,10 +136,10 @@ export default async function TransactionsPage({
 
       <div>
         {/* desktop view */}
-        <Card className="hidden md:block border border-slate-800/80 bg-slate-900/50 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5">
+        <Card className="hidden md:block border border-border bg-card text-card-foreground rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5">
           <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-slate-200 flex items-center gap-2">
-              <ReceiptText className="size-5 text-indigo-400" />
+            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+              <ReceiptText className="size-5 text-primary" />
               Transactions Logs
             </CardTitle>
           </CardHeader>
@@ -147,7 +147,7 @@ export default async function TransactionsPage({
 
         {/* mobile view */}
         <div className="md:hidden px-0 pb-0">
-          <h2 className="text-2xl font-bold mb-4">Transactions</h2>
+          <h2 className="text-2xl font-bold mb-4 text-foreground">Transactions</h2>
           <RecentTransactions
             transactions={transactions}
             readOnly={currentProj.role === "viewer"}

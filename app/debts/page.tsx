@@ -86,8 +86,8 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
         subtitle="View, record payments, and track history of borrow and lend amounts."
         showRefresh={false}
         actions={
-          <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs font-semibold text-slate-300">
-            <Landmark className="size-4 text-indigo-400" />
+          <div className="flex items-center gap-3 px-4 py-2 rounded-2xl bg-card border border-border text-xs font-semibold text-muted-foreground">
+            <Landmark className="size-4 text-primary" />
             <span>Total Loan records: {debts.length}</span>
           </div>
         }
@@ -110,7 +110,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
       <div className="animate-in fade-in duration-500 delay-100">
         <Suspense
           fallback={
-            <div className="h-10 bg-slate-900/30 border border-slate-800 rounded-xl animate-pulse" />
+            <div className="h-10 bg-muted/30 border border-border rounded-xl animate-pulse" />
           }
         >
           <DebtFilters />
@@ -119,10 +119,10 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
 
       {/* Debts List Card */}
       <div>
-        <Card className="hidden md:block border border-slate-800/80 bg-slate-900/50 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5">
+        <Card className="hidden md:block border border-border bg-card text-card-foreground rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5">
           <CardHeader className="px-0 pt-0 pb-4">
-            <CardTitle className="text-lg font-bold text-slate-200 flex items-center gap-2">
-              <Landmark className="size-5 text-indigo-400" />
+            <CardTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Landmark className="size-5 text-primary" />
               Loans & Debts History
             </CardTitle>
           </CardHeader>
@@ -136,7 +136,7 @@ export default async function DebtsPage({ searchParams }: DebtsPageProps) {
 
         {/* mobile view */}
         <div className="md:hidden">
-          <h2 className="text-2xl font-bold mb-4">Debts & Loans</h2>
+          <h2 className="text-2xl font-bold mb-4 text-foreground">Debts & Loans</h2>
           <ActiveDebts debts={debts} readOnly={currentProj.role === "viewer"} />
         </div>
       </div>

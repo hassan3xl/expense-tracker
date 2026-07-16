@@ -230,7 +230,7 @@ export default async function EvaluationPage({
         subtitle={`Evaluate your income, expenses, cashflows and loans from ${formatDateDisplay(startDate)} to ${formatDateDisplay(endDate)}.`}
         showRefresh={false}
         actions={
-          <div className="px-4 py-2 rounded-2xl bg-zinc-900/60 border border-slate-800/80 text-xs sm:text-sm font-semibold text-slate-300 self-start sm:self-center">
+          <div className="px-4 py-2 rounded-2xl bg-card border border-border text-xs sm:text-sm font-semibold text-muted-foreground self-start sm:self-center">
             {formatDateDisplay(startDate)} — {formatDateDisplay(endDate)}
           </div>
         }
@@ -245,7 +245,7 @@ export default async function EvaluationPage({
                     cashOnHandChange >= 0
                       ? "bg-emerald-500/10 text-emerald-400"
                       : "bg-rose-500/10 text-rose-400",
-                  cardBg: "border-indigo-500/20 bg-indigo-950/20",
+                  cardBg: "border-primary/20 bg-primary/10",
                   description: "Net physical cash added/spent",
                 },
                 {
@@ -267,7 +267,7 @@ export default async function EvaluationPage({
                   title: "Total Earned",
                   value: formatNaira(totalIncome),
                   icon: <ArrowUpRight className="size-5" />,
-                  iconBg: "bg-indigo-500/10 text-indigo-400",
+                  iconBg: "bg-primary/10 text-primary",
                   description: "Total incoming earnings",
                 },
                 {
@@ -291,12 +291,12 @@ export default async function EvaluationPage({
       </div>
 
       {transactions.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/10 min-h-[300px]">
-          <Calendar className="size-12 text-slate-600 mb-3" />
-          <p className="text-slate-400 text-base font-semibold">
+        <div className="flex flex-col items-center justify-center p-12 text-center border border-dashed border-border rounded-3xl bg-card/10 min-h-[300px]">
+          <Calendar className="size-12 text-muted-foreground/60 mb-3" />
+          <p className="text-muted-foreground text-base font-semibold">
             No transactions found in this date range.
           </p>
-          <p className="text-slate-500 text-sm mt-1.5 max-w-md">
+          <p className="text-muted-foreground/75 text-sm mt-1.5 max-w-md">
             Try adjusting your start and end dates above, or add new
             income/expenses and debts on the Dashboard.
           </p>
@@ -306,13 +306,13 @@ export default async function EvaluationPage({
           {/* Debts & Loans Summary Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-in fade-in duration-500 delay-300">
             {/* Borrowed in Period */}
-            <Card className="border border-slate-900 bg-zinc-950/40 rounded-3xl">
+            <Card className="border border-border bg-card text-card-foreground rounded-3xl">
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     Borrowed (New)
                   </span>
-                  <h4 className="text-lg font-bold mt-1 text-slate-200">
+                  <h4 className="text-lg font-bold mt-1 text-foreground">
                     {formatNaira(totalBorrowed)}
                   </h4>
                 </div>
@@ -323,13 +323,13 @@ export default async function EvaluationPage({
             </Card>
 
             {/* Lent in Period */}
-            <Card className="border border-slate-900 bg-zinc-950/40 rounded-3xl">
+            <Card className="border border-border bg-card text-card-foreground rounded-3xl">
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     Lent (New)
                   </span>
-                  <h4 className="text-lg font-bold mt-1 text-slate-200">
+                  <h4 className="text-lg font-bold mt-1 text-foreground">
                     {formatNaira(totalLent)}
                   </h4>
                 </div>
@@ -340,13 +340,13 @@ export default async function EvaluationPage({
             </Card>
 
             {/* Debt Repaid in Period */}
-            <Card className="border border-slate-900 bg-zinc-950/40 rounded-3xl">
+            <Card className="border border-border bg-card text-card-foreground rounded-3xl">
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     Paid Back to Others
                   </span>
-                  <h4 className="text-lg font-bold mt-1 text-slate-200">
+                  <h4 className="text-lg font-bold mt-1 text-foreground">
                     {formatNaira(totalDebtPayments)}
                   </h4>
                 </div>
@@ -357,17 +357,17 @@ export default async function EvaluationPage({
             </Card>
 
             {/* Repayments Received in Period */}
-            <Card className="border border-slate-900 bg-zinc-950/40 rounded-3xl">
+            <Card className="border border-border bg-card text-card-foreground rounded-3xl">
               <CardContent className="p-4 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                     Repayments Received
                   </span>
-                  <h4 className="text-lg font-bold mt-1 text-slate-200">
+                  <h4 className="text-lg font-bold mt-1 text-foreground">
                     {formatNaira(totalDebtRepayments)}
                   </h4>
                 </div>
-                <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-400">
+                <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
                   <TrendingUp className="size-4.5" />
                 </div>
               </CardContent>
@@ -380,14 +380,14 @@ export default async function EvaluationPage({
             <div className="lg:col-span-8 space-y-6 animate-in fade-in duration-500 delay-300">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 {/* Income Breakdown */}
-                <div className="border border-slate-800/60 bg-slate-900/50 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
-                  <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
-                    <ArrowUpRight className="size-5 text-indigo-400" />
+                <div className="border border-border bg-card text-card-foreground rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
+                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                    <ArrowUpRight className="size-5 text-primary" />
                     Income Breakdown
                   </h3>
 
                   {incomeBreakdown.length === 0 ? (
-                    <p className="text-slate-500 text-sm">
+                    <p className="text-muted-foreground text-sm">
                       No regular income recorded.
                     </p>
                   ) : (
@@ -400,17 +400,17 @@ export default async function EvaluationPage({
                         return (
                           <div key={item.category} className="space-y-1.5">
                             <div className="flex items-center justify-between text-xs font-semibold">
-                              <span className="text-slate-300">
+                              <span className="text-foreground">
                                 {item.category}
                               </span>
-                              <span className="text-slate-400">
+                              <span className="text-muted-foreground">
                                 {formatNaira(item.amount)} ({percent.toFixed(1)}
                                 %)
                               </span>
                             </div>
-                            <div className="w-full h-2 rounded-full bg-black border border-slate-900 overflow-hidden">
+                            <div className="w-full h-2 rounded-full bg-background border border-border overflow-hidden">
                               <div
-                                className="h-full rounded-full bg-indigo-500 transition-all duration-500"
+                                className="h-full rounded-full bg-primary transition-all duration-500"
                                 style={{ width: `${percent}%` }}
                               />
                             </div>
@@ -422,14 +422,14 @@ export default async function EvaluationPage({
                 </div>
 
                 {/* Expense Breakdown */}
-                <div className="border border-slate-800/60 bg-slate-900/50 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
-                  <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+                <div className="border border-border bg-card text-card-foreground rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
+                  <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                     <ArrowDownRight className="size-5 text-rose-400" />
                     Expense Breakdown
                   </h3>
 
                   {expenseBreakdown.length === 0 ? (
-                    <p className="text-slate-500 text-sm">
+                    <p className="text-muted-foreground text-sm">
                       No regular expenses recorded.
                     </p>
                   ) : (
@@ -442,15 +442,15 @@ export default async function EvaluationPage({
                         return (
                           <div key={item.category} className="space-y-1.5">
                             <div className="flex items-center justify-between text-xs font-semibold">
-                              <span className="text-slate-300">
+                              <span className="text-foreground">
                                 {item.category}
                               </span>
-                              <span className="text-slate-400">
+                              <span className="text-muted-foreground">
                                 {formatNaira(item.amount)} ({percent.toFixed(1)}
                                 %)
                               </span>
                             </div>
-                            <div className="w-full h-2 rounded-full bg-black border border-slate-900 overflow-hidden">
+                            <div className="w-full h-2 rounded-full bg-background border border-border overflow-hidden">
                               <div
                                 className="h-full rounded-full bg-rose-500 transition-all duration-500"
                                 style={{ width: `${percent}%` }}
@@ -467,8 +467,8 @@ export default async function EvaluationPage({
 
             {/* Smart Insights & Evaluation (lg:span-4) */}
             <div className="lg:col-span-4 space-y-6 animate-in fade-in duration-500 delay-400">
-              <div className="border border-slate-800/60 bg-slate-900/50 rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
-                <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2">
+              <div className="border border-border bg-card text-card-foreground rounded-3xl p-5 sm:p-6 shadow-xl shadow-black/5 space-y-4">
+                <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <Sparkles className="size-5 text-amber-400 animate-pulse" />
                   Smart Evaluation Insights
                 </h3>
@@ -489,7 +489,7 @@ export default async function EvaluationPage({
                               ? "border-rose-500/20 bg-rose-500/5 text-rose-300"
                               : isWarning
                                 ? "border-amber-500/20 bg-amber-500/5 text-amber-300"
-                                : "border-slate-800 bg-slate-900/40 text-slate-300"
+                                : "border-border bg-muted/40 text-muted-foreground"
                         }`}
                       >
                         <Info
@@ -500,7 +500,7 @@ export default async function EvaluationPage({
                                 ? "text-rose-400"
                                 : isWarning
                                   ? "text-amber-400"
-                                  : "text-slate-400"
+                                  : "text-muted-foreground"
                           }`}
                         />
                         <div className="space-y-1">

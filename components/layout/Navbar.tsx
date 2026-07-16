@@ -66,7 +66,7 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-slate-800/40 bg-black/70 backdrop-blur-md">
+    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/70 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
         {/* Left Side: Brand Logo, Project Switcher & Invite/Share button */}
         <div className="flex items-center gap-2">
@@ -82,7 +82,7 @@ export default function Navbar({
               <Button
                 variant="outline"
                 size="sm"
-                className="border-slate-800 bg-black text-indigo-400 hover:text-indigo-300 hover:bg-slate-900 rounded-xl flex items-center gap-1.5 h-9"
+                className="border-border bg-background text-primary hover:text-primary/80 hover:bg-muted/50 rounded-xl flex items-center gap-1.5 h-9"
                 title="Share Project"
               >
                 <Users className="size-4" />
@@ -104,8 +104,8 @@ export default function Navbar({
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200",
                   isActive
-                    ? "bg-indigo-600/15 text-indigo-400 border border-indigo-500/20"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-900/50 border border-transparent",
+                    ? "bg-primary/15 text-primary border border-primary/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50 border border-transparent",
                 )}
               >
                 <Icon className="size-4" />
@@ -119,19 +119,19 @@ export default function Navbar({
         <div className="relative animate-in fade-in duration-300" ref={dropdownRef}>
           <button
             onClick={() => setProfileOpen(!profileOpen)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900/60 border border-slate-800/50 hover:bg-slate-800/50 hover:border-slate-700/50 text-slate-350 text-sm font-semibold transition-all duration-200 cursor-pointer select-none"
+            className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-card border border-border hover:bg-muted/50 text-foreground text-sm font-semibold transition-all duration-200 cursor-pointer select-none"
             title="Profile menu"
           >
-            <User className="size-4 text-slate-400" />
+            <User className="size-4 text-muted-foreground" />
             <span className="max-w-[120px] truncate">
               {username}
             </span>
           </button>
 
           {profileOpen && (
-            <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-slate-855 bg-zinc-950/95 backdrop-blur-md p-1.5 shadow-xl shadow-black/85 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
-              <div className="px-3 py-2 border-b border-slate-900 text-[10px] text-slate-500 font-bold uppercase tracking-wider select-none">
-                Signed in as <span className="text-slate-200 font-extrabold normal-case block mt-0.5">{username}</span>
+            <div className="absolute right-0 mt-2 w-48 rounded-2xl border border-border bg-popover text-popover-foreground p-1.5 shadow-xl shadow-black/85 animate-in fade-in slide-in-from-top-2 duration-150 z-50">
+              <div className="px-3 py-2 border-b border-border/50 text-[10px] text-muted-foreground font-bold uppercase tracking-wider select-none">
+                Signed in as <span className="text-foreground font-extrabold normal-case block mt-0.5">{username}</span>
               </div>
               <form onSubmit={handleLogout} className="mt-1">
                 <button
@@ -148,7 +148,7 @@ export default function Navbar({
       </div>
 
       {/* Mobile Navigation Bar */}
-      <div className="md:hidden border-t border-slate-900/60 bg-black/80 px-2 py-2 flex items-center justify-around">
+      <div className="md:hidden border-t border-border bg-card px-2 py-2 flex items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -159,8 +159,8 @@ export default function Navbar({
               className={cn(
                 "flex flex-col items-center gap-1 py-1 px-3 rounded-lg text-xs transition-colors",
                 isActive
-                  ? "text-indigo-400"
-                  : "text-slate-500 hover:text-slate-300",
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <Icon className="size-5" />

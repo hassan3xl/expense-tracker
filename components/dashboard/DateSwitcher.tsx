@@ -126,12 +126,12 @@ export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Date Switcher Container */}
-      <div className="flex items-center rounded-2xl bg-zinc-900/90 border border-slate-800/80 p-1 shadow-lg">
+      <div className="flex items-center rounded-2xl bg-card border border-border p-1 shadow-lg">
         {/* Prev Day Button */}
         <button
           onClick={handlePrevDay}
           disabled={isPending}
-          className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 disabled:opacity-50 transition-all duration-200 active:scale-95"
+          className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 transition-all duration-200 active:scale-95"
           aria-label="Previous day"
         >
           <ChevronLeft className="size-4 sm:size-5" />
@@ -141,9 +141,9 @@ export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
         <button
           onClick={openDatePicker}
           disabled={isPending}
-          className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-xl hover:bg-slate-800/30 text-xs sm:text-sm font-semibold text-slate-200 transition-all duration-200 active:scale-[0.98]"
+          className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-xl hover:bg-muted text-xs sm:text-sm font-semibold text-foreground transition-all duration-200 active:scale-[0.98]"
         >
-          <Calendar className="size-4 text-indigo-400 shrink-0" />
+          <Calendar className="size-4 text-primary shrink-0" />
           <span>{getFormattedLabel()}</span>
         </button>
 
@@ -151,7 +151,7 @@ export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
         <button
           onClick={handleNextDay}
           disabled={isPending}
-          className="p-2 rounded-xl text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 disabled:opacity-50 transition-all duration-200 active:scale-95"
+          className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted disabled:opacity-50 transition-all duration-200 active:scale-95"
           aria-label="Next day"
         >
           <ChevronRight className="size-4 sm:size-5" />
@@ -172,7 +172,7 @@ export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
         <button
           onClick={handleToday}
           disabled={isPending}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-indigo-600/10 border border-indigo-500/20 hover:bg-indigo-600/20 text-indigo-400 text-xs font-semibold transition-all duration-200 active:scale-95"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-primary/10 border border-primary/20 hover:bg-primary/20 text-primary text-xs font-semibold transition-all duration-200 active:scale-95"
         >
           <RotateCcw className="size-3.5" />
           <span>Today</span>

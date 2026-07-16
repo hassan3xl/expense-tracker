@@ -38,18 +38,18 @@ const StatCard = ({
   return (
     <div
       className={`group relative p-4 sm:p-6 rounded-3xl border ${
-        cardBg || "bg-zinc-900/30 border-slate-800/80"
+        cardBg || "bg-card border-border"
       }`}
     >
       <div className="flex justify-between items-center mb-3 sm:mb-4">
-        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400 truncate max-w-[70%] select-none">
+        <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-muted-foreground truncate max-w-[70%] select-none">
           {title}
         </span>
         <div className={`p-1.5 sm:p-2.5 rounded-xl shrink-0 ${iconBg || "bg-muted"}`}>{icon}</div>
       </div>
 
       <div className="flex items-baseline justify-between mt-2">
-        <div className="text-lg sm:text-2xl font-extrabold tracking-tight text-slate-100 truncate">
+        <div className="text-lg sm:text-2xl font-extrabold tracking-tight text-foreground truncate">
           {value}
         </div>
         {trend && (
@@ -65,7 +65,7 @@ const StatCard = ({
         )}
       </div>
       {description && (
-        <div className="text-[10px] text-slate-400 mt-1 select-none font-medium">
+        <div className="text-[10px] text-muted-foreground mt-1 select-none font-medium">
           {description}
         </div>
       )}
@@ -87,11 +87,11 @@ export const Header: React.FC<HeaderProps> = ({
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
         {/* Left side - title/subtitle */}
         <div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-100">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
             {title}
           </h1>
           {subtitle && (
-            <p className="text-xs sm:text-sm text-slate-400 mt-1 font-medium">
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1 font-medium">
               {subtitle}
             </p>
           )}

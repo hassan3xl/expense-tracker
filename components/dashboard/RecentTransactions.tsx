@@ -65,12 +65,12 @@ export default function RecentTransactions({
 
   if (transactions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/10">
-        <ReceiptText className="size-8 text-slate-600 mb-2" />
-        <p className="text-slate-400 text-sm font-medium">
+      <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-border rounded-3xl bg-card/10">
+        <ReceiptText className="size-8 text-muted-foreground/60 mb-2" />
+        <p className="text-muted-foreground text-sm font-medium">
           No transactions recorded yet.
         </p>
-        <p className="text-slate-500 text-xs mt-1">
+        <p className="text-muted-foreground/75 text-xs mt-1">
           Use the quick add form to record your first income or expense.
         </p>
       </div>
@@ -95,7 +95,7 @@ export default function RecentTransactions({
         return (
           <div
             key={tx.id}
-            className="flex items-center justify-between p-3.5 rounded-2xl border border-slate-800/60 bg-slate-900/30 hover:bg-slate-900/50 hover:border-slate-800 transition-all duration-300 group"
+            className="flex items-center justify-between p-3.5 rounded-2xl border border-border bg-card/40 hover:bg-muted/50 hover:border-border transition-all duration-300 group"
           >
             {/* Left: Icon and Details */}
             <div className="flex items-center gap-3">
@@ -113,12 +113,12 @@ export default function RecentTransactions({
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-200 truncate max-w-[150px] sm:max-w-[200px]">
+                <p className="text-sm font-semibold text-foreground truncate max-w-[150px] sm:max-w-[200px]">
                   {tx.description || tx.category}
                 </p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="flex items-center gap-1 text-[11px] font-medium text-slate-400 bg-black/40 px-1.5 py-0.5 rounded-md border border-slate-900">
-                    <Tag className="size-3 text-slate-500" />
+                  <span className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground bg-background px-1.5 py-0.5 rounded-md border border-border">
+                    <Tag className="size-3 text-muted-foreground/60" />
                     {tx.category}
                   </span>
                 </div>
@@ -136,7 +136,7 @@ export default function RecentTransactions({
                   {isIncome ? "+" : "-"}
                   {formatNaira(amount)}
                 </span>
-                <span className="flex items-center gap-1 text-[11px] text-slate-500">
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground/80">
                   <Calendar size={16} />
                   {formattedDate}
                 </span>
@@ -147,7 +147,7 @@ export default function RecentTransactions({
                   size="icon-xs"
                   onClick={() => handleDelete(tx.id)}
                   disabled={isPending}
-                  className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
+                  className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
                   title="Delete Transaction"
                 >
                   <Trash2 className="size-4" />
@@ -159,15 +159,15 @@ export default function RecentTransactions({
       })}
 
       <Dialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
-        <DialogContent className="border border-slate-800 bg-slate-950/95 text-slate-100 max-w-sm rounded-3xl p-6">
+        <DialogContent className="border border-border bg-popover text-popover-foreground max-w-sm rounded-3xl p-6">
           <DialogHeader className="flex flex-col items-center text-center gap-3">
             <div className="flex items-center justify-center size-12 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 mb-1">
               <Trash2 className="size-6" />
             </div>
-            <DialogTitle className="text-xl font-bold text-slate-100">
+            <DialogTitle className="text-xl font-bold text-foreground">
               Delete Transaction
             </DialogTitle>
-            <DialogDescription className="text-sm text-slate-400">
+            <DialogDescription className="text-sm text-muted-foreground">
               Are you sure you want to delete this transaction? This action is permanent and cannot be undone.
             </DialogDescription>
           </DialogHeader>
@@ -175,7 +175,7 @@ export default function RecentTransactions({
             <Button
               variant="outline"
               onClick={() => setDeleteId(null)}
-              className="w-full sm:w-auto border-slate-800 hover:bg-slate-900 text-slate-300 hover:text-white rounded-xl"
+              className="w-full sm:w-auto border-border hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl"
             >
               Cancel
             </Button>

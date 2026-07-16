@@ -105,12 +105,12 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
 
   if (debts.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/10">
-        <Landmark className="size-8 text-slate-600 mb-2" />
-        <p className="text-slate-400 text-sm font-medium">
+      <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-border rounded-3xl bg-card/10">
+        <Landmark className="size-8 text-muted-foreground/60 mb-2" />
+        <p className="text-muted-foreground text-sm font-medium">
           No debts or loans found.
         </p>
-        <p className="text-slate-500 text-xs mt-1">
+        <p className="text-muted-foreground/75 text-xs mt-1">
           Lend or borrow money to record details.
         </p>
       </div>
@@ -146,22 +146,22 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
             key={debt.id}
             className={`p-4 rounded-2xl border transition-all duration-300 group ${
               isPaid
-                ? "border-slate-900/80 bg-black/20 opacity-75"
-                : "border-slate-800 bg-slate-900/30 hover:border-slate-800/80"
+                ? "border-border bg-muted/20 opacity-75"
+                : "border-border bg-card/30 hover:bg-muted/50"
             }`}
           >
             {/* Header: Person & Type Badge */}
             <div className="flex items-center justify-between gap-2 mb-2">
               <div className="flex items-center gap-2">
-                <div className="flex items-center justify-center size-8 rounded-lg bg-black/60 border border-slate-800">
-                  <User className="size-4 text-slate-400" />
+                <div className="flex items-center justify-center size-8 rounded-lg bg-background border border-border">
+                  <User className="size-4 text-muted-foreground" />
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-slate-200">
+                  <h4 className="text-sm font-semibold text-foreground">
                     {debt.person}
                   </h4>
                   {debt.description && (
-                    <p className="text-xs text-slate-500 line-clamp-1">
+                    <p className="text-xs text-muted-foreground line-clamp-1">
                       {debt.description}
                     </p>
                   )}
@@ -185,7 +185,7 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
                     size="icon-xs"
                     onClick={() => handleDelete(debt.id)}
                     disabled={isPending}
-                    className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
+                    className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
                     title="Delete Record"
                   >
                     <Trash2 className="size-3.5" />
@@ -196,13 +196,13 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
 
             {/* Repayment Progress */}
             <div className="space-y-1.5 my-3">
-              <div className="flex items-center justify-between text-xs font-medium text-slate-400">
+              <div className="flex items-center justify-between text-xs font-medium text-muted-foreground">
                 <span>Repaid: {formatNaira(paid)}</span>
-                <span className="text-slate-300">
+                <span className="text-foreground">
                   Remaining: {formatNaira(remaining)} / {formatNaira(total)}
                 </span>
               </div>
-              <div className="w-full h-2 rounded-full bg-black border border-slate-900 overflow-hidden">
+              <div className="w-full h-2 rounded-full bg-background border border-border overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     isPaid
@@ -217,20 +217,20 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
             </div>
 
             {/* Due Date & Pay Button */}
-            <div className="flex items-center justify-between gap-4 pt-1 border-t border-slate-800/40">
+            <div className="flex items-center justify-between gap-4 pt-1 border-t border-border/40">
               {formattedDueDate ? (
                 <span
                   className={`flex items-center gap-1 text-[11px] font-medium ${
                     isOverdue
                       ? "text-rose-400 font-semibold animate-pulse"
-                      : "text-slate-500"
+                      : "text-muted-foreground"
                   }`}
                 >
                   <Calendar className="size-3.5" />
                   Due {formattedDueDate} {isOverdue && "(Overdue)"}
                 </span>
               ) : (
-                <span className="text-[11px] text-slate-600">No due date</span>
+                <span className="text-[11px] text-muted-foreground/60">No due date</span>
               )}
 
               {isPaid ? (
@@ -238,7 +238,7 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
                   <CheckCircle2 className="size-3.5" /> Paid & Settled
                 </span>
               ) : readOnly ? (
-                <span className="text-[11px] text-slate-500 font-semibold italic">
+                <span className="text-[11px] text-muted-foreground font-semibold italic">
                   Active
                 </span>
               ) : (
@@ -268,10 +268,10 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
 
             {/* Inline Payment Form */}
             {activePaymentId === debt.id && !isPaid && (
-              <div className="mt-3 p-3 rounded-xl bg-black/70 border border-slate-800/80 space-y-3.5 animate-in slide-in-from-top-2 duration-200">
+              <div className="mt-3 p-3 rounded-xl bg-background border border-border space-y-3.5 animate-in slide-in-from-top-2 duration-200">
                 <div className="flex gap-2">
                   <div className="relative flex-1">
-                    <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-sm font-bold text-slate-500 select-none">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-2.5 text-sm font-bold text-muted-foreground select-none">
                       ₦
                     </span>
                     <Input
@@ -280,7 +280,7 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
                       placeholder="Amount"
                       value={paymentAmount}
                       onChange={(e) => setPaymentAmount(e.target.value)}
-                      className="pl-8 min-w-35 bg-slate-900 border-slate-800 h-8 rounded-lg text-xs"
+                      className="pl-8 min-w-35 bg-background border-border h-8 rounded-lg text-xs"
                     />
                   </div>
                   <Input
@@ -288,13 +288,13 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
                     placeholder="Note"
                     value={paymentNote}
                     onChange={(e) => setPaymentNote(e.target.value)}
-                    className="bg-slate-900 border-slate-800 h-8 rounded-lg text-xs flex-[1.5]"
+                    className="bg-background border-border h-8 rounded-lg text-xs flex-[1.5]"
                   />
                   <Button
                     size="sm"
                     disabled={isPending}
                     onClick={() => handleRecordPayment(debt.id, remaining)}
-                    className="bg-indigo-700 hover:bg-indigo-600 text-slate-100 rounded-lg h-8 px-3 text-xs shrink-0 font-semibold"
+                    className="bg-primary hover:bg-primary/80 text-primary-foreground rounded-lg h-8 px-3 text-xs shrink-0 font-semibold"
                   >
                     Submit
                   </Button>
@@ -306,15 +306,15 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
       })}
 
       <Dialog open={deleteId !== null} onOpenChange={(open) => { if (!open) setDeleteId(null); }}>
-        <DialogContent className="border border-slate-800 bg-slate-950/95 text-slate-100 max-w-sm rounded-3xl p-6">
+        <DialogContent className="border border-border bg-popover text-popover-foreground max-w-sm rounded-3xl p-6">
           <DialogHeader className="flex flex-col items-center text-center gap-3">
             <div className="flex items-center justify-center size-12 rounded-full bg-rose-500/10 text-rose-500 border border-rose-500/20 mb-1">
               <Trash2 className="size-6" />
             </div>
-            <DialogTitle className="text-xl font-bold text-slate-100">
+            <DialogTitle className="text-xl font-bold text-foreground">
               Delete Debt Record
             </DialogTitle>
-            <DialogDescription className="text-sm text-slate-400">
+            <DialogDescription className="text-sm text-muted-foreground">
               Are you sure you want to delete this debt record? This action is permanent and does not delete associated transaction logs.
             </DialogDescription>
           </DialogHeader>
@@ -322,7 +322,7 @@ export default function ActiveDebts({ debts, readOnly = false }: ActiveDebtsProp
             <Button
               variant="outline"
               onClick={() => setDeleteId(null)}
-              className="w-full sm:w-auto border-slate-800 hover:bg-slate-900 text-slate-300 hover:text-white rounded-xl"
+              className="w-full sm:w-auto border-border hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl"
             >
               Cancel
             </Button>

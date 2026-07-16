@@ -195,7 +195,7 @@ export default async function DashboardPage({
               </div>
             ),
             icon: <Landmark className="size-5" />,
-            iconBg: "bg-slate-800 text-slate-300",
+            iconBg: "bg-muted text-muted-foreground",
           },
         ]}
       />
@@ -205,12 +205,12 @@ export default async function DashboardPage({
         {/* Left Column: Input Forms (lg:span-5) */}
         <div className="lg:col-span-5 space-y-6">
           {currentProj.role === "viewer" ? (
-            <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-800 rounded-3xl bg-slate-900/10 min-h-[300px]">
-              <Activity className="size-10 text-indigo-400/60 mb-3" />
-              <h4 className="text-base font-bold text-slate-200">
+            <div className="flex flex-col items-center justify-center p-6 text-center border border-dashed border-border rounded-3xl bg-card/10 min-h-[300px]">
+              <Activity className="size-10 text-primary/60 mb-3" />
+              <h4 className="text-base font-bold text-foreground">
                 Read-Only Access
               </h4>
-              <p className="text-slate-400 text-sm mt-1.5 max-w-sm leading-relaxed">
+              <p className="text-muted-foreground text-sm mt-1.5 max-w-sm leading-relaxed">
                 You are a viewer on this project. You can inspect logs, metrics,
                 and trends but cannot record transactions, log payments, or
                 delete records.
@@ -227,15 +227,15 @@ export default async function DashboardPage({
         {/* Right Column: Feeds & Lists (lg:span-7) */}
         <div className="lg:col-span-7 space-y-6">
           {/* Recent Transactions Feed */}
-          <div className="border-t sm:border border-slate-800/60 bg-slate-900/20 sm:rounded-3xl py-5 sm:p-6">
+          <div className="border-t sm:border border-border/60 bg-card/20 sm:rounded-3xl py-5 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-md sm:text-lg font-bold text-slate-200 flex items-center gap-2">
-                <Activity className="size-5 text-indigo-400" />
+              <h3 className="text-md sm:text-lg font-bold text-foreground flex items-center gap-2">
+                <Activity className="size-5 text-primary" />
                 Recent Transactions
               </h3>
               <Link
                 href="/transactions"
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 group"
+                className="text-xs font-semibold text-primary hover:text-primary/80 inline-flex items-center gap-1 group"
               >
                 View All
                 <ArrowRight className="size-3.5" />
@@ -247,18 +247,18 @@ export default async function DashboardPage({
               readOnly={currentProj.role === "viewer"}
             />
           </div>
-          <hr className="border-slate-800/60" />
+          <hr className="border-border/60" />
 
           {/* Active Debts & Loans Feed */}
-          <div className="borde sm:border border-slate-800/60 bg-slate-900/20 rounded-3xl py-5 sm:p-6">
+          <div className="borde sm:border border-border/60 bg-card/20 rounded-3xl py-5 sm:p-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-md sm:text-lg font-bold text-slate-200 flex items-center gap-2">
-                <Landmark className="size-5 text-indigo-400" />
+              <h3 className="text-md sm:text-lg font-bold text-foreground flex items-center gap-2">
+                <Landmark className="size-5 text-primary" />
                 Active Debts & Loans
               </h3>
               <Link
                 href="/debts"
-                className="text-xs font-semibold text-indigo-400 hover:text-indigo-300 inline-flex items-center gap-1 group"
+                className="text-xs font-semibold text-primary hover:text-primary/80 inline-flex items-center gap-1 group"
               >
                 Manage All
                 <ArrowRight className="size-3.5" />
