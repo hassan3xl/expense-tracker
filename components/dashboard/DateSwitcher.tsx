@@ -101,16 +101,22 @@ export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
       })}`;
     }
     if (diffDays === -1) {
-      return `Yesterday, ${new Date(selectedDateStr).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      })}`;
+      return `Yesterday, ${new Date(selectedDateStr).toLocaleDateString(
+        undefined,
+        {
+          month: "short",
+          day: "numeric",
+        },
+      )}`;
     }
     if (diffDays === 1) {
-      return `Tomorrow, ${new Date(selectedDateStr).toLocaleDateString(undefined, {
-        month: "short",
-        day: "numeric",
-      })}`;
+      return `Tomorrow, ${new Date(selectedDateStr).toLocaleDateString(
+        undefined,
+        {
+          month: "short",
+          day: "numeric",
+        },
+      )}`;
     }
 
     return new Date(selectedDateStr).toLocaleDateString(undefined, {
@@ -126,7 +132,7 @@ export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
   return (
     <div className="flex flex-wrap items-center gap-2">
       {/* Date Switcher Container */}
-      <div className="flex items-center rounded-2xl bg-card border border-border p-1 shadow-lg">
+      <div className="flex items-center rounded-2xl bg-card border border-border shadow-lg">
         {/* Prev Day Button */}
         <button
           onClick={handlePrevDay}
@@ -143,7 +149,6 @@ export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
           disabled={isPending}
           className="flex items-center gap-2 px-3 sm:px-4 py-1.5 rounded-xl hover:bg-muted text-xs sm:text-sm font-semibold text-foreground transition-all duration-200 active:scale-[0.98]"
         >
-          <Calendar className="size-4 text-primary shrink-0" />
           <span>{getFormattedLabel()}</span>
         </button>
 
@@ -174,7 +179,7 @@ export default function DateSwitcher({ initialDate }: DateSwitcherProps) {
           disabled={isPending}
           className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-primary/10 border border-primary/20 hover:bg-primary/20 text-primary text-xs font-semibold transition-all duration-200 active:scale-95"
         >
-          <RotateCcw className="size-3.5" />
+          <RotateCcw size={14} />
           <span>Today</span>
         </button>
       )}
