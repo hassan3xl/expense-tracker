@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono, Inter, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,13 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Pennywise | Finance Tracker",
   description: "Take control of your money",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#0a0f14",
 };
 
 export default async function RootLayout({
@@ -68,7 +75,7 @@ export default async function RootLayout({
         notoSansHeading.variable,
       )}
     >
-      <body className="min-h-full bg-background text-foreground flex flex-col font-sans">
+      <body className="min-h-full overflow-x-hidden bg-background text-foreground flex flex-col font-sans">
         {user && currentProj && (
           <Navbar
             username={user.username}
