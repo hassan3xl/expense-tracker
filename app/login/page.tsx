@@ -34,52 +34,49 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4 overflow-hidden bg-black text-slate-100 selection:bg-indigo-500 selection:text-white">
-      {/* Background decoration */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] rounded-full bg-emerald-500/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px] pointer-events-none" />
-
-      <div className="w-full max-w-md relative z-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
-        {/* Logo/Brand Header */}
-        <div className="flex flex-col items-center mb-6">
-          <div className="flex items-center justify-center size-12 rounded-2xl bg-indigo-600/25 border border-indigo-500/30 shadow-lg shadow-indigo-500/10 mb-3 backdrop-blur-md">
-            <Wallet className="size-6 text-indigo-400" />
+    <div className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center">
+      <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+        {/* Brand Header */}
+        <div className="mb-6 flex flex-col items-center text-center">
+          <div className="mb-3 flex size-12 items-center justify-center rounded-2xl bg-primary/15 ring-1 ring-primary/25">
+            <Wallet className="size-6 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-200 via-slate-100 to-indigo-200">
-            Expense Tracker
+          <h1 className="font-heading text-2xl font-semibold text-foreground">
+            Pennywise
           </h1>
-          <p className="text-slate-400 text-sm mt-1">
+          <p className="mt-1 text-sm text-muted-foreground">
             Take control of your money
           </p>
         </div>
 
-        <Card className="border border-slate-800/80 bg-slate-900/60 backdrop-blur-xl shadow-2xl shadow-black/40 rounded-3xl overflow-hidden">
-          <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl font-semibold text-slate-100">
-              Welcome Back
-            </CardTitle>
-            <CardDescription className="text-slate-400">
+        <Card className="ring-1 ring-border">
+          <CardHeader className="gap-1.5">
+            <CardTitle className="text-lg">Welcome back</CardTitle>
+            <CardDescription>
               Enter your credentials to access your finance dashboard.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
               {state?.error && (
-                <div className="flex items-start gap-2.5 p-3.5 rounded-2xl border border-rose-500/20 bg-rose-500/10 text-rose-300 text-sm animate-in fade-in zoom-in-95 duration-200">
-                  <AlertCircle className="size-5 shrink-0 text-rose-400 mt-0.5" />
+                <div
+                  role="alert"
+                  className="flex items-start gap-2.5 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive animate-in fade-in zoom-in-95 duration-200"
+                >
+                  <AlertCircle className="mt-0.5 size-4 shrink-0" />
                   <span>{state.error}</span>
                 </div>
               )}
 
               <div className="space-y-2">
                 <label
-                  className="text-xs font-semibold uppercase tracking-wider text-slate-400 block ml-1"
+                  className="ml-0.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground"
                   htmlFor="username"
                 >
                   Username
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 z-10 pointer-events-none">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3 text-muted-foreground">
                     <User className="size-4" />
                   </span>
                   <Input
@@ -88,20 +85,20 @@ export default function LoginPage() {
                     type="text"
                     required
                     placeholder="Enter your username"
-                    className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 text-slate-200"
+                    className="h-11 pl-9"
                   />
                 </div>
               </div>
 
               <div className="space-y-2">
                 <label
-                  className="text-xs font-semibold uppercase tracking-wider text-slate-400 block ml-1"
+                  className="ml-0.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground"
                   htmlFor="password"
                 >
                   Password
                 </label>
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-500 z-10 pointer-events-none">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 z-10 flex items-center pl-3 text-muted-foreground">
                     <Lock className="size-4" />
                   </span>
                   <Input
@@ -110,7 +107,7 @@ export default function LoginPage() {
                     type="password"
                     required
                     placeholder="••••••••"
-                    className="pl-9 bg-black/45 border-slate-800 focus-visible:border-indigo-500/50 focus-visible:ring-indigo-500/10 text-slate-200"
+                    className="h-11 pl-9"
                   />
                 </div>
               </div>
@@ -118,28 +115,28 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 disabled={isPending}
-                className="w-full bg-indigo-700 hover:bg-indigo-600 text-slate-100 font-medium h-14 rounded-2xl shadow-lg shadow-indigo-950/20 transition-all duration-300 flex items-center justify-center gap-2 group mt-2"
+                className="group mt-1 flex h-11 w-full items-center justify-center gap-2"
               >
                 {isPending ? (
-                  <div className="size-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="size-5 animate-spin rounded-full border-2 border-primary-foreground/30 border-t-primary-foreground" />
                 ) : (
                   <>
                     <span>Sign In</span>
-                    <LogIn className="size-4 group-hover:translate-x-0.5 transition-transform" />
+                    <LogIn className="size-4 transition-transform group-hover:translate-x-0.5" />
                   </>
                 )}
               </Button>
             </form>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-2 pt-2 pb-6 border-t border-slate-800/40 text-center">
-            <p className="text-sm text-slate-400">
+          <CardFooter className="justify-center">
+            <p className="text-sm text-muted-foreground">
               Don&apos;t have an account?{" "}
               <Link
                 href="/register"
-                className="text-indigo-400 hover:text-indigo-300 font-medium inline-flex items-center gap-1 group/link transition-colors"
+                className="group/link inline-flex items-center gap-1 font-medium text-primary transition-colors hover:text-primary/80"
               >
                 Create Account
-                <ArrowRight className="size-3 group-hover/link:translate-x-0.5 transition-transform" />
+                <ArrowRight className="size-3 transition-transform group-hover/link:translate-x-0.5" />
               </Link>
             </p>
           </CardFooter>
