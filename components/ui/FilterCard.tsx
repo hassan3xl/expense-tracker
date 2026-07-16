@@ -67,7 +67,7 @@ export const FilterInput = React.forwardRef<HTMLInputElement, FilterInputProps>(
         <input
           ref={ref}
           className={cn(
-            "h-11 w-full rounded-xl border border-border bg-background px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground transition-all outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5",
+            "h-11 w-full rounded-xl border border-border bg-background px-3.5 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none focus:border-primary",
             icon && "pl-10",
             className
           )}
@@ -95,7 +95,7 @@ export const FilterSelect = React.forwardRef<HTMLSelectElement, FilterSelectProp
         <select
           ref={ref}
           className={cn(
-            "h-11 w-full appearance-none rounded-xl border border-border bg-background px-3.5 py-2 pr-10 text-sm text-foreground cursor-pointer transition-all outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5",
+            "h-11 w-full appearance-none rounded-xl border border-border bg-background px-3.5 py-2 pr-10 text-sm text-foreground cursor-pointer outline-none focus:border-primary",
             icon && "pl-10",
             className
           )}
@@ -165,13 +165,13 @@ export function FilterButton({
   return (
     <button
       className={cn(
-        "h-11 px-5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-1.5 shadow-xs cursor-pointer select-none",
+        "h-11 px-5 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-xs cursor-pointer select-none",
         variant === "primary" &&
-          "bg-primary/10 hover:bg-primary/20 border border-primary/30 hover:border-primary/40 text-primary active:translate-y-px",
+          "bg-primary text-primary-foreground border border-primary hover:bg-primary/90 active:translate-y-px",
         variant === "secondary" &&
           "bg-card border border-border hover:bg-muted text-foreground active:translate-y-px",
         variant === "danger" &&
-          "bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 hover:border-rose-500/35 text-rose-400 active:translate-y-px",
+          "bg-rose-950 border border-rose-900 text-rose-400 hover:bg-rose-900 active:translate-y-px",
         className
       )}
       {...props}

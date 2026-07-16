@@ -66,7 +66,7 @@ export default function Navbar({
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/80 backdrop-blur-md transform-gpu [transform:translateZ(0)] [backface-visibility:hidden] [-webkit-backface-visibility:hidden]">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
         {/* Left Side: Brand Logo, Project Switcher & Invite/Share button */}
         <div className="flex items-center gap-2">
