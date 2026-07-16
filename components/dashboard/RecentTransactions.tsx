@@ -65,7 +65,7 @@ export default function RecentTransactions({
 
   if (transactions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-border rounded-3xl bg-card/10">
+      <div className="flex flex-col items-center justify-center p-8 text-center border border-dashed border-border rounded-3xl bg-card">
         <ReceiptText className="size-8 text-muted-foreground/60 mb-2" />
         <p className="text-muted-foreground text-sm font-medium">
           No transactions recorded yet.
@@ -95,7 +95,7 @@ export default function RecentTransactions({
         return (
           <div
             key={tx.id}
-            className="flex items-center justify-between p-3.5 rounded-2xl border border-border bg-card/40 hover:bg-muted/50 hover:border-border transition-all duration-300 group"
+            className="flex items-center justify-between p-3.5 rounded-2xl border border-border bg-card group"
           >
             {/* Left: Icon and Details */}
             <div className="flex items-center gap-3">
@@ -147,7 +147,7 @@ export default function RecentTransactions({
                   size="icon-xs"
                   onClick={() => handleDelete(tx.id)}
                   disabled={isPending}
-                  className="opacity-100 sm:opacity-0 group-hover:opacity-100 focus:opacity-100 text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition-all duration-300"
+                  className="text-muted-foreground hover:text-rose-400 hover:bg-rose-500/10 rounded-lg"
                   title="Delete Transaction"
                 >
                   <Trash2 className="size-4" />

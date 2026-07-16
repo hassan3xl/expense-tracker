@@ -96,7 +96,7 @@ export default async function TransactionsPage({
         }
       />
 
-      <div className="animate-in fade-in duration-500 delay-100">
+      <div>
         <Suspense
           fallback={
             <div className="h-10 bg-muted/30 border border-border rounded-xl animate-pulse" />
@@ -108,7 +108,7 @@ export default async function TransactionsPage({
 
       {/* Aggregate Info for current filter */}
       {(type || category || q) && (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-3xl border border-border bg-card/10 text-sm font-semibold animate-in fade-in duration-300">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 rounded-3xl border border-border bg-card text-sm font-semibold">
           <div className="text-muted-foreground">
             Filtered Earnings:{" "}
             <span className="text-emerald-400 font-bold block sm:inline mt-0.5 sm:mt-0">
