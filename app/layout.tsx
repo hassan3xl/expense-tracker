@@ -75,7 +75,7 @@ export default async function RootLayout({
         notoSansHeading.variable,
       )}
     >
-      <body className="min-h-full overflow-x-hidden bg-background text-foreground flex flex-col font-sans">
+      <body className="min-h-full overflow-x-clip bg-background text-foreground flex flex-col font-sans">
         {user && currentProj && (
           <Navbar
             username={user.username}
