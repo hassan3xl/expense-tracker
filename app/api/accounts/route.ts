@@ -29,7 +29,7 @@ export async function POST(req: Request) {
         name,
         type,
         balance: parseFloat(balance),
-        currency: currency || "USD",
+        currency: currency || "NGN",
         accountNumber,
         color: color || "#3b82f6",
       },

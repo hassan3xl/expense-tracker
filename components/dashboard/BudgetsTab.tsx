@@ -7,21 +7,17 @@ import {
   AlertCircle,
   CheckCircle2,
   ShieldAlert,
-  Info,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Progress } from "../ui/progress";
 import { Badge } from "../ui/badge";
 import { formatCurrency, calculatePercentage } from "../../lib/utils";
-import { BudgetItem } from "../../lib/mock-data";
+import { useFinance } from "@/lib/finance-context";
 
-interface BudgetsTabProps {
-  budgets: BudgetItem[];
-  onOpenAddBudget: () => void;
-}
+export function BudgetsTab() {
+  const { budgets = [], setIsAddBudgetOpen } = useFinance();
 
-export function BudgetsTab({ budgets, onOpenAddBudget }: BudgetsTabProps) {
   const totalBudgeted = budgets.reduce((sum, b) => sum + b.amount, 0);
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
 
@@ -38,7 +34,7 @@ export function BudgetsTab({ budgets, onOpenAddBudget }: BudgetsTabProps) {
 
   return (
     <div className="space-y-6">
-      {/* FR6 Academic Citation & Alert Monitor Header */}
+      {/* Alert Monitor Header */}
       <Card className="glass-card border-emerald-500/30">
         <CardContent className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
@@ -48,13 +44,13 @@ export function BudgetsTab({ budgets, onOpenAddBudget }: BudgetsTabProps) {
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base">
-                  Automatic Budget Alert System (FR6)
+                  Automatic Budget Alert System
                 </CardTitle>
                 <Badge
                   variant="outline"
                   className="text-[10px] text-amber-400 border-amber-500/30"
                 >
-                  Uma & Bhuvana (2026) Model
+                  Uma & Bhuvana Alert Model
                 </Badge>
               </div>
               <p className="text-xs text-slate-400">
@@ -63,7 +59,7 @@ export function BudgetsTab({ budgets, onOpenAddBudget }: BudgetsTabProps) {
               </p>
             </div>
           </div>
-          <Button onClick={onOpenAddBudget} variant="gradient" size="sm">
+          <Button onClick={() => setIsAddBudgetOpen(true)} variant="gradient" size="sm">
             <Plus className="h-4 w-4" /> Add Budget
           </Button>
         </CardContent>
@@ -96,12 +92,12 @@ export function BudgetsTab({ budgets, onOpenAddBudget }: BudgetsTabProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
               Total Budgeted
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-white">
+            <div className="text-2xl font-extrabold text-slate-900 dark:text-white">
               {formatCurrency(totalBudgeted)}
             </div>
             <p className="text-xs text-slate-400 mt-1">
@@ -150,123 +146,140 @@ export function BudgetsTab({ budgets, onOpenAddBudget }: BudgetsTabProps) {
       </div>
 
       {/* Category Budget Progress Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {budgets.map((b) => {
-          const percent = calculatePercentage(b.spent, b.amount);
-          const isOver = b.spent > b.amount;
-          const remaining = b.amount - b.spent;
+      {budgets.length === 0 ? (
+        <Card className="glass-card p-12 text-center flex flex-col items-center justify-center space-y-4">
+          <div className="h-14 w-14 rounded-2xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 text-amber-500 dark:text-amber-400">
+            <ShieldAlert className="h-7 w-7" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Monthly Budgets Configured</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
+              Set spending limits per category to automatically monitor expenditure thresholds (50% and 80%).
+            </p>
+          </div>
+          <Button onClick={() => setIsAddBudgetOpen(true)} variant="gradient" size="sm">
+            <Plus className="h-4 w-4" /> Create Your First Budget
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {budgets.map((b) => {
+            const percent = calculatePercentage(b.spent, b.amount);
+            const isOver = b.spent > b.amount;
+            const remaining = b.amount - b.spent;
 
-          let statusBadge = (
-            <Badge
-              variant="default"
-              className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30"
-            >
-              Below 50%
-            </Badge>
-          );
-          if (isOver) {
-            statusBadge = <Badge variant="destructive">Exceeded (100%+)</Badge>;
-          } else if (percent >= 80) {
-            statusBadge = (
+            let statusBadge = (
               <Badge
-                variant="secondary"
-                className="bg-rose-500/20 text-rose-300 border-rose-500/40"
+                variant="default"
+                className="bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
               >
-                80% Alert Threshold
+                Below 50%
               </Badge>
             );
-          } else if (percent >= 50) {
-            statusBadge = (
-              <Badge
-                variant="secondary"
-                className="bg-amber-500/20 text-amber-300 border-amber-500/40"
-              >
-                50% Notice Threshold
-              </Badge>
-            );
-          }
+            if (isOver) {
+              statusBadge = <Badge variant="destructive">Exceeded (100%+)</Badge>;
+            } else if (percent >= 80) {
+              statusBadge = (
+                <Badge
+                  variant="secondary"
+                  className="bg-rose-500/20 text-rose-600 dark:text-rose-300 border-rose-500/40"
+                >
+                  80% Alert Threshold
+                </Badge>
+              );
+            } else if (percent >= 50) {
+              statusBadge = (
+                <Badge
+                  variant="secondary"
+                  className="bg-amber-500/20 text-amber-600 dark:text-amber-300 border-amber-500/40"
+                >
+                  50% Notice Threshold
+                </Badge>
+              );
+            }
 
-          return (
-            <Card key={b.id} className="glass-card">
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <div className="flex items-center gap-3">
-                  <div
-                    className="h-3.5 w-3.5 rounded-full"
-                    style={{ backgroundColor: b.categoryColor }}
-                  />
-                  <CardTitle className="text-base">{b.categoryName}</CardTitle>
-                </div>
-                {statusBadge}
-              </CardHeader>
+            return (
+              <Card key={b.id} className="glass-card">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="h-3.5 w-3.5 rounded-full"
+                      style={{ backgroundColor: b.categoryColor }}
+                    />
+                    <CardTitle className="text-base">{b.categoryName}</CardTitle>
+                  </div>
+                  {statusBadge}
+                </CardHeader>
 
-              <CardContent className="space-y-4 pt-2">
-                <div className="flex items-baseline justify-between">
-                  <div>
-                    <span className="text-2xl font-black text-white">
-                      {formatCurrency(b.spent)}
-                    </span>
-                    <span className="text-xs text-slate-400 font-normal">
-                      {" "}
-                      / {formatCurrency(b.amount)}
+                <CardContent className="space-y-4 pt-2">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <span className="text-2xl font-black text-slate-900 dark:text-white">
+                        {formatCurrency(b.spent)}
+                      </span>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                        {" "}
+                        / {formatCurrency(b.amount)}
+                      </span>
+                    </div>
+                    <span
+                      className={`text-sm font-bold ${
+                        isOver
+                          ? "text-rose-400"
+                          : percent >= 80
+                            ? "text-rose-400"
+                            : percent >= 50
+                              ? "text-amber-400"
+                              : "text-emerald-400"
+                      }`}
+                    >
+                      {percent}%
                     </span>
                   </div>
-                  <span
-                    className={`text-sm font-bold ${
+
+                  <Progress
+                    value={percent}
+                    indicatorClassName={
                       isOver
-                        ? "text-rose-400"
+                        ? "bg-rose-600"
                         : percent >= 80
-                          ? "text-rose-400"
+                          ? "bg-rose-500"
                           : percent >= 50
-                            ? "text-amber-400"
-                            : "text-emerald-400"
-                    }`}
-                  >
-                    {percent}%
-                  </span>
-                </div>
+                            ? "bg-amber-500"
+                            : "bg-emerald-500"
+                    }
+                  />
 
-                <Progress
-                  value={percent}
-                  indicatorClassName={
-                    isOver
-                      ? "bg-rose-600"
-                      : percent >= 80
-                        ? "bg-rose-500"
-                        : percent >= 50
-                          ? "bg-amber-500"
-                          : "bg-emerald-500"
-                  }
-                />
-
-                <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
-                  {isOver ? (
-                    <span className="text-rose-400 flex items-center gap-1 font-semibold">
-                      <AlertCircle className="h-3.5 w-3.5" /> Exceeded by{" "}
-                      {formatCurrency(Math.abs(remaining))}
-                    </span>
-                  ) : percent >= 80 ? (
-                    <span className="text-rose-400 flex items-center gap-1 font-semibold">
-                      <AlertCircle className="h-3.5 w-3.5" /> 80% Threshold
-                      Reached ({formatCurrency(remaining)} left)
-                    </span>
-                  ) : percent >= 50 ? (
-                    <span className="text-amber-400 flex items-center gap-1 font-semibold">
-                      <AlertTriangle className="h-3.5 w-3.5" /> 50% Threshold
-                      Reached ({formatCurrency(remaining)} left)
-                    </span>
-                  ) : (
-                    <span className="text-emerald-400 flex items-center gap-1 font-semibold">
-                      <CheckCircle2 className="h-3.5 w-3.5" />{" "}
-                      {formatCurrency(remaining)} left to spend
-                    </span>
-                  )}
-                  <span>Cap: {formatCurrency(b.amount)}</span>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+                  <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+                    {isOver ? (
+                      <span className="text-rose-400 flex items-center gap-1 font-semibold">
+                        <AlertCircle className="h-3.5 w-3.5" /> Exceeded by{" "}
+                        {formatCurrency(Math.abs(remaining))}
+                      </span>
+                    ) : percent >= 80 ? (
+                      <span className="text-rose-400 flex items-center gap-1 font-semibold">
+                        <AlertCircle className="h-3.5 w-3.5" /> 80% Threshold
+                        Reached ({formatCurrency(remaining)} left)
+                      </span>
+                    ) : percent >= 50 ? (
+                      <span className="text-amber-400 flex items-center gap-1 font-semibold">
+                        <AlertTriangle className="h-3.5 w-3.5" /> 50% Threshold
+                        Reached ({formatCurrency(remaining)} left)
+                      </span>
+                    ) : (
+                      <span className="text-emerald-400 flex items-center gap-1 font-semibold">
+                        <CheckCircle2 className="h-3.5 w-3.5" />{" "}
+                        {formatCurrency(remaining)} left to spend
+                      </span>
+                    )}
+                    <span>Cap: {formatCurrency(b.amount)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

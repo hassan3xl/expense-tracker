@@ -49,7 +49,7 @@ model Account {
   name         String
   type         AccountType   @default(CHECKING)
   balance      Float         @default(0.0)
-  currency     String        @default("USD")
+  currency     String        @default("NGN")
   accountNumber String?
   color        String?       @default("#3b82f6")
   isDefault    Boolean       @default(false)

@@ -13,14 +13,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { formatCurrency } from "../../lib/utils";
-import { AccountItem } from "../../lib/mock-data";
+import { useFinance } from "@/lib/finance-context";
 
-interface AccountsTabProps {
-  accounts: AccountItem[];
-  onOpenAddAccount: () => void;
-}
+export function AccountsTab() {
+  const { accounts = [], setIsAddAccountOpen } = useFinance();
 
-export function AccountsTab({ accounts, onOpenAddAccount }: AccountsTabProps) {
   const totalAssets = accounts
     .filter((a) => a.balance > 0)
     .reduce((sum, a) => sum + a.balance, 0);
@@ -72,86 +69,103 @@ export function AccountsTab({ accounts, onOpenAddAccount }: AccountsTabProps) {
               Connect card or bank account
             </p>
           </div>
-          <Button onClick={onOpenAddAccount} variant="gradient" size="sm">
+          <Button onClick={() => setIsAddAccountOpen(true)} variant="gradient" size="sm">
             <Plus className="h-4 w-4" /> Add Account
           </Button>
         </Card>
       </div>
 
       {/* Account Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {accounts.map((acc) => (
-          <Card
-            key={acc.id}
-            className="glass-card glass-card-hover border-slate-800 relative overflow-hidden flex flex-col justify-between"
-          >
-            {/* Top color accent stripe */}
-            <div
-              className="absolute top-0 left-0 right-0 h-1.5"
-              style={{ backgroundColor: acc.color }}
-            />
+      {accounts.length === 0 ? (
+        <Card className="glass-card p-12 text-center flex flex-col items-center justify-center space-y-4">
+          <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-emerald-500 dark:text-emerald-400">
+            <Wallet className="h-7 w-7" />
+          </div>
+          <div>
+            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Linked Accounts Yet</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
+              Start by adding your bank account, checking, savings, cash, or credit card to track your live balance.
+            </p>
+          </div>
+          <Button onClick={() => setIsAddAccountOpen(true)} variant="gradient" size="sm">
+            <Plus className="h-4 w-4" /> Add Your First Account
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {accounts.map((acc) => (
+            <Card
+              key={acc.id}
+              className="glass-card glass-card-hover border-slate-200 dark:border-zinc-800 relative overflow-hidden flex flex-col justify-between"
+            >
+              {/* Top color accent stripe */}
+              <div
+                className="absolute top-0 left-0 right-0 h-1.5"
+                style={{ backgroundColor: acc.color }}
+              />
 
-            <div>
-              <CardHeader className="flex flex-row items-center justify-between pt-6">
-                <div>
-                  <Badge
-                    variant="secondary"
-                    className="text-[10px] uppercase font-bold tracking-wider mb-1"
-                  >
-                    {acc.type.replace("_", " ")}
-                  </Badge>
-                  <CardTitle className="text-lg">{acc.name}</CardTitle>
-                </div>
-                <div
-                  className="h-10 w-10 rounded-xl flex items-center justify-center border border-slate-700/60"
-                  style={{
-                    backgroundColor: `${acc.color}15`,
-                    color: acc.color,
-                  }}
-                >
-                  {acc.type === "CHECKING" && <Landmark className="h-5 w-5" />}
-                  {acc.type === "SAVINGS" && <Wallet className="h-5 w-5" />}
-                  {acc.type === "CREDIT_CARD" && (
-                    <CreditCard className="h-5 w-5" />
-                  )}
-                  {acc.type === "INVESTMENT" && (
-                    <TrendingUp className="h-5 w-5" />
-                  )}
-                </div>
-              </CardHeader>
-
-              <CardContent className="space-y-4">
-                <div>
-                  <span className="text-xs text-slate-400 font-medium">
-                    Current Balance
-                  </span>
-                  <div
-                    className={`text-2xl font-black ${
-                      acc.balance < 0 ? "text-rose-400" : "text-white"
-                    }`}
-                  >
-                    {formatCurrency(acc.balance)}
+              <div>
+                <CardHeader className="flex flex-row items-center justify-between pt-6">
+                  <div>
+                    <Badge
+                      variant="secondary"
+                      className="text-[10px] uppercase font-bold tracking-wider mb-1"
+                    >
+                      {acc.type.replace("_", " ")}
+                    </Badge>
+                    <CardTitle className="text-lg">{acc.name}</CardTitle>
                   </div>
-                </div>
+                  <div
+                    className="h-10 w-10 rounded-xl flex items-center justify-center border border-slate-200 dark:border-zinc-700/60"
+                    style={{
+                      backgroundColor: `${acc.color}15`,
+                      color: acc.color,
+                    }}
+                  >
+                    {acc.type === "CHECKING" && <Landmark className="h-5 w-5" />}
+                    {acc.type === "SAVINGS" && <Wallet className="h-5 w-5" />}
+                    {acc.type === "CREDIT_CARD" && (
+                      <CreditCard className="h-5 w-5" />
+                    )}
+                    {acc.type === "INVESTMENT" && (
+                      <TrendingUp className="h-5 w-5" />
+                    )}
+                  </div>
+                </CardHeader>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 text-xs text-slate-400">
-                  <span>Account Number</span>
-                  <span className="font-mono text-slate-200">
-                    {acc.accountNumber || "•••• ----"}
-                  </span>
-                </div>
-              </CardContent>
-            </div>
+                <CardContent className="space-y-4">
+                  <div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                      Current Balance
+                    </span>
+                    <div
+                      className={`text-2xl font-black ${
+                        acc.balance < 0 ? "text-rose-500 dark:text-rose-400" : "text-slate-900 dark:text-white"
+                      }`}
+                    >
+                      {formatCurrency(acc.balance)}
+                    </div>
+                  </div>
 
-            <div className="p-4 pt-0">
-              <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-semibold bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
-                <ShieldCheck className="h-3.5 w-3.5" /> Synchronized with
-                PostgreSQL DB
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800/80 text-xs text-slate-500 dark:text-slate-400">
+                    <span>Account Number</span>
+                    <span className="font-mono text-slate-800 dark:text-slate-200">
+                      {acc.accountNumber || "•••• ----"}
+                    </span>
+                  </div>
+                </CardContent>
               </div>
-            </div>
-          </Card>
-        ))}
-      </div>
+
+              <div className="p-4 pt-0">
+                <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-semibold bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Synchronized with
+                  User Account
+                </div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Download, FileText, Calendar, Filter } from "lucide-react";
+import { Download, Calendar } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -16,13 +16,10 @@ import {
   TableCell,
 } from "../ui/table";
 import { formatCurrency, formatDate, exportToCSV } from "../../lib/utils";
-import { TransactionItem } from "../../lib/mock-data";
+import { useFinance } from "@/lib/finance-context";
 
-interface ReportsTabProps {
-  transactions: TransactionItem[];
-}
-
-export function ReportsTab({ transactions }: ReportsTabProps) {
+export function ReportsTab() {
+  const { transactions = [] } = useFinance();
   const [startDate, setStartDate] = useState("2026-08-01");
   const [endDate, setEndDate] = useState("2026-08-31");
 
@@ -72,7 +69,7 @@ export function ReportsTab({ transactions }: ReportsTabProps) {
             <Calendar className="h-5 w-5 text-emerald-400 shrink-0" />
             <div>
               <CardTitle className="text-base">
-                Financial Report Generator (FR8)
+                Financial Report Generator
               </CardTitle>
               <p className="text-xs text-slate-400">
                 Generate and export CSV reports for custom date ranges.
@@ -191,7 +188,7 @@ export function ReportsTab({ transactions }: ReportsTabProps) {
                     <TableCell className="text-xs text-slate-400 font-mono">
                       {formatDate(tx.date)}
                     </TableCell>
-                    <TableCell className="font-semibold text-white">
+                    <TableCell className="font-semibold text-slate-900 dark:text-white">
                       {tx.description}
                     </TableCell>
                     <TableCell>

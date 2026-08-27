@@ -90,14 +90,14 @@ export function AddTransactionModal({
 
         <form onSubmit={handleSubmit} className="space-y-4 py-2">
           {/* Type selector toggle buttons */}
-          <div className="grid grid-cols-3 gap-2 p-1 bg-slate-950 rounded-xl border border-slate-800">
+          <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-zinc-950 rounded-xl border border-slate-200 dark:border-zinc-800">
             <button
               type="button"
               onClick={() => setType("EXPENSE")}
               className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
                 type === "EXPENSE"
-                  ? "bg-rose-500/20 text-rose-400 border border-rose-500/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/30"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
               <ArrowUpRight className="h-3.5 w-3.5" /> Expense
@@ -107,8 +107,8 @@ export function AddTransactionModal({
               onClick={() => setType("INCOME")}
               className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
                 type === "INCOME"
-                  ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
               <ArrowDownLeft className="h-3.5 w-3.5" /> Income
@@ -118,8 +118,8 @@ export function AddTransactionModal({
               onClick={() => setType("TRANSFER")}
               className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
                 type === "TRANSFER"
-                  ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30"
+                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
               }`}
             >
               <RefreshCw className="h-3.5 w-3.5" /> Transfer
@@ -128,7 +128,7 @@ export function AddTransactionModal({
 
           {/* Amount */}
           <div className="space-y-1.5">
-            <Label>Amount ($)</Label>
+            <Label>Amount (₦)</Label>
             <Input
               type="number"
               step="0.01"

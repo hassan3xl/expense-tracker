@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,13 +20,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
-        {isClerkKeyValid ? (
-          <ClerkProvider>{children}</ClerkProvider>
-        ) : (
-          <div>{children}</div>
-        )}
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-background text-foreground min-h-screen flex flex-col antialiased">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {isClerkKeyValid ? (
+            <ClerkProvider>{children}</ClerkProvider>
+          ) : (
+            <div>{children}</div>
+          )}
+        </ThemeProvider>
       </body>
     </html>
   );

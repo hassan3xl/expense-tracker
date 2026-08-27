@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import {
   Search,
-  Filter,
   Plus,
   ArrowUpRight,
   ArrowDownLeft,
@@ -29,27 +28,16 @@ import {
   TableCell,
 } from "../ui/table";
 import { formatCurrency, formatDate } from "../../lib/utils";
-import {
-  AccountItem,
-  CategoryItem,
-  TransactionItem,
-} from "../../lib/mock-data";
+import { useFinance } from "@/lib/finance-context";
 
-interface TransactionsTabProps {
-  transactions: TransactionItem[];
-  accounts: AccountItem[];
-  categories: CategoryItem[];
-  onOpenAddTransaction: () => void;
-  onDeleteTransaction: (id: string) => void;
-}
+export function TransactionsTab() {
+  const {
+    transactions = [],
+    accounts = [],
+    setIsAddTransactionOpen,
+    handleDeleteTransaction,
+  } = useFinance();
 
-export function TransactionsTab({
-  transactions,
-  accounts,
-  categories,
-  onOpenAddTransaction,
-  onDeleteTransaction,
-}: TransactionsTabProps) {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [accountFilter, setAccountFilter] = useState<string>("ALL");
@@ -114,7 +102,7 @@ export function TransactionsTab({
               </SelectContent>
             </Select>
 
-            <Button onClick={onOpenAddTransaction} variant="gradient" size="sm">
+            <Button onClick={() => setIsAddTransactionOpen(true)} variant="gradient" size="sm">
               <Plus className="h-4 w-4" /> Add Transaction
             </Button>
           </div>
@@ -176,7 +164,7 @@ export function TransactionsTab({
                       )}
                     </TableCell>
                     <TableCell>
-                      <div className="font-semibold text-white">
+                      <div className="font-semibold text-slate-900 dark:text-white">
                         {tx.description}
                       </div>
                       {tx.payee && (
@@ -209,7 +197,7 @@ export function TransactionsTab({
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10"
-                        onClick={() => onDeleteTransaction(tx.id)}
+                        onClick={() => handleDeleteTransaction(tx.id)}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>

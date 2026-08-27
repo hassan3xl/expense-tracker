@@ -46,7 +46,7 @@ export function AddAccountModal({
       name,
       type,
       balance: parseFloat(balance),
-      currency: "USD",
+      currency: "NGN",
       accountNumber: accountNumber
         ? `•••• ${accountNumber.slice(-4)}`
         : undefined,
@@ -102,7 +102,7 @@ export function AddAccountModal({
             </div>
 
             <div className="space-y-1.5">
-              <Label>Initial Balance ($)</Label>
+              <Label>Initial Balance (₦)</Label>
               <Input
                 type="number"
                 step="0.01"

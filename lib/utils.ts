@@ -5,13 +5,13 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number, currency: string = "USD"): string {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: currency,
+export function formatCurrency(amount: number, currency: string = "NGN"): string {
+  const absolute = Math.abs(amount);
+  const formatted = new Intl.NumberFormat("en-NG", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(amount);
+  }).format(absolute);
+  return amount < 0 ? `-₦${formatted}` : `₦${formatted}`;
 }
 
 export function formatDate(date: Date | string): string {

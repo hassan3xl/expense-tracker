@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import {
   Plus,
-  Tag,
   Edit2,
   Trash2,
   ArrowUpRight,
@@ -13,7 +12,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
-import { Badge } from "../ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -30,20 +28,16 @@ import {
   SelectValue,
 } from "../ui/select";
 import { CategoryItem } from "../../lib/mock-data";
+import { useFinance } from "@/lib/finance-context";
 
-interface CategoriesTabProps {
-  categories: CategoryItem[];
-  onAddCategory: (cat: Omit<CategoryItem, "id">) => void;
-  onEditCategory: (id: string, cat: Partial<CategoryItem>) => void;
-  onDeleteCategory: (id: string) => void;
-}
+export function CategoriesTab() {
+  const {
+    categories = [],
+    handleAddCategory,
+    handleEditCategory,
+    handleDeleteCategory,
+  } = useFinance();
 
-export function CategoriesTab({
-  categories,
-  onAddCategory,
-  onEditCategory,
-  onDeleteCategory,
-}: CategoriesTabProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
@@ -75,9 +69,9 @@ export function CategoriesTab({
     if (!name) return;
 
     if (editingId) {
-      onEditCategory(editingId, { name, type, color, icon });
+      handleEditCategory(editingId, { name, type, color, icon });
     } else {
-      onAddCategory({ name, type, color, icon });
+      handleAddCategory({ name, type, color, icon });
     }
 
     setIsModalOpen(false);
@@ -91,7 +85,7 @@ export function CategoriesTab({
       {/* Category Header */}
       <Card className="glass-card flex items-center justify-between p-6">
         <div>
-          <CardTitle className="text-lg">Category Management (FR4)</CardTitle>
+          <CardTitle className="text-lg">Category Management</CardTitle>
           <p className="text-xs text-slate-400">
             Create, edit, and delete custom income & expense categories.
           </p>
@@ -105,14 +99,14 @@ export function CategoriesTab({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Income Categories */}
         <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-800">
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-400 border border-emerald-500/20">
+              <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
                 <ArrowDownLeft className="h-4 w-4" />
               </div>
               <div>
                 <CardTitle className="text-base">Income Categories</CardTitle>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {incomeCategories.length} categories defined
                 </p>
               </div>
@@ -122,14 +116,14 @@ export function CategoriesTab({
             {incomeCategories.map((cat) => (
               <div
                 key={cat.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition-colors"
+                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 hover:border-emerald-500/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div
                     className="h-3.5 w-3.5 rounded-full"
                     style={{ backgroundColor: cat.color }}
                   />
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
                     {cat.name}
                   </span>
                 </div>
@@ -137,7 +131,7 @@ export function CategoriesTab({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-white"
+                    className="h-8 w-8 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     onClick={() => openEditModal(cat)}
                   >
                     <Edit2 className="h-3.5 w-3.5" />
@@ -145,8 +139,8 @@ export function CategoriesTab({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
-                    onClick={() => onDeleteCategory(cat.id)}
+                    className="h-8 w-8 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10"
+                    onClick={() => handleDeleteCategory(cat.id)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -158,14 +152,14 @@ export function CategoriesTab({
 
         {/* Expense Categories */}
         <Card className="glass-card">
-          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-800">
+          <CardHeader className="flex flex-row items-center justify-between pb-3 border-b border-slate-100 dark:border-zinc-800">
             <div className="flex items-center gap-2">
-              <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-400 border border-rose-500/20">
+              <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500 dark:text-rose-400 border border-rose-500/20">
                 <ArrowUpRight className="h-4 w-4" />
               </div>
               <div>
                 <CardTitle className="text-base">Expense Categories</CardTitle>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {expenseCategories.length} categories defined
                 </p>
               </div>
@@ -175,14 +169,14 @@ export function CategoriesTab({
             {expenseCategories.map((cat) => (
               <div
                 key={cat.id}
-                className="flex items-center justify-between p-3 rounded-xl bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 transition-colors"
+                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 hover:border-emerald-500/50 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <div
                     className="h-3.5 w-3.5 rounded-full"
                     style={{ backgroundColor: cat.color }}
                   />
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
                     {cat.name}
                   </span>
                 </div>
@@ -190,7 +184,7 @@ export function CategoriesTab({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-white"
+                    className="h-8 w-8 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
                     onClick={() => openEditModal(cat)}
                   >
                     <Edit2 className="h-3.5 w-3.5" />
@@ -198,8 +192,8 @@ export function CategoriesTab({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10"
-                    onClick={() => onDeleteCategory(cat.id)}
+                    className="h-8 w-8 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10"
+                    onClick={() => handleDeleteCategory(cat.id)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>

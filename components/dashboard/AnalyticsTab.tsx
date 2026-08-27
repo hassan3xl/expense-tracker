@@ -16,28 +16,118 @@ import {
   Pie,
   Cell,
 } from "recharts";
-
-const CASHFLOW_TRENDS = [
-  { month: "Jan", income: 3500, expense: 2200, net: 1300 },
-  { month: "Feb", income: 3600, expense: 2400, net: 1200 },
-  { month: "Mar", income: 3800, expense: 2100, net: 1700 },
-  { month: "Apr", income: 4200, expense: 2600, net: 1600 },
-  { month: "May", income: 3900, expense: 2000, net: 1900 },
-  { month: "Jun", income: 4500, expense: 2300, net: 2200 },
-  { month: "Jul", income: 4300, expense: 1900, net: 2400 },
-  { month: "Aug", income: 4800, expense: 2100, net: 2700 },
-];
-
-const CATEGORY_DISTRIBUTION = [
-  { name: "Housing & Rent", value: 1450, color: "#f59e0b" },
-  { name: "Groceries & Dining", value: 420, color: "#ec4899" },
-  { name: "Shopping", value: 220, color: "#8b5cf6" },
-  { name: "Utilities", value: 180, color: "#3b82f6" },
-  { name: "Entertainment", value: 120, color: "#06b6d4" },
-  { name: "Transportation", value: 95, color: "#64748b" },
-];
+import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
+import { useFinance } from "@/lib/finance-context";
 
 export function AnalyticsTab() {
+  const { transactions = [], accounts = [] } = useFinance();
+
+  // Calculations
+  const totalIncome = transactions
+    .filter((t) => t.type === "INCOME")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const totalExpense = transactions
+    .filter((t) => t.type === "EXPENSE")
+    .reduce((sum, t) => sum + t.amount, 0);
+
+  const netSavings = totalIncome - totalExpense;
+
+  const totalLiquidAssets = accounts
+    .filter((a) => a.balance > 0)
+    .reduce((sum, a) => sum + a.balance, 0);
+
+  const totalLiabilities = Math.abs(
+    accounts
+      .filter((a) => a.balance < 0)
+      .reduce((sum, a) => sum + a.balance, 0),
+  );
+
+  // Health Score calculation (0 to 100)
+  let healthScore = 50;
+  if (totalIncome > 0) {
+    const savingsRatio = Math.max(0, netSavings / totalIncome);
+    healthScore = Math.min(100, Math.round(50 + savingsRatio * 50));
+  } else if (transactions.length === 0 && accounts.length === 0) {
+    healthScore = 100;
+  }
+
+  // Emergency Fund Cover (Months)
+  const emergencyFundMonths =
+    totalExpense > 0
+      ? (totalLiquidAssets / totalExpense).toFixed(1)
+      : totalLiquidAssets > 0
+        ? "12+"
+        : "0";
+
+  // Debt-to-Income Ratio
+  const dtiRatio =
+    totalIncome > 0
+      ? ((totalLiabilities / totalIncome) * 100).toFixed(1)
+      : "0.0";
+
+  // Dynamic monthly cashflow trends from transactions
+  const now = new Date();
+  const monthMap = new Map<string, { income: number; expense: number }>();
+  const monthLabels: string[] = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const label = d.toLocaleString("default", { month: "short" });
+    monthLabels.push(label);
+    monthMap.set(label, { income: 0, expense: 0 });
+  }
+
+  transactions.forEach((tx) => {
+    const txDate = new Date(tx.date);
+    const label = txDate.toLocaleString("default", { month: "short" });
+    if (monthMap.has(label)) {
+      const curr = monthMap.get(label)!;
+      if (tx.type === "INCOME") curr.income += tx.amount;
+      if (tx.type === "EXPENSE") curr.expense += tx.amount;
+    }
+  });
+
+  const cashflowTrends = monthLabels.map((m) => {
+    const data = monthMap.get(m) || { income: 0, expense: 0 };
+    return {
+      month: m,
+      income: data.income,
+      expense: data.expense,
+      net: data.income - data.expense,
+    };
+  });
+
+  // Dynamic Category Distribution
+  const categorySpendingMap = new Map<string, number>();
+  transactions
+    .filter((t) => t.type === "EXPENSE")
+    .forEach((t) => {
+      const name = t.categoryName || "Uncategorized";
+      categorySpendingMap.set(
+        name,
+        (categorySpendingMap.get(name) || 0) + t.amount,
+      );
+    });
+
+  const CATEGORY_COLORS = [
+    "#f59e0b",
+    "#ec4899",
+    "#8b5cf6",
+    "#3b82f6",
+    "#06b6d4",
+    "#10b981",
+    "#64748b",
+  ];
+
+  const categoryDistribution = Array.from(categorySpendingMap.entries()).map(
+    ([name, value], idx) => ({
+      name,
+      value,
+      color: CATEGORY_COLORS[idx % CATEGORY_COLORS.length],
+    }),
+  );
+
   return (
     <div className="space-y-6">
       {/* Financial Health Scores Header */}
@@ -50,25 +140,29 @@ export function AnalyticsTab() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-extrabold text-emerald-400">
-              92 / 100
+              {transactions.length === 0 && accounts.length === 0
+                ? "N/A"
+                : `${healthScore} / 100`}
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Excellent stability index
+              {transactions.length === 0
+                ? "Add entries to compute score"
+                : "Based on savings & cashflow ratio"}
             </p>
           </CardContent>
         </Card>
 
         <Card className="glass-card">
           <CardHeader className="pb-1">
-            <CardTitle className="text-xs text-slate-400 uppercase">
-              Average Monthly Savings
+            <CardTitle className="text-xs text-slate-500 dark:text-slate-400 uppercase">
+              Net Savings Balance
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-extrabold text-white">
-              {formatCurrency(1875)}
+            <div className="text-3xl font-extrabold text-slate-900 dark:text-white">
+              {formatCurrency(netSavings)}
             </div>
-            <p className="text-xs text-slate-400 mt-1">Last 8 months average</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Income minus expenses</p>
           </CardContent>
         </Card>
 
@@ -80,10 +174,10 @@ export function AnalyticsTab() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-extrabold text-teal-400">
-              6.8 Months
+              {emergencyFundMonths} Months
             </div>
             <p className="text-xs text-slate-400 mt-1">
-              Recommended is 3-6 mos
+              Liquid assets vs expenses
             </p>
           </CardContent>
         </Card>
@@ -95,8 +189,10 @@ export function AnalyticsTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-extrabold text-cyan-400">14.5%</div>
-            <p className="text-xs text-slate-400 mt-1">Low debt exposure</p>
+            <div className="text-3xl font-extrabold text-cyan-400">
+              {dtiRatio}%
+            </div>
+            <p className="text-xs text-slate-400 mt-1">Liabilities vs income</p>
           </CardContent>
         </Card>
       </div>
@@ -105,16 +201,16 @@ export function AnalyticsTab() {
       <Card className="glass-card">
         <CardHeader>
           <CardTitle className="text-base">
-            Cashflow & Savings Trend (2026)
+            Cashflow & Savings Trend
           </CardTitle>
           <p className="text-xs text-slate-400">
-            Monthly comparison of income vs expenses
+            Monthly comparison of logged income vs expenses
           </p>
         </CardHeader>
         <CardContent className="h-80 pt-4">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart
-              data={CASHFLOW_TRENDS}
+              data={cashflowTrends}
               margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
             >
               <defs>
@@ -173,30 +269,37 @@ export function AnalyticsTab() {
               Expense Category Distribution
             </CardTitle>
           </CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={CATEGORY_DISTRIBUTION}
-                  innerRadius={60}
-                  outerRadius={90}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {CATEGORY_DISTRIBUTION.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#0f172a",
-                    borderColor: "#334155",
-                    borderRadius: "10px",
-                    color: "#f8fafc",
-                  }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+          <CardContent className="h-64 flex flex-col items-center justify-center">
+            {categoryDistribution.length === 0 ? (
+              <div className="text-center text-xs text-slate-400 py-8">
+                <PieChartIcon className="h-8 w-8 mx-auto mb-2 text-slate-600 opacity-60" />
+                No expense transactions logged yet.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={categoryDistribution}
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={5}
+                    dataKey="value"
+                  >
+                    {categoryDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0f172a",
+                      borderColor: "#334155",
+                      borderRadius: "10px",
+                      color: "#f8fafc",
+                    }}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
@@ -204,38 +307,45 @@ export function AnalyticsTab() {
           <CardHeader>
             <CardTitle className="text-base">Top Monthly Spending</CardTitle>
           </CardHeader>
-          <CardContent className="h-64">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-                data={CATEGORY_DISTRIBUTION}
-                layout="vertical"
-                margin={{ left: 20 }}
-              >
-                <XAxis
-                  type="number"
-                  stroke="#64748b"
-                  fontSize={12}
-                  tickLine={false}
-                />
-                <YAxis
-                  dataKey="name"
-                  type="category"
-                  stroke="#64748b"
-                  fontSize={12}
-                  tickLine={false}
-                  width={100}
-                />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "#0f172a",
-                    borderColor: "#334155",
-                    borderRadius: "10px",
-                    color: "#f8fafc",
-                  }}
-                />
-                <Bar dataKey="value" fill="#3b82f6" radius={[0, 6, 6, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent className="h-64 flex flex-col items-center justify-center">
+            {categoryDistribution.length === 0 ? (
+              <div className="text-center text-xs text-slate-400 py-8">
+                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-slate-600 opacity-60" />
+                No expense categories to display.
+              </div>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={categoryDistribution}
+                  layout="vertical"
+                  margin={{ left: 20 }}
+                >
+                  <XAxis
+                    type="number"
+                    stroke="#64748b"
+                    fontSize={12}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    dataKey="name"
+                    type="category"
+                    stroke="#64748b"
+                    fontSize={12}
+                    tickLine={false}
+                    width={100}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#0f172a",
+                      borderColor: "#334155",
+                      borderRadius: "10px",
+                      color: "#f8fafc",
+                    }}
+                  />
+                  <Bar dataKey="value" fill="#3b82f6" radius={[0, 6, 6, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>

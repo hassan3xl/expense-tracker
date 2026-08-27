@@ -75,7 +75,7 @@ export function AddGoalModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-1.5">
-              <Label>Target Amount ($)</Label>
+              <Label>Target Amount (₦)</Label>
               <Input
                 type="number"
                 step="0.01"
@@ -86,7 +86,7 @@ export function AddGoalModal({
               />
             </div>
             <div className="space-y-1.5">
-              <Label>Current Saved ($)</Label>
+              <Label>Current Saved (₦)</Label>
               <Input
                 type="number"
                 step="0.01"

@@ -85,7 +85,7 @@ export function AddBudgetModal({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Monthly Spending Limit ($)</Label>
+            <Label>Monthly Spending Limit (₦)</Label>
             <Input
               type="number"
               step="0.01"
