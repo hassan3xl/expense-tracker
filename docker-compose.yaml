@@ -8,8 +8,7 @@ services:
       POSTGRES_PASSWORD: postgrespassword
       POSTGRES_DB: financetracker
     ports:
-      - "5432:5432"
-      - "5433:5432" # Backup fallback port if 5432 is occupied
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

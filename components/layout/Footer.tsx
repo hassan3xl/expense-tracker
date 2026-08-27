@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Github, Heart, ShieldCheck, TrendingUp, ExternalLink } from "lucide-react";
+import { ShieldCheck, TrendingUp, ExternalLink } from "lucide-react";
 
 export function Footer() {
   return (
@@ -36,7 +36,7 @@ export function Footer() {
             rel="noopener noreferrer"
             className="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-850 hover:text-white border border-slate-800 hover:border-slate-700 text-slate-200 font-semibold transition-all shadow-sm group"
           >
-            <Github className="h-4 w-4 text-slate-200 group-hover:text-white transition-transform group-hover:scale-110" />
+            {/* <Github className="h-4 w-4 text-slate-200 group-hover:text-white transition-transform group-hover:scale-110" /> */}
             <span>GitHub Repository</span>
             <ExternalLink className="h-3 w-3 opacity-60 group-hover:opacity-100" />
           </a>
@@ -44,7 +44,9 @@ export function Footer() {
 
         {/* Copyright */}
         <div className="text-center md:text-right text-[11px] text-slate-400">
-          <p>© {new Date().getFullYear()} Finance Tracker. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} Finance Tracker. All rights reserved.
+          </p>
           <p className="text-[10px] text-slate-400 mt-0.5">
             Built with Next.js (App Router), pnpm, Tailwind CSS & PostgreSQL
           </p>
