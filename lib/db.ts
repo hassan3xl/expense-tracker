@@ -1,20 +1,12 @@
-import { Agent, setGlobalDispatcher } from 'undici';
-import { neon } from '@neondatabase/serverless';
+import { PrismaClient } from "@prisma/client";
 
-// Force undici to use IPv4 on the server side to prevent IPv6 connection timeouts
-if (typeof window === 'undefined') {
-  setGlobalDispatcher(new Agent({
-    connect: {
-      family: 4
-    }
-  }));
+declare global {
+  // eslint-disable-next-line no-var
+  var prisma: PrismaClient | undefined;
 }
 
-if (!process.env.DB_URI) {
-  throw new Error("DB_URI environment variable is not defined.");
+export const db = globalThis.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== "production") {
+  globalThis.prisma = db;
 }
-
-const url = process.env.DB_URI.replace('-pooler', '');
-
-export const sql = neon(url);
-export default sql;

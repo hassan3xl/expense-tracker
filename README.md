@@ -1,36 +1,83 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Finance Tracker - Web-Based Expense Monitoring & Budget Management System
 
-## Getting Started
+A full-stack Personal Finance Tracker web app built with **Next.js**, **TypeScript**, **pnpm**, **shadcn/ui**, **Tailwind CSS**, **Clerk Authentication**, **Prisma ORM**, and **PostgreSQL (Docker)**.
 
-First, run the development server:
+---
 
+## 🌟 Key Features
+
+- 📊 **Financial Dashboard**: Real-time Net Worth, Monthly Income, Expenses, and Savings Rate calculations.
+- 💳 **Accounts & Assets**: Manage Checking, Savings, Credit Cards, and Investment accounts.
+- 🧾 **Transactions**: Record and filter income, expenses, and transfers by date, payee, category, and account.
+- 🎯 **Monthly Budgets**: Category-based spending limits with over-budget alerts.
+- 🚀 **Savings Goals**: Track milestones (Emergency Fund, New Car, Vacation) with quick deposit features.
+- 📈 **Analytics & Insights**: Recharts visual trend analysis and spending distribution.
+- 🔐 **Clerk Authentication**: Secure authentication & user profile management.
+- 🐘 **PostgreSQL & Prisma**: Dockerized PostgreSQL database with Prisma schema models.
+
+---
+
+## 🚀 Getting Started
+
+### 1. Requirements
+Make sure you have installed:
+- Node.js v18+ & pnpm (`pnpm --version`)
+- Docker & Docker Compose (`docker compose version`)
+
+### 2. Start Local PostgreSQL Database via Docker
+Run the following command to start PostgreSQL 16 on `localhost:5432`:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm db:up
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+To stop the database container when finished:
+```bash
+pnpm db:down
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Push Prisma Database Schema
+Push the Prisma models to your running PostgreSQL container:
+```bash
+pnpm db:push
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+You can open Prisma Studio to view database contents interactively:
+```bash
+pnpm db:studio
+```
 
-## Learn More
+### 4. Configure Clerk Authentication (Optional)
+Update `.env.local` with your publishable key and secret key from [Clerk Dashboard](https://dashboard.clerk.com):
+```env
+DATABASE_URL="postgresql://postgres:postgrespassword@localhost:5432/financetracker?schema=public"
 
-To learn more about Next.js, take a look at the following resources:
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_your_key_here
+CLERK_SECRET_KEY=sk_test_your_key_here
+```
+*(Note: If Clerk keys are not set, the app will run in Demo mode).*
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 5. Run Development Server
+```bash
+pnpm dev
+```
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🛠 Project Architecture
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+fianance-tracker/
+├── docker-compose.yaml       # PostgreSQL 16 Docker setup
+├── prisma/
+│   └── schema.prisma         # Models: User, Account, Category, Transaction, Budget, Goal
+├── src/
+│   ├── app/                  # Next.js App Router (pages & API routes)
+│   ├── components/
+│   │   ├── ui/               # shadcn/ui primitives (Button, Card, Dialog, Select, etc.)
+│   │   ├── layout/           # Header & Sidebar navigation
+│   │   ├── dashboard/        # Dashboard tabs (Overview, Transactions, Accounts, etc.)
+│   │   └── modals/           # Add Transaction, Add Account, Add Budget, Add Goal modals
+│   ├── lib/                  # db singleton, mock data, utility formatters
+│   └── middleware.ts         # Clerk routing middleware
+```
