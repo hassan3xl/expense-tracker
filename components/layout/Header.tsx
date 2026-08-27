@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { UserButton, Show, SignInButton } from "@clerk/nextjs";
 import { Plus, ShieldCheck, User } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback } from "../ui/avatar";
@@ -77,25 +77,12 @@ export function Header({ onOpenAddTransaction, activeTab }: HeaderProps) {
         <div className="pl-2 border-l border-slate-800 flex items-center gap-2">
           {isClerkConfigured ? (
             <>
-              <SignedIn>
-                <UserButton
-                  afterSignOutUrl="/"
-                  appearance={{
-                    elements: {
-                      avatarBox:
-                        "h-9 w-9 border border-emerald-500/40 shadow-md",
-                    },
-                  }}
-                />
-              </SignedIn>
-              <SignedOut>
-                <SignInButton mode="modal">
-                  <Button variant="secondary" size="sm" className="gap-2">
-                    <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                    <span>Sign In</span>
-                  </Button>
-                </SignInButton>
-              </SignedOut>
+              <Show when="signed-in">
+                <UserButton />
+              </Show>
+              <Show when="signed-out">
+                <SignInButton />
+              </Show>
             </>
           ) : (
             <div className="flex items-center gap-2">
