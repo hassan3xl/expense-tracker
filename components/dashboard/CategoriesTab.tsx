@@ -29,6 +29,8 @@ import {
 } from "../ui/select";
 import { CategoryItem } from "../../lib/mock-data";
 import { useFinance } from "@/lib/finance-context";
+import { PageHeader } from "../ui/page-header";
+import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 
 export function CategoriesTab() {
   const {
@@ -36,7 +38,12 @@ export function CategoriesTab() {
     handleAddCategory,
     handleEditCategory,
     handleDeleteCategory,
+    isInitialized,
   } = useFinance();
+
+  if (!isInitialized) {
+    return <DashboardSkeleton />;
+  }
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -81,19 +88,16 @@ export function CategoriesTab() {
   const expenseCategories = categories.filter((c) => c.type === "EXPENSE");
 
   return (
-    <div className="space-y-6">
-      {/* Category Header */}
-      <Card className="glass-card flex items-center justify-between p-6">
-        <div>
-          <CardTitle className="text-lg">Category Management</CardTitle>
-          <p className="text-xs text-slate-400">
-            Create, edit, and delete custom income & expense categories.
-          </p>
-        </div>
-        <Button onClick={openAddModal} variant="gradient" size="sm">
-          <Plus className="h-4 w-4" /> Add Category
-        </Button>
-      </Card>
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader
+        title="Category Management"
+        description="Personalize and manage custom transaction categories."
+        action={
+          <Button onClick={openAddModal} variant="gradient" size="sm">
+            <Plus className="h-4 w-4" /> Add Category
+          </Button>
+        }
+      />
 
       {/* Category Lists Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -106,7 +110,7 @@ export function CategoriesTab() {
               </div>
               <div>
                 <CardTitle className="text-base">Income Categories</CardTitle>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   {incomeCategories.length} categories defined
                 </p>
               </div>
@@ -123,7 +127,7 @@ export function CategoriesTab() {
                     className="h-3.5 w-3.5 rounded-full"
                     style={{ backgroundColor: cat.color }}
                   />
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                  <span className="text-sm font-semibold text-foreground">
                     {cat.name}
                   </span>
                 </div>
@@ -131,7 +135,7 @@ export function CategoriesTab() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     onClick={() => openEditModal(cat)}
                   >
                     <Edit2 className="h-3.5 w-3.5" />
@@ -139,7 +143,7 @@ export function CategoriesTab() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10"
+                    className="h-8 w-8 text-muted-foreground hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10"
                     onClick={() => handleDeleteCategory(cat.id)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -159,7 +163,7 @@ export function CategoriesTab() {
               </div>
               <div>
                 <CardTitle className="text-base">Expense Categories</CardTitle>
-                <p className="text-xs text-slate-500 dark:text-slate-400">
+                <p className="text-xs text-muted-foreground">
                   {expenseCategories.length} categories defined
                 </p>
               </div>
@@ -176,7 +180,7 @@ export function CategoriesTab() {
                     className="h-3.5 w-3.5 rounded-full"
                     style={{ backgroundColor: cat.color }}
                   />
-                  <span className="text-sm font-semibold text-slate-900 dark:text-white">
+                  <span className="text-sm font-semibold text-foreground">
                     {cat.name}
                   </span>
                 </div>
@@ -184,7 +188,7 @@ export function CategoriesTab() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     onClick={() => openEditModal(cat)}
                   >
                     <Edit2 className="h-3.5 w-3.5" />
@@ -192,7 +196,7 @@ export function CategoriesTab() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10"
+                    className="h-8 w-8 text-muted-foreground hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10"
                     onClick={() => handleDeleteCategory(cat.id)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />

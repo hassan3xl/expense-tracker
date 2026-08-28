@@ -32,13 +32,14 @@ const NAV_ITEMS = [
   { href: "/dashboard/accounts", label: "Accounts & Assets", icon: Wallet },
   { href: "/dashboard/goals", label: "Savings Goals", icon: Target },
   { href: "/dashboard/profile", label: "Profile & Security", icon: User },
-  { href: "/dashboard/analytics", label: "Analytics & Trends", icon: BarChart3 },
+  {
+    href: "/dashboard/analytics",
+    label: "Analytics & Trends",
+    icon: BarChart3,
+  },
 ];
 
-export function Sidebar({
-  isOpenMobile,
-  onCloseMobile,
-}: SidebarProps) {
+export function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
   const pathname = usePathname();
 
   const handleNavClick = () => {
@@ -79,10 +80,7 @@ export function Sidebar({
       </div>
 
       {/* Main Navigation */}
-      <nav className="flex-1 space-y-1 overflow-y-auto pr-1">
-        <p className="px-3 text-[10px] font-bold text-slate-400 dark:text-zinc-500 uppercase tracking-wider mb-2">
-          System Modules
-        </p>
+      <nav className="flex-1 space-y-2 overflow-y-auto pr-1">
         {NAV_ITEMS.map((item) => {
           const Icon = item.icon;
           const isActive =
@@ -99,7 +97,7 @@ export function Sidebar({
                 "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all duration-200 group text-left",
                 isActive
                   ? "bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-bold shadow-sm"
-                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-900/80"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900 dark:hover:text-zinc-100 hover:bg-slate-100 dark:hover:bg-zinc-900/80",
               )}
             >
               <Icon
@@ -107,7 +105,7 @@ export function Sidebar({
                   "h-4 w-4 shrink-0 transition-transform duration-200 group-hover:scale-110",
                   isActive
                     ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-slate-400 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-300"
+                    : "text-slate-400 dark:text-zinc-500 group-hover:text-slate-700 dark:group-hover:text-zinc-300",
                 )}
               />
               <span className="truncate">{item.label}</span>
@@ -143,4 +141,3 @@ export function Sidebar({
     </>
   );
 }
-

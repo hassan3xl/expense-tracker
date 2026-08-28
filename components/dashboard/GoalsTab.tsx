@@ -19,9 +19,15 @@ import {
   formatDate,
 } from "../../lib/utils";
 import { useFinance } from "@/lib/finance-context";
+import { PageHeader } from "../ui/page-header";
+import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 
 export function GoalsTab() {
-  const { goals = [], setIsAddGoalOpen, handleUpdateGoalDeposit } = useFinance();
+  const { goals = [], setIsAddGoalOpen, handleUpdateGoalDeposit, isInitialized } = useFinance();
+
+  if (!isInitialized) {
+    return <DashboardSkeleton />;
+  }
 
   const [depositAmount, setDepositAmount] = useState<{ [id: string]: string }>(
     {},
@@ -39,12 +45,25 @@ export function GoalsTab() {
   const totalTarget = goals.reduce((sum, g) => sum + g.targetAmount, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader
+        title="Savings Goals"
+        description="Track progress towards long-term financial milestones."
+        action={
+          <Button
+            onClick={() => setIsAddGoalOpen(true)}
+            variant="gradient"
+            size="sm"
+          >
+            <Plus className="h-4 w-4" /> New Savings Goal
+          </Button>
+        }
+      />
       {/* Header Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Saved for Goals
             </CardTitle>
           </CardHeader>
@@ -52,7 +71,7 @@ export function GoalsTab() {
             <div className="text-2xl font-extrabold text-emerald-400">
               {formatCurrency(totalSaved)}
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Across all active targets
             </p>
           </CardContent>
@@ -60,15 +79,15 @@ export function GoalsTab() {
 
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Target Goal
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white">
+            <div className="text-2xl font-extrabold text-foreground">
               {formatCurrency(totalTarget)}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {calculatePercentage(totalSaved, totalTarget)}% overall progress
             </p>
           </CardContent>
@@ -77,7 +96,7 @@ export function GoalsTab() {
         <Card className="glass-card flex items-center justify-between p-6">
           <div>
             <CardTitle className="text-sm">Create New Goal</CardTitle>
-            <p className="text-xs text-slate-400">Track major purchases</p>
+            <p className="text-xs text-muted-foreground">Track major purchases</p>
           </div>
           <Button onClick={() => setIsAddGoalOpen(true)} variant="gradient" size="sm">
             <Plus className="h-4 w-4" /> New Goal
@@ -92,8 +111,8 @@ export function GoalsTab() {
             <Target className="h-7 w-7" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Savings Goals Set</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
+            <h3 className="text-lg font-bold text-foreground">No Savings Goals Set</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mt-1">
               Track progress towards your long-term goals like emergency funds, home downpayments, or vacations.
             </p>
           </div>
@@ -131,7 +150,7 @@ export function GoalsTab() {
                       </div>
                       <div>
                         <CardTitle className="text-base">{g.name}</CardTitle>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-xs text-muted-foreground">
                           Target: {formatDate(g.targetDate)}
                         </p>
                       </div>
@@ -141,10 +160,10 @@ export function GoalsTab() {
                   <CardContent className="space-y-4">
                     <div className="flex items-baseline justify-between">
                       <div>
-                        <span className="text-2xl font-black text-slate-900 dark:text-white">
+                        <span className="text-2xl font-black text-foreground">
                           {formatCurrency(g.currentAmount)}
                         </span>
-                        <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                        <span className="text-xs text-muted-foreground font-normal">
                           {" "}
                           / {formatCurrency(g.targetAmount)}
                         </span>
@@ -175,7 +194,7 @@ export function GoalsTab() {
                               [g.id]: e.target.value,
                             }))
                           }
-                          className="flex h-9 w-full rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 text-xs text-slate-900 dark:text-slate-100 placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                          className="flex h-9 w-full rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 px-3 text-xs text-foreground placeholder:text-muted-foreground"
                         />
                         <Button
                           variant="secondary"

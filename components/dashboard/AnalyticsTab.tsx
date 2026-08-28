@@ -18,9 +18,15 @@ import {
 } from "recharts";
 import { BarChart3, PieChart as PieChartIcon } from "lucide-react";
 import { useFinance } from "@/lib/finance-context";
+import { PageHeader } from "../ui/page-header";
+import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 
 export function AnalyticsTab() {
-  const { transactions = [], accounts = [] } = useFinance();
+  const { transactions = [], accounts = [], isInitialized } = useFinance();
+
+  if (!isInitialized) {
+    return <DashboardSkeleton />;
+  }
 
   // Calculations
   const totalIncome = transactions
@@ -129,12 +135,16 @@ export function AnalyticsTab() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader
+        title="Analytics & Trends"
+        description="Visualize cashflow trends, financial health scores, and spending breakdowns."
+      />
       {/* Financial Health Scores Header */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card className="glass-card">
           <CardHeader className="pb-1">
-            <CardTitle className="text-xs text-slate-400 uppercase">
+            <CardTitle className="text-xs text-muted-foreground uppercase">
               Financial Health Score
             </CardTitle>
           </CardHeader>
@@ -144,7 +154,7 @@ export function AnalyticsTab() {
                 ? "N/A"
                 : `${healthScore} / 100`}
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {transactions.length === 0
                 ? "Add entries to compute score"
                 : "Based on savings & cashflow ratio"}
@@ -154,21 +164,21 @@ export function AnalyticsTab() {
 
         <Card className="glass-card">
           <CardHeader className="pb-1">
-            <CardTitle className="text-xs text-slate-500 dark:text-slate-400 uppercase">
+            <CardTitle className="text-xs text-muted-foreground uppercase">
               Net Savings Balance
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-extrabold text-slate-900 dark:text-white">
+            <div className="text-3xl font-extrabold text-foreground">
               {formatCurrency(netSavings)}
             </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Income minus expenses</p>
+            <p className="text-xs text-muted-foreground mt-1">Income minus expenses</p>
           </CardContent>
         </Card>
 
         <Card className="glass-card">
           <CardHeader className="pb-1">
-            <CardTitle className="text-xs text-slate-400 uppercase">
+            <CardTitle className="text-xs text-muted-foreground uppercase">
               Emergency Fund Cover
             </CardTitle>
           </CardHeader>
@@ -176,7 +186,7 @@ export function AnalyticsTab() {
             <div className="text-3xl font-extrabold text-teal-400">
               {emergencyFundMonths} Months
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Liquid assets vs expenses
             </p>
           </CardContent>
@@ -184,7 +194,7 @@ export function AnalyticsTab() {
 
         <Card className="glass-card">
           <CardHeader className="pb-1">
-            <CardTitle className="text-xs text-slate-400 uppercase">
+            <CardTitle className="text-xs text-muted-foreground uppercase">
               Debt-to-Income Ratio
             </CardTitle>
           </CardHeader>
@@ -192,7 +202,7 @@ export function AnalyticsTab() {
             <div className="text-3xl font-extrabold text-cyan-400">
               {dtiRatio}%
             </div>
-            <p className="text-xs text-slate-400 mt-1">Liabilities vs income</p>
+            <p className="text-xs text-muted-foreground mt-1">Liabilities vs income</p>
           </CardContent>
         </Card>
       </div>
@@ -203,7 +213,7 @@ export function AnalyticsTab() {
           <CardTitle className="text-base">
             Cashflow & Savings Trend
           </CardTitle>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground">
             Monthly comparison of logged income vs expenses
           </p>
         </CardHeader>
@@ -225,17 +235,18 @@ export function AnalyticsTab() {
               </defs>
               <XAxis
                 dataKey="month"
-                stroke="#64748b"
+                stroke="currentColor"
+                className="text-muted-foreground text-xs"
                 fontSize={12}
                 tickLine={false}
               />
-              <YAxis stroke="#64748b" fontSize={12} tickLine={false} />
+              <YAxis stroke="currentColor" className="text-muted-foreground text-xs" fontSize={12} tickLine={false} />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "#0f172a",
-                  borderColor: "#334155",
+                  backgroundColor: "var(--card)",
+                  borderColor: "var(--border)",
                   borderRadius: "12px",
-                  color: "#f8fafc",
+                  color: "var(--foreground)",
                 }}
               />
               <Area
@@ -271,8 +282,8 @@ export function AnalyticsTab() {
           </CardHeader>
           <CardContent className="h-64 flex flex-col items-center justify-center">
             {categoryDistribution.length === 0 ? (
-              <div className="text-center text-xs text-slate-400 py-8">
-                <PieChartIcon className="h-8 w-8 mx-auto mb-2 text-slate-600 opacity-60" />
+              <div className="text-center text-xs text-muted-foreground py-8">
+                <PieChartIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground opacity-60" />
                 No expense transactions logged yet.
               </div>
             ) : (
@@ -291,10 +302,10 @@ export function AnalyticsTab() {
                   </Pie>
                   <Tooltip
                     contentStyle={{
-                      backgroundColor: "#0f172a",
-                      borderColor: "#334155",
+                      backgroundColor: "var(--card)",
+                      borderColor: "var(--border)",
                       borderRadius: "10px",
-                      color: "#f8fafc",
+                      color: "var(--foreground)",
                     }}
                   />
                 </PieChart>
@@ -309,8 +320,8 @@ export function AnalyticsTab() {
           </CardHeader>
           <CardContent className="h-64 flex flex-col items-center justify-center">
             {categoryDistribution.length === 0 ? (
-              <div className="text-center text-xs text-slate-400 py-8">
-                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-slate-600 opacity-60" />
+              <div className="text-center text-xs text-muted-foreground py-8">
+                <BarChart3 className="h-8 w-8 mx-auto mb-2 text-muted-foreground opacity-60" />
                 No expense categories to display.
               </div>
             ) : (

@@ -25,11 +25,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useUser } from "@clerk/nextjs";
+import { PageHeader } from "@/components/ui/page-header";
+import { Badge } from "@/components/ui/badge";
+import { useFinance } from "@/lib/finance-context";
+import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 
 export function ProfileTab() {
+  const { isInitialized } = useFinance();
   const { user, isSignedIn } = useUser();
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+
+  if (!isInitialized) {
+    return <DashboardSkeleton />;
+  }
 
   const [fullName, setFullName] = useState("Hasan Student");
   const [email, setEmail] = useState("hasan@example.com");
@@ -70,7 +79,19 @@ export function ProfileTab() {
   };
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
+      <PageHeader
+        title="Profile & Security"
+        description="Manage account details, application themes, and security preferences."
+        action={
+          <Badge
+            variant="outline"
+            className="gap-1.5 py-1 px-3 border-emerald-500/30 text-emerald-500 font-semibold"
+          >
+            <ShieldCheck className="h-4 w-4" /> Bcrypt Secured
+          </Badge>
+        }
+      />
       {successMessage && (
         <div className="flex items-center gap-2 p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-sm font-semibold">
           <CheckCircle2 className="h-5 w-5" /> {successMessage}
@@ -87,7 +108,7 @@ export function ProfileTab() {
             <CardTitle className="text-base">
               Profile Management
             </CardTitle>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Update your personal details & authentication credentials
             </p>
           </div>
@@ -106,7 +127,7 @@ export function ProfileTab() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label>Email Address</Label>
-                  <span className="text-[10px] text-slate-400 flex items-center gap-1">
+                  <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                     <Lock className="h-3 w-3" /> Locked
                   </span>
                 </div>
@@ -114,9 +135,9 @@ export function ProfileTab() {
                   type="email"
                   value={email}
                   disabled
-                  className="cursor-not-allowed opacity-75 bg-slate-100 dark:bg-zinc-900/60 text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-800"
+                  className="cursor-not-allowed opacity-75 bg-slate-100 dark:bg-zinc-900/60 text-muted-foreground border-slate-200 dark:border-zinc-800"
                 />
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-muted-foreground mt-1">
                   Email address is synced with your Clerk authentication account and disabled for direct modification.
                 </p>
               </div>
@@ -144,7 +165,7 @@ export function ProfileTab() {
               <CardTitle className="text-base">
                 Appearance & Interface Theme
               </CardTitle>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Choose your preferred visual aesthetic for the finance dashboard.
               </p>
             </div>
@@ -158,16 +179,16 @@ export function ProfileTab() {
                 className={`p-4 rounded-xl border flex flex-col items-center text-center transition-all ${
                   theme === "light"
                     ? "border-amber-500 bg-amber-500/10 text-amber-400 shadow-md"
-                    : "border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 text-slate-600 dark:text-zinc-400 hover:border-slate-300 dark:hover:border-zinc-700"
+                    : "border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 text-muted-foreground hover:border-slate-300 dark:hover:border-zinc-700"
                 }`}
               >
                 <div className="h-12 w-12 rounded-xl bg-amber-500/20 flex items-center justify-center mb-3 text-amber-500">
                   <Sun className="h-6 w-6" />
                 </div>
-                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                <span className="font-bold text-sm text-foreground">
                   Light Mode
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
+                <span className="text-[11px] text-muted-foreground mt-1">
                   Clean & crisp daylight look
                 </span>
                 {theme === "light" && (
@@ -184,16 +205,16 @@ export function ProfileTab() {
                 className={`p-4 rounded-xl border flex flex-col items-center text-center transition-all ${
                   theme === "dark"
                     ? "border-emerald-500 bg-emerald-500/10 text-emerald-400 shadow-md"
-                    : "border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 text-slate-600 dark:text-zinc-400 hover:border-slate-300 dark:hover:border-zinc-700"
+                    : "border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 text-muted-foreground hover:border-slate-300 dark:hover:border-zinc-700"
                 }`}
               >
                 <div className="h-12 w-12 rounded-xl bg-emerald-500/20 flex items-center justify-center mb-3 text-emerald-400">
                   <Moon className="h-6 w-6" />
                 </div>
-                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                <span className="font-bold text-sm text-foreground">
                   Dark Mode
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
+                <span className="text-[11px] text-muted-foreground mt-1">
                   Sleek dark glow aesthetic
                 </span>
                 {theme === "dark" && (
@@ -210,16 +231,16 @@ export function ProfileTab() {
                 className={`p-4 rounded-xl border flex flex-col items-center text-center transition-all ${
                   theme === "system"
                     ? "border-cyan-500 bg-cyan-500/10 text-cyan-400 shadow-md"
-                    : "border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 text-slate-600 dark:text-zinc-400 hover:border-slate-300 dark:hover:border-zinc-700"
+                    : "border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 text-muted-foreground hover:border-slate-300 dark:hover:border-zinc-700"
                 }`}
               >
                 <div className="h-12 w-12 rounded-xl bg-cyan-500/20 flex items-center justify-center mb-3 text-cyan-400">
                   <Monitor className="h-6 w-6" />
                 </div>
-                <span className="font-bold text-sm text-slate-900 dark:text-white">
+                <span className="font-bold text-sm text-foreground">
                   System Preference
                 </span>
-                <span className="text-[11px] text-slate-500 dark:text-zinc-400 mt-1">
+                <span className="text-[11px] text-muted-foreground mt-1">
                   Automatically syncs with OS
                 </span>
                 {theme === "system" && (
@@ -243,7 +264,7 @@ export function ProfileTab() {
             <CardTitle className="text-base">
               Security & Password Hashing
             </CardTitle>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Passwords are hashed using bcrypt algorithm prior to storage.
             </p>
           </div>

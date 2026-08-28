@@ -14,9 +14,15 @@ import { Progress } from "../ui/progress";
 import { Badge } from "../ui/badge";
 import { formatCurrency, calculatePercentage } from "../../lib/utils";
 import { useFinance } from "@/lib/finance-context";
+import { PageHeader } from "../ui/page-header";
+import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 
 export function BudgetsTab() {
-  const { budgets = [], setIsAddBudgetOpen } = useFinance();
+  const { budgets = [], setIsAddBudgetOpen, isInitialized } = useFinance();
+
+  if (!isInitialized) {
+    return <DashboardSkeleton />;
+  }
 
   const totalBudgeted = budgets.reduce((sum, b) => sum + b.amount, 0);
   const totalSpent = budgets.reduce((sum, b) => sum + b.spent, 0);
@@ -33,7 +39,20 @@ export function BudgetsTab() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader
+        title="Monthly Budgets"
+        description="Set spending caps per category and monitor your monthly progress."
+        action={
+          <Button
+            onClick={() => setIsAddBudgetOpen(true)}
+            variant="gradient"
+            size="sm"
+          >
+            <Plus className="h-4 w-4" /> New Budget
+          </Button>
+        }
+      />
       {/* Alert Monitor Header */}
       <Card className="glass-card border-emerald-500/30">
         <CardContent className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -53,7 +72,7 @@ export function BudgetsTab() {
                   Uma & Bhuvana Alert Model
                 </Badge>
               </div>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Monitors category expenditures and automatically flags threshold
                 alerts at 50% and 80% budget utilization.
               </p>
@@ -92,15 +111,15 @@ export function BudgetsTab() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Budgeted
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white">
+            <div className="text-2xl font-extrabold text-foreground">
               {formatCurrency(totalBudgeted)}
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Monthly cap across all categories
             </p>
           </CardContent>
@@ -108,7 +127,7 @@ export function BudgetsTab() {
 
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Spent
             </CardTitle>
           </CardHeader>
@@ -122,7 +141,7 @@ export function BudgetsTab() {
             >
               {formatCurrency(totalSpent)}
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               {formatCurrency(totalBudgeted - totalSpent)} remaining this month
             </p>
           </CardContent>
@@ -130,7 +149,7 @@ export function BudgetsTab() {
 
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Monitored Categories
             </CardTitle>
           </CardHeader>
@@ -138,7 +157,7 @@ export function BudgetsTab() {
             <div className="text-2xl font-extrabold text-teal-400">
               {budgets.length} Active Budgets
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Real-time spending checks
             </p>
           </CardContent>
@@ -152,8 +171,8 @@ export function BudgetsTab() {
             <ShieldAlert className="h-7 w-7" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Monthly Budgets Configured</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
+            <h3 className="text-lg font-bold text-foreground">No Monthly Budgets Configured</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mt-1">
               Set spending limits per category to automatically monitor expenditure thresholds (50% and 80%).
             </p>
           </div>
@@ -214,10 +233,10 @@ export function BudgetsTab() {
                 <CardContent className="space-y-4 pt-2">
                   <div className="flex items-baseline justify-between">
                     <div>
-                      <span className="text-2xl font-black text-slate-900 dark:text-white">
+                      <span className="text-2xl font-black text-foreground">
                         {formatCurrency(b.spent)}
                       </span>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-normal">
+                      <span className="text-xs text-muted-foreground font-normal">
                         {" "}
                         / {formatCurrency(b.amount)}
                       </span>
@@ -250,7 +269,7 @@ export function BudgetsTab() {
                     }
                   />
 
-                  <div className="flex items-center justify-between text-xs text-slate-400 pt-1">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
                     {isOver ? (
                       <span className="text-rose-400 flex items-center gap-1 font-semibold">
                         <AlertCircle className="h-3.5 w-3.5" /> Exceeded by{" "}

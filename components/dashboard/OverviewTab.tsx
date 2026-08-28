@@ -22,6 +22,7 @@ import {
   TableCell,
 } from "../ui/table";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { PageHeader } from "../ui/page-header";
 import {
   ResponsiveContainer,
   BarChart,
@@ -34,6 +35,7 @@ import {
   Cell,
 } from "recharts";
 import { useFinance } from "@/lib/finance-context";
+import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 
 export function OverviewTab() {
   const router = useRouter();
@@ -42,7 +44,12 @@ export function OverviewTab() {
     transactions = [],
     setIsAddTransactionOpen,
     setIsAddAccountOpen,
+    isInitialized,
   } = useFinance();
+
+  if (!isInitialized) {
+    return <DashboardSkeleton />;
+  }
 
   // Calculations
   const totalNetWorth = accounts.reduce((sum, acc) => sum + acc.balance, 0);
@@ -57,7 +64,9 @@ export function OverviewTab() {
 
   const netSavings = monthlyIncome - monthlyExpenses;
   const savingsRate =
-    monthlyIncome > 0 ? Math.max(0, Math.round((netSavings / monthlyIncome) * 100)) : 0;
+    monthlyIncome > 0
+      ? Math.max(0, Math.round((netSavings / monthlyIncome) * 100))
+      : 0;
 
   // Dynamic monthly chart data setup
   const now = new Date();
@@ -118,13 +127,26 @@ export function OverviewTab() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader
+        title="Financial Overview"
+        description="Track income, expenses, net worth, and recent activity."
+        action={
+          <Button
+            onClick={() => setIsAddTransactionOpen(true)}
+            variant="gradient"
+            size="sm"
+          >
+            <Plus className="h-4 w-4" /> New Transaction
+          </Button>
+        }
+      />
       {/* Top Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Net Worth */}
         <Card className="glass-card glass-card-hover border-slate-200 dark:border-zinc-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Net Worth
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
@@ -132,14 +154,16 @@ export function OverviewTab() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <div className="text-2xl font-extrabold text-foreground tracking-tight">
               {formatCurrency(totalNetWorth)}
             </div>
             <div className="flex items-center gap-1.5 mt-2">
               <Badge variant="income" className="gap-1 text-[11px] py-0">
                 <TrendingUp className="h-3 w-3" /> Live
               </Badge>
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">Total account balance</span>
+              <span className="text-[11px] text-muted-foreground">
+                Total account balance
+              </span>
             </div>
           </CardContent>
         </Card>
@@ -147,7 +171,7 @@ export function OverviewTab() {
         {/* Monthly Income */}
         <Card className="glass-card glass-card-hover border-slate-200 dark:border-zinc-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Monthly Income
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
@@ -155,11 +179,11 @@ export function OverviewTab() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <div className="text-2xl font-extrabold text-foreground tracking-tight">
               {formatCurrency(monthlyIncome)}
             </div>
             <div className="flex items-center gap-1.5 mt-2">
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="text-[11px] text-muted-foreground">
                 Logged income entries
               </span>
             </div>
@@ -169,7 +193,7 @@ export function OverviewTab() {
         {/* Monthly Expenses */}
         <Card className="glass-card glass-card-hover border-slate-200 dark:border-zinc-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Monthly Expenses
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center border border-rose-500/20">
@@ -177,11 +201,11 @@ export function OverviewTab() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <div className="text-2xl font-extrabold text-foreground tracking-tight">
               {formatCurrency(monthlyExpenses)}
             </div>
             <div className="flex items-center gap-1.5 mt-2">
-              <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="text-[11px] text-muted-foreground">
                 Logged expense entries
               </span>
             </div>
@@ -191,7 +215,7 @@ export function OverviewTab() {
         {/* Savings Rate */}
         <Card className="glass-card glass-card-hover border-slate-200 dark:border-zinc-800">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Savings Rate
             </CardTitle>
             <div className="h-8 w-8 rounded-lg bg-cyan-500/10 flex items-center justify-center border border-cyan-500/20">
@@ -199,12 +223,13 @@ export function OverviewTab() {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+            <div className="text-2xl font-extrabold text-foreground tracking-tight">
               {savingsRate}%
             </div>
             <div className="flex items-center gap-1.5 mt-2">
               <span className="text-[11px] text-emerald-500 dark:text-emerald-400 font-semibold">
-                {netSavings >= 0 ? "+" : ""}{formatCurrency(netSavings)} saved
+                {netSavings >= 0 ? "+" : ""}
+                {formatCurrency(netSavings)} saved
               </span>
             </div>
           </CardContent>
@@ -218,7 +243,7 @@ export function OverviewTab() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base">Financial Overview</CardTitle>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Monthly cashflow breakdown
               </p>
             </div>
@@ -238,17 +263,18 @@ export function OverviewTab() {
               >
                 <XAxis
                   dataKey="month"
-                  stroke="#64748b"
+                  stroke="currentColor"
+                  className="text-muted-foreground text-xs"
                   fontSize={12}
                   tickLine={false}
                 />
-                <YAxis stroke="#64748b" fontSize={12} tickLine={false} />
+                <YAxis stroke="currentColor" className="text-muted-foreground text-xs" fontSize={12} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "#0f172a",
-                    borderColor: "#334155",
+                    backgroundColor: "var(--card)",
+                    borderColor: "var(--border)",
                     borderRadius: "12px",
-                    color: "#f8fafc",
+                    color: "var(--foreground)",
                   }}
                 />
                 <Bar
@@ -272,12 +298,12 @@ export function OverviewTab() {
         <Card className="glass-card flex flex-col">
           <CardHeader>
             <CardTitle className="text-base">Spending Breakdown</CardTitle>
-            <p className="text-xs text-slate-400">Top categories this month</p>
+            <p className="text-xs text-muted-foreground">Top categories this month</p>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-center items-center">
             {categoryBreakdown.length === 0 ? (
-              <div className="text-center py-10 text-xs text-slate-400">
-                <PieChartIcon className="h-8 w-8 mx-auto mb-2 text-slate-600 opacity-60" />
+              <div className="text-center py-10 text-xs text-muted-foreground">
+                <PieChartIcon className="h-8 w-8 mx-auto mb-2 text-muted-foreground opacity-60" />
                 No expense transactions logged yet.
               </div>
             ) : (
@@ -298,10 +324,10 @@ export function OverviewTab() {
                       </Pie>
                       <Tooltip
                         contentStyle={{
-                          backgroundColor: "#0f172a",
-                          borderColor: "#334155",
+                          backgroundColor: "var(--card)",
+                          borderColor: "var(--border)",
                           borderRadius: "10px",
-                          color: "#f8fafc",
+                          color: "var(--foreground)",
                         }}
                       />
                     </PieChart>
@@ -315,7 +341,9 @@ export function OverviewTab() {
                         className="h-2.5 w-2.5 rounded-full shrink-0"
                         style={{ backgroundColor: item.color }}
                       />
-                      <span className="text-slate-400 truncate">{item.name}</span>
+                      <span className="text-muted-foreground truncate">
+                        {item.name}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -332,7 +360,7 @@ export function OverviewTab() {
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle className="text-base">Recent Transactions</CardTitle>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-muted-foreground">
                 Latest income and expense entries
               </p>
             </div>
@@ -344,64 +372,108 @@ export function OverviewTab() {
               See All
             </Button>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Account</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead className="text-right">Amount</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {transactions.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center py-8 text-slate-400 text-xs"
+          <CardContent className="pt-0">
+            {transactions.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground text-xs">
+                No transactions recorded yet. Click &quot;New Transaction&quot;
+                to begin.
+              </div>
+            ) : (
+              <>
+                {/* Mobile View */}
+                <div className="block md:hidden space-y-2.5">
+                  {transactions.slice(0, 5).map((tx) => (
+                    <div
+                      key={tx.id}
+                      className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 flex items-center justify-between gap-3"
                     >
-                      No transactions recorded yet. Click &quot;New Transaction&quot; to begin.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  transactions.slice(0, 5).map((tx) => (
-                    <TableRow key={tx.id}>
-                      <TableCell className="font-semibold text-slate-900 dark:text-white">
-                        {tx.description}
-                        {tx.payee && (
-                          <span className="block text-[11px] text-slate-400 font-normal">
-                            {tx.payee}
+                      <div className="min-w-0">
+                        <div className="font-semibold text-xs sm:text-sm text-foreground truncate">
+                          {tx.description}
+                        </div>
+                        <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground">
+                          <Badge
+                            variant="secondary"
+                            className="text-[9px] px-1.5 py-0"
+                          >
+                            {tx.categoryName || "General"}
+                          </Badge>
+                          <span>•</span>
+                          <span className="truncate">
+                            {tx.accountName || "Account"}
                           </span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-xs text-slate-300">
-                        {tx.accountName || "Account"}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="secondary" className="text-[11px]">
-                          {tx.categoryName || "General"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-slate-400">
-                        {formatDate(tx.date)}
-                      </TableCell>
-                      <TableCell
-                        className={`text-right font-bold text-sm ${
-                          tx.type === "INCOME"
-                            ? "text-emerald-400"
-                            : "text-slate-200"
-                        }`}
-                      >
-                        {tx.type === "INCOME" ? "+" : "-"}
-                        {formatCurrency(tx.amount)}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                        </div>
+                      </div>
+                      <div className="text-right flex-shrink-0">
+                        <div
+                          className={`font-bold text-xs sm:text-sm ${
+                            tx.type === "INCOME"
+                              ? "text-emerald-600 dark:text-emerald-400"
+                              : "text-foreground"
+                          }`}
+                        >
+                          {tx.type === "INCOME" ? "+" : "-"}
+                          {formatCurrency(tx.amount)}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground font-mono">
+                          {formatDate(tx.date)}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop Table View */}
+                <div className="hidden md:block">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Description</TableHead>
+                        <TableHead>Account</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Date</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {transactions.slice(0, 5).map((tx) => (
+                        <TableRow key={tx.id}>
+                          <TableCell className="font-semibold text-foreground">
+                            {tx.description}
+                            {tx.payee && (
+                              <span className="block text-[11px] text-muted-foreground font-normal">
+                                {tx.payee}
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {tx.accountName || "Account"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary" className="text-[11px]">
+                              {tx.categoryName || "General"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {formatDate(tx.date)}
+                          </TableCell>
+                          <TableCell
+                            className={`text-right font-bold text-sm ${
+                              tx.type === "INCOME"
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-foreground"
+                            }`}
+                          >
+                            {tx.type === "INCOME" ? "+" : "-"}
+                            {formatCurrency(tx.amount)}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </>
+            )}
           </CardContent>
         </Card>
 
@@ -421,7 +493,7 @@ export function OverviewTab() {
             </CardHeader>
             <CardContent className="space-y-3">
               {accounts.length === 0 ? (
-                <div className="text-center py-6 text-xs text-slate-400">
+                <div className="text-center py-6 text-xs text-muted-foreground">
                   No accounts linked. Add an account to manage your balance.
                 </div>
               ) : (
@@ -436,17 +508,19 @@ export function OverviewTab() {
                         style={{ backgroundColor: acc.color }}
                       />
                       <div>
-                        <h4 className="text-sm font-semibold text-slate-900 dark:text-white">
+                        <h4 className="text-sm font-semibold text-foreground">
                           {acc.name}
                         </h4>
-                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                        <p className="text-[11px] text-muted-foreground font-mono">
                           {acc.accountNumber || acc.type}
                         </p>
                       </div>
                     </div>
                     <span
                       className={`text-sm font-bold ${
-                        acc.balance < 0 ? "text-rose-500 dark:text-rose-400" : "text-slate-900 dark:text-slate-200"
+                        acc.balance < 0
+                          ? "text-rose-500 dark:text-rose-400"
+                          : "text-foreground"
                       }`}
                     >
                       {formatCurrency(acc.balance)}
@@ -456,7 +530,7 @@ export function OverviewTab() {
               )}
             </CardContent>
           </div>
-          <div className="p-4 pt-0">
+          <div className="p-4 pt-4">
             <Button
               variant="outline"
               className="w-full text-xs"

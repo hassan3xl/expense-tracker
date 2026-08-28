@@ -14,9 +14,15 @@ import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
 import { formatCurrency } from "../../lib/utils";
 import { useFinance } from "@/lib/finance-context";
+import { PageHeader } from "../ui/page-header";
+import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 
 export function AccountsTab() {
-  const { accounts = [], setIsAddAccountOpen } = useFinance();
+  const { accounts = [], setIsAddAccountOpen, isInitialized } = useFinance();
+
+  if (!isInitialized) {
+    return <DashboardSkeleton />;
+  }
 
   const totalAssets = accounts
     .filter((a) => a.balance > 0)
@@ -29,12 +35,25 @@ export function AccountsTab() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
+      <PageHeader
+        title="Accounts & Assets"
+        description="Manage checking, savings, credit cards, and investments."
+        action={
+          <Button
+            onClick={() => setIsAddAccountOpen(true)}
+            variant="gradient"
+            size="sm"
+          >
+            <Plus className="h-4 w-4" /> Add Account
+          </Button>
+        }
+      />
       {/* Account Overview Header Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Assets
             </CardTitle>
           </CardHeader>
@@ -42,7 +61,7 @@ export function AccountsTab() {
             <div className="text-2xl font-extrabold text-emerald-400">
               {formatCurrency(totalAssets)}
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Cash, savings, & investments
             </p>
           </CardContent>
@@ -50,7 +69,7 @@ export function AccountsTab() {
 
         <Card className="glass-card">
           <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
               Total Liabilities
             </CardTitle>
           </CardHeader>
@@ -58,14 +77,14 @@ export function AccountsTab() {
             <div className="text-2xl font-extrabold text-rose-400">
               {formatCurrency(totalLiabilities)}
             </div>
-            <p className="text-xs text-slate-400 mt-1">Credit cards & loans</p>
+            <p className="text-xs text-muted-foreground mt-1">Credit cards & loans</p>
           </CardContent>
         </Card>
 
         <Card className="glass-card flex items-center justify-between p-6">
           <div>
             <CardTitle className="text-sm">Add New Account</CardTitle>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               Connect card or bank account
             </p>
           </div>
@@ -82,8 +101,8 @@ export function AccountsTab() {
             <Wallet className="h-7 w-7" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">No Linked Accounts Yet</h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mt-1">
+            <h3 className="text-lg font-bold text-foreground">No Linked Accounts Yet</h3>
+            <p className="text-xs text-muted-foreground max-w-sm mt-1">
               Start by adding your bank account, checking, savings, cash, or credit card to track your live balance.
             </p>
           </div>
@@ -135,21 +154,21 @@ export function AccountsTab() {
 
                 <CardContent className="space-y-4">
                   <div>
-                    <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                    <span className="text-xs text-muted-foreground font-medium">
                       Current Balance
                     </span>
                     <div
                       className={`text-2xl font-black ${
-                        acc.balance < 0 ? "text-rose-500 dark:text-rose-400" : "text-slate-900 dark:text-white"
+                        acc.balance < 0 ? "text-rose-500 dark:text-rose-400" : "text-foreground"
                       }`}
                     >
                       {formatCurrency(acc.balance)}
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800/80 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800/80 text-xs text-muted-foreground">
                     <span>Account Number</span>
-                    <span className="font-mono text-slate-800 dark:text-slate-200">
+                    <span className="font-mono text-foreground font-semibold">
                       {acc.accountNumber || "•••• ----"}
                     </span>
                   </div>
