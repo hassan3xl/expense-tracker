@@ -32,40 +32,42 @@ export function ConfirmDeleteModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-sm sm:max-w-md">
-        <DialogHeader>
-          <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 shrink-0">
-              <AlertTriangle className="h-5 w-5" />
+        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+          <DialogHeader>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-500 shrink-0">
+                <AlertTriangle className="h-5 w-5" />
+              </div>
+              <div>
+                <DialogTitle className="text-base font-bold text-foreground">
+                  {title}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground mt-0.5">
+                  {description}
+                </DialogDescription>
+              </div>
             </div>
-            <div>
-              <DialogTitle className="text-base font-bold text-foreground">
-                {title}
-              </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground mt-0.5">
-                {description}
-              </DialogDescription>
+          </DialogHeader>
+
+          {itemName && (
+            <div className="p-3 rounded-xl bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-semibold text-foreground truncate">
+              &quot;{itemName}&quot;
             </div>
-          </div>
-        </DialogHeader>
+          )}
+        </div>
 
-        {itemName && (
-          <div className="p-3 mx-4 sm:mx-5 rounded-xl bg-slate-100 dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 text-xs font-semibold text-foreground truncate">
-            &quot;{itemName}&quot;
-          </div>
-        )}
-
-        <DialogFooter className="mt-4">
+        <DialogFooter>
           <Button
             type="button"
             variant="outline"
-            className="border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-900 font-semibold"
+            className="w-full border-slate-300 dark:border-zinc-700 text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-zinc-900 font-semibold"
             onClick={onClose}
           >
             Cancel
           </Button>
           <Button
             type="button"
-            className="bg-rose-600 hover:bg-rose-700 text-white font-semibold flex items-center gap-1.5 shadow-sm"
+            className="w-full bg-rose-600 hover:bg-rose-700 text-white font-semibold flex items-center gap-1.5 shadow-sm"
             onClick={() => {
               onConfirm();
               onClose();

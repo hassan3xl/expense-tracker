@@ -1,7 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import { Plus, Wallet, Pencil } from "lucide-react";
+import {
+  Plus,
+  Wallet,
+  Pencil,
+} from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -44,6 +48,8 @@ export function AccountsTab() {
       .reduce((sum, a) => sum + a.balance, 0),
   );
 
+  const netWorth = totalAssets - totalLiabilities;
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <PageHeader
@@ -60,8 +66,8 @@ export function AccountsTab() {
         }
       />
 
-      {/* Account Overview Header Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Account Overview Header Cards (3 Cards) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="glass-card">
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
@@ -69,10 +75,10 @@ export function AccountsTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-emerald-400">
+            <div className="text-xl sm:text-2xl font-extrabold text-emerald-500 dark:text-emerald-400">
               {formatCurrency(totalAssets)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 truncate">
               Cash, savings, & investments
             </p>
           </CardContent>
@@ -85,11 +91,35 @@ export function AccountsTab() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-extrabold text-rose-400">
+            <div className="text-xl sm:text-2xl font-extrabold text-rose-500 dark:text-rose-400">
               {formatCurrency(totalLiabilities)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 truncate">
               Credit cards & loans
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="glass-card col-span-1 sm:col-span-2 lg:col-span-1">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Net Financial Worth
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div
+              className={`text-xl sm:text-2xl font-extrabold ${
+                netWorth >= 0
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : "text-rose-600 dark:text-rose-400"
+              }`}
+            >
+              {formatCurrency(netWorth)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1 truncate">
+              {netWorth >= 0
+                ? "Positive asset position"
+                : "Liabilities exceed liquid assets"}
             </p>
           </CardContent>
         </Card>
@@ -97,12 +127,12 @@ export function AccountsTab() {
 
       {/* Account Cards Grid */}
       {accounts.length === 0 ? (
-        <Card className="glass-card p-12 text-center flex flex-col items-center justify-center space-y-4">
+        <Card className="glass-card p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-4">
           <div className="h-14 w-14 rounded-2xl bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 text-emerald-500 dark:text-emerald-400">
             <Wallet className="h-7 w-7" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-foreground">
+            <h3 className="text-base sm:text-lg font-bold text-foreground">
               No Accounts Found
             </h3>
             <p className="text-xs text-muted-foreground max-w-sm mt-1">
@@ -119,7 +149,7 @@ export function AccountsTab() {
           </Button>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {accounts.map((acc) => (
             <Card
               key={acc.id}
@@ -132,23 +162,25 @@ export function AccountsTab() {
               />
 
               <div>
-                <CardHeader className="flex flex-row items-center justify-between pt-6 pb-2">
-                  <div>
+                <CardHeader className="flex flex-row items-start justify-between pt-6 pb-2 gap-2 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <Badge
                       variant="secondary"
-                      className="text-[10px] uppercase font-bold tracking-wider mb-1"
+                      className="text-[9px] sm:text-[10px] uppercase font-bold tracking-wider mb-1"
                     >
                       {acc.type.replace("_", " ")}
                     </Badge>
-                    <CardTitle className="text-lg">{acc.name}</CardTitle>
+                    <CardTitle className="text-base sm:text-lg truncate">
+                      {acc.name}
+                    </CardTitle>
                   </div>
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 px-2.5 text-xs gap-1.5 border-slate-200 dark:border-zinc-700/80 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                    className="h-7 sm:h-8 px-2 sm:px-2.5 text-xs gap-1.5 shrink-0 border-slate-200 dark:border-zinc-700/80 hover:bg-slate-100 dark:hover:bg-zinc-800"
                     onClick={() => setEditingAccount(acc)}
                   >
-                    <Pencil className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />{" "}
+                    <Pencil className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-slate-500 dark:text-slate-400" />{" "}
                     Edit
                   </Button>
                 </CardHeader>
@@ -159,7 +191,7 @@ export function AccountsTab() {
                       Current Balance
                     </span>
                     <div
-                      className={`text-2xl font-black ${
+                      className={`text-xl sm:text-2xl font-black truncate ${
                         acc.balance < 0
                           ? "text-rose-500 dark:text-rose-400"
                           : "text-foreground"

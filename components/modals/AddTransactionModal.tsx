@@ -106,7 +106,7 @@ export function AddTransactionModal({
       description: description || (type === "TRANSFER" ? `Transfer to ${toAccount?.name || "Account"}` : "Transaction"),
       date: date || new Date().toISOString().split("T")[0],
       payee,
-      isPending,
+      isPending: type === "INCOME" ? isPending : false,
     });
 
     // Reset fields
@@ -120,15 +120,15 @@ export function AddTransactionModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Record New Transaction</DialogTitle>
-          <DialogDescription>
-            Enter details for your income, expense, or transfer.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
           <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+            <DialogHeader>
+              <DialogTitle>Record New Transaction</DialogTitle>
+              <DialogDescription>
+                Enter details for your income, expense, or transfer.
+              </DialogDescription>
+            </DialogHeader>
+
             {/* Type selector toggle buttons (Income -> Expense -> Transfer) */}
             <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-zinc-950 rounded-xl border border-slate-200 dark:border-zinc-800">
               <button
@@ -325,32 +325,34 @@ export function AddTransactionModal({
               </div>
             </div>
 
-            {/* Pending Payment Toggle */}
-            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1.5">
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isPending}
-                  onChange={(e) => setIsPending(e.target.checked)}
-                  className="h-4 w-4 rounded border-amber-500/40 text-amber-600 focus:ring-amber-500 accent-amber-500 cursor-pointer"
-                />
-                <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
-                  Mark as Pending / Unpaid (Accounts Receivable)
-                </span>
-              </label>
-              <p className="text-[11px] text-amber-700/80 dark:text-amber-300/80 pl-6 leading-relaxed">
-                {isPending
-                  ? "This transaction will be recorded under Expected Income and won't affect active account balance until marked as paid."
-                  : "Check this if you haven't received payment yet (e.g. freelance work, pending invoice)."}
-              </p>
-            </div>
+            {/* Pending Payment Toggle (Income only) */}
+            {type === "INCOME" && (
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1.5 animate-in fade-in">
+                <label className="flex items-center gap-2.5 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isPending}
+                    onChange={(e) => setIsPending(e.target.checked)}
+                    className="h-4 w-4 rounded border-amber-500/40 text-amber-600 focus:ring-amber-500 accent-amber-500 cursor-pointer"
+                  />
+                  <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+                    Mark as Pending / Unpaid (Expected Income)
+                  </span>
+                </label>
+                <p className="text-[11px] text-amber-700/80 dark:text-amber-300/80 pl-6 leading-relaxed">
+                  {isPending
+                    ? "This transaction will be recorded under Expected Income and won't affect active account balance until marked as paid."
+                    : "Check this if you haven't received payment yet (e.g. freelance work, pending invoice)."}
+                </p>
+              </div>
+            )}
           </div>
 
           <DialogFooter>
             <Button
               type="button"
               variant="outline"
-              className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 dark:border-rose-500/30 dark:text-rose-400 font-semibold"
+              className="w-full border-rose-500/30 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 dark:border-rose-500/30 dark:text-rose-400 font-semibold"
               onClick={onClose}
             >
               Cancel
@@ -358,6 +360,7 @@ export function AddTransactionModal({
             <Button
               type="submit"
               variant="gradient"
+              className="w-full"
               disabled={Boolean(isInsufficient || isSameAccount || isInvalidAmount || !amount || parsedAmount <= 0)}
             >
               Save Transaction

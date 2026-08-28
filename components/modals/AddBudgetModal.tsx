@@ -60,15 +60,15 @@ export function AddBudgetModal({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Set Category Budget</DialogTitle>
-          <DialogDescription>
-            Define a spending cap for a specific category.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
           <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+            <DialogHeader>
+              <DialogTitle>Set Category Budget</DialogTitle>
+              <DialogDescription>
+                Define a spending cap for a specific category.
+              </DialogDescription>
+            </DialogHeader>
+
             <div className="space-y-1.5">
               <Label>Category</Label>
               <Select value={categoryId} onValueChange={setCategoryId}>
@@ -102,12 +102,12 @@ export function AddBudgetModal({
             <Button
               type="button"
               variant="outline"
-              className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 dark:border-rose-500/30 dark:text-rose-400 font-semibold"
+              className="w-full border-rose-500/30 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 dark:border-rose-500/30 dark:text-rose-400 font-semibold"
               onClick={onClose}
             >
               Cancel
             </Button>
-            <Button type="submit" variant="gradient">
+            <Button type="submit" variant="gradient" className="w-full">
               Save Budget
             </Button>
           </DialogFooter>

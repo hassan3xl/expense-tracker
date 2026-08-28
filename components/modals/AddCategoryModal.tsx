@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,41 +19,56 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import { AccountItem } from "../../lib/mock-data";
+import { CategoryItem } from "@/lib/mock-data";
 
-interface AddAccountModalProps {
+interface AddCategoryModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddAccount: (acc: Omit<AccountItem, "id">) => void;
+  categoryToEdit?: CategoryItem | null;
+  onSaveCategory: (cat: {
+    name: string;
+    type: "INCOME" | "EXPENSE";
+    color: string;
+    icon: string;
+  }) => void;
 }
 
-export function AddAccountModal({
+export function AddCategoryModal({
   isOpen,
   onClose,
-  onAddAccount,
-}: AddAccountModalProps) {
+  categoryToEdit,
+  onSaveCategory,
+}: AddCategoryModalProps) {
   const [name, setName] = useState("");
-  const [type, setType] = useState<AccountItem["type"]>("CHECKING");
-  const [balance, setBalance] = useState("");
+  const [type, setType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
   const [color, setColor] = useState("#3b82f6");
+  const [icon, setIcon] = useState("tag");
+
+  useEffect(() => {
+    if (categoryToEdit) {
+      setName(categoryToEdit.name);
+      setType(categoryToEdit.type as "INCOME" | "EXPENSE");
+      setColor(categoryToEdit.color || "#3b82f6");
+      setIcon(categoryToEdit.icon || "tag");
+    } else {
+      setName("");
+      setType("EXPENSE");
+      setColor("#3b82f6");
+      setIcon("tag");
+    }
+  }, [categoryToEdit, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const parsedBalance = parseFloat(balance);
-    const validBalance = isNaN(parsedBalance) ? 0 : parsedBalance;
-
-    onAddAccount({
+    onSaveCategory({
       name: name.trim(),
       type,
-      balance: validBalance,
-      currency: "NGN",
       color,
+      icon,
     });
 
-    setName("");
-    setBalance("");
     onClose();
   };
 
@@ -61,18 +76,21 @@ export function AddAccountModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+          {/* Scrollable Container: Header + Description + Input Controls */}
           <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
             <DialogHeader>
-              <DialogTitle>Add Financial Account</DialogTitle>
+              <DialogTitle>
+                {categoryToEdit ? "Edit Category" : "Create New Category"}
+              </DialogTitle>
               <DialogDescription>
-                Create a new checking, savings, cash, or credit card account.
+                Define personalized classification for your income or expenses.
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-1.5">
-              <Label>Account Name</Label>
+              <Label>Category Name</Label>
               <Input
-                placeholder="e.g. Main Checking, Savings Vault"
+                placeholder="e.g. Subscriptions, Side Business"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -81,48 +99,34 @@ export function AddAccountModal({
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label>Account Type</Label>
+                <Label>Transaction Type</Label>
                 <Select
                   value={type}
-                  onValueChange={(val) => setType(val as AccountItem["type"])}
+                  onValueChange={(v) => setType(v as "INCOME" | "EXPENSE")}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Type" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="CHECKING">Checking</SelectItem>
-                    <SelectItem value="SAVINGS">Savings</SelectItem>
-                    <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
-                    <SelectItem value="INVESTMENT">Investment</SelectItem>
-                    <SelectItem value="CASH">Cash</SelectItem>
+                    <SelectItem value="EXPENSE">Expense</SelectItem>
+                    <SelectItem value="INCOME">Income</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-1.5">
-                <Label>Initial Balance (₦)</Label>
+                <Label>Badge Accent Color</Label>
                 <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={balance}
-                  onChange={(e) => setBalance(e.target.value)}
-                  required
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className="h-10 p-1 cursor-pointer w-full"
                 />
               </div>
             </div>
-
-            <div className="space-y-1.5">
-              <Label>Card Accent Color</Label>
-              <Input
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="h-11 p-1 cursor-pointer w-full"
-              />
-            </div>
           </div>
 
+          {/* Sticky Bottom Footer: Side-by-Side Cancel and Save buttons */}
           <DialogFooter>
             <Button
               type="button"
@@ -133,7 +137,7 @@ export function AddAccountModal({
               Cancel
             </Button>
             <Button type="submit" variant="gradient" className="w-full">
-              Add Account
+              {categoryToEdit ? "Save Changes" : "Create Category"}
             </Button>
           </DialogFooter>
         </form>

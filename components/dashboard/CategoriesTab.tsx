@@ -10,28 +10,12 @@ import {
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "../ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { CategoryItem } from "../../lib/mock-data";
 import { useFinance } from "@/lib/finance-context";
 import { PageHeader } from "../ui/page-header";
 import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
+import { AddCategoryModal } from "@/components/modals/AddCategoryModal";
 
 export function CategoriesTab() {
   const {
@@ -43,48 +27,34 @@ export function CategoriesTab() {
   } = useFinance();
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryItem | null>(null);
 
   if (!isInitialized) {
     return <DashboardSkeleton />;
   }
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-
-  const [name, setName] = useState("");
-  const [type, setType] = useState<"INCOME" | "EXPENSE">("EXPENSE");
-  const [color, setColor] = useState("#3b82f6");
-  const [icon, setIcon] = useState("tag");
-
   const openAddModal = () => {
-    setEditingId(null);
-    setName("");
-    setType("EXPENSE");
-    setColor("#3b82f6");
-    setIcon("tag");
+    setEditingCategory(null);
     setIsModalOpen(true);
   };
 
   const openEditModal = (cat: CategoryItem) => {
-    setEditingId(cat.id);
-    setName(cat.name);
-    setType(cat.type as "INCOME" | "EXPENSE");
-    setColor(cat.color);
-    setIcon(cat.icon);
+    setEditingCategory(cat);
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name) return;
-
-    if (editingId) {
-      handleEditCategory(editingId, { name, type, color, icon });
+  const handleSaveCategory = (data: {
+    name: string;
+    type: "INCOME" | "EXPENSE";
+    color: string;
+    icon: string;
+  }) => {
+    if (editingCategory) {
+      handleEditCategory(editingCategory.id, data);
     } else {
-      handleAddCategory({ name, type, color, icon });
+      handleAddCategory(data);
     }
-
-    setIsModalOpen(false);
   };
 
   const incomeCategories = categories.filter((c) => c.type === "INCOME");
@@ -127,14 +97,14 @@ export function CategoriesTab() {
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="h-3.5 w-3.5 rounded-full"
+                    className="h-3.5 w-3.5 rounded-full shrink-0"
                     style={{ backgroundColor: cat.color }}
                   />
-                  <span className="text-sm font-semibold text-foreground">
+                  <span className="text-sm font-semibold text-foreground truncate">
                     {cat.name}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -180,14 +150,14 @@ export function CategoriesTab() {
               >
                 <div className="flex items-center gap-3">
                   <div
-                    className="h-3.5 w-3.5 rounded-full"
+                    className="h-3.5 w-3.5 rounded-full shrink-0"
                     style={{ backgroundColor: cat.color }}
                   />
-                  <span className="text-sm font-semibold text-foreground">
+                  <span className="text-sm font-semibold text-foreground truncate">
                     {cat.name}
                   </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                   <Button
                     variant="ghost"
                     size="icon"
@@ -212,72 +182,12 @@ export function CategoriesTab() {
       </div>
 
       {/* Add/Edit Category Modal */}
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>
-              {editingId ? "Edit Category" : "Create New Category"}
-            </DialogTitle>
-            <DialogDescription>
-              Define personalized classification for income or expenses.
-            </DialogDescription>
-          </DialogHeader>
-
-          <form onSubmit={handleSubmit} className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label>Category Name</Label>
-              <Input
-                placeholder="e.g. Subscriptions, Side Business"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Transaction Type</Label>
-                <Select
-                  value={type}
-                  onValueChange={(v) => setType(v as "INCOME" | "EXPENSE")}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EXPENSE">Expense</SelectItem>
-                    <SelectItem value="INCOME">Income</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Badge Color</Label>
-                <Input
-                  type="color"
-                  value={color}
-                  onChange={(e) => setColor(e.target.value)}
-                  className="h-11 p-1 cursor-pointer"
-                />
-              </div>
-            </div>
-
-            <DialogFooter className="mt-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 dark:border-rose-500/30 dark:text-rose-400 font-semibold"
-                onClick={() => setIsModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" variant="gradient">
-                {editingId ? "Save Changes" : "Create Category"}
-              </Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
+      <AddCategoryModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        categoryToEdit={editingCategory}
+        onSaveCategory={handleSaveCategory}
+      />
 
       <ConfirmDeleteModal
         isOpen={Boolean(deleteTarget)}

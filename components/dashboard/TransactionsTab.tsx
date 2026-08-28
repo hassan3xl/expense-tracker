@@ -46,7 +46,10 @@ export function TransactionsTab() {
     isInitialized,
   } = useFinance();
 
-  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
@@ -61,29 +64,31 @@ export function TransactionsTab() {
     .filter((tx) => tx.isPending && tx.type === "INCOME")
     .reduce((sum, tx) => sum + tx.amount, 0);
 
-  const filteredTransactions = transactions.filter((tx) => {
-    const matchesSearch =
-      tx.description.toLowerCase().includes(search.toLowerCase()) ||
-      (tx.payee && tx.payee.toLowerCase().includes(search.toLowerCase())) ||
-      (tx.categoryName &&
-        tx.categoryName.toLowerCase().includes(search.toLowerCase()));
+  const filteredTransactions = transactions
+    .filter((tx) => {
+      const matchesSearch =
+        tx.description.toLowerCase().includes(search.toLowerCase()) ||
+        (tx.payee && tx.payee.toLowerCase().includes(search.toLowerCase())) ||
+        (tx.categoryName &&
+          tx.categoryName.toLowerCase().includes(search.toLowerCase()));
 
-    const matchesType = typeFilter === "ALL" || tx.type === typeFilter;
-    const matchesAccount =
-      accountFilter === "ALL" || tx.accountId === accountFilter;
-    const matchesStatus =
-      statusFilter === "ALL" ||
-      (statusFilter === "PENDING" && tx.isPending) ||
-      (statusFilter === "CLEARED" && !tx.isPending);
+      const matchesType = typeFilter === "ALL" || tx.type === typeFilter;
+      const matchesAccount =
+        accountFilter === "ALL" || tx.accountId === accountFilter;
+      const matchesStatus =
+        statusFilter === "ALL" ||
+        (statusFilter === "PENDING" && tx.isPending) ||
+        (statusFilter === "CLEARED" && !tx.isPending);
 
-    return matchesSearch && matchesType && matchesAccount && matchesStatus;
-  });
+      return matchesSearch && matchesType && matchesAccount && matchesStatus;
+    })
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
   return (
     <div className="space-y-4 sm:space-y-6">
       <PageHeader
         title="Transaction History"
-        description="Search, filter, and manage all your income and expenses."
+        description="Search, filter, and manage all your transactions."
         action={
           <Button
             onClick={() => setIsAddTransactionOpen(true)}
@@ -96,7 +101,7 @@ export function TransactionsTab() {
       />
       {/* Header controls & filters */}
       <Card className="glass-card">
-        <CardContent className="p-2 sm:p-2 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+        <CardContent className="p-1 sm:p-2 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
           {/* Search box */}
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
@@ -170,12 +175,15 @@ export function TransactionsTab() {
               <Clock className="h-5 w-5" />
             </div>
             <div>
-              <h4 className="font-bold text-sm text-foreground">Expected Pending Income</h4>
+              <h4 className="font-bold text-sm text-foreground">
+                Expected Pending Income
+              </h4>
               <p className="text-xs text-muted-foreground">
                 You have unpaid freelance jobs / invoices totaling{" "}
                 <span className="font-bold text-amber-600 dark:text-amber-400">
                   {formatCurrency(pendingIncomeTotal)}
-                </span>. Click "Mark as Paid" on a transaction when funds arrive.
+                </span>
+                . Click "Mark as Paid" on a transaction when funds arrive.
               </p>
             </div>
           </div>
@@ -189,7 +197,7 @@ export function TransactionsTab() {
             <CardTitle className="text-base">Transactions List</CardTitle>
             <p className="text-xs text-muted-foreground">
               Showing {filteredTransactions.length} of {transactions.length}{" "}
-              records
+              records (Sorted most recent first)
             </p>
           </div>
         </CardHeader>
@@ -201,58 +209,60 @@ export function TransactionsTab() {
           ) : (
             <>
               {/* Mobile Card View (block md:hidden) */}
-              <div className="block md:hidden space-y-2.5">
+              <div className="block md:hidden space-y-3">
                 {filteredTransactions.map((tx) => (
                   <div
                     key={tx.id}
-                    className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 flex items-center justify-between gap-3"
+                    className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 space-y-2.5"
                   >
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="h-9 w-9 rounded-xl flex-shrink-0 flex items-center justify-center">
-                        {tx.type === "INCOME" && (
-                          <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
-                            <ArrowDownLeft className="h-4 w-4" />
-                          </div>
-                        )}
-                        {tx.type === "EXPENSE" && (
-                          <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500 dark:text-rose-400 border border-rose-500/20">
-                            <ArrowUpRight className="h-4 w-4" />
-                          </div>
-                        )}
-                        {tx.type === "TRANSFER" && (
-                          <div className="h-8 w-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-500 dark:text-cyan-400 border border-cyan-500/20">
-                            <RefreshCw className="h-4 w-4" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-semibold text-xs sm:text-sm text-foreground truncate">
-                          {tx.description}
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground flex-wrap">
-                          <Badge
-                            variant="secondary"
-                            className="text-[9px] px-1.5 py-0 font-normal"
-                          >
-                            {tx.categoryName}
-                          </Badge>
-                          {tx.isPending ? (
-                            <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[9px] px-1.5 py-0 gap-1 font-semibold">
-                              <Clock className="h-2.5 w-2.5" /> Pending
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[9px] px-1.5 py-0 font-normal">
-                              Paid
-                            </Badge>
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                        <div className="h-9 w-9 rounded-xl flex-shrink-0 flex items-center justify-center">
+                          {tx.type === "INCOME" && (
+                            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
+                              <ArrowDownLeft className="h-4 w-4" />
+                            </div>
                           )}
-                          <span>•</span>
-                          <span className="truncate">{tx.accountName}</span>
+                          {tx.type === "EXPENSE" && (
+                            <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500 dark:text-rose-400 border border-rose-500/20">
+                              <ArrowUpRight className="h-4 w-4" />
+                            </div>
+                          )}
+                          {tx.type === "TRANSFER" && (
+                            <div className="h-8 w-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-500 dark:text-cyan-400 border border-cyan-500/20">
+                              <RefreshCw className="h-4 w-4" />
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-xs sm:text-sm text-foreground truncate">
+                            {tx.description}
+                          </div>
+                          <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground flex-wrap">
+                            <Badge
+                              variant="secondary"
+                              className="text-[9px] px-1.5 py-0 font-normal"
+                            >
+                              {tx.categoryName}
+                            </Badge>
+                            {tx.isPending ? (
+                              <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[9px] px-1.5 py-0 gap-1 font-semibold">
+                                <Clock className="h-2.5 w-2.5" /> Pending
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[9px] px-1.5 py-0 font-normal">
+                                Paid
+                              </Badge>
+                            )}
+                            <span>•</span>
+                            <span className="truncate max-w-[100px]">
+                              {tx.accountName}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-1.5 flex-shrink-0">
-                      <div className="text-right">
+                      <div className="text-right shrink-0">
                         <div
                           className={`font-bold text-xs sm:text-sm ${
                             tx.type === "INCOME"
@@ -267,11 +277,13 @@ export function TransactionsTab() {
                           {formatDate(tx.date)}
                         </div>
                       </div>
+                    </div>
 
+                    <div className="flex items-center justify-end gap-2 pt-1.5 border-t border-slate-200/60 dark:border-zinc-800/60">
                       {tx.isPending && (
                         <Button
                           size="sm"
-                          className="h-7 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1"
+                          className="h-7 text-[10px] px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1"
                           onClick={() => handleTogglePendingTransaction(tx.id)}
                         >
                           <CheckCircle2 className="h-3 w-3" /> Mark Paid
@@ -280,11 +292,13 @@ export function TransactionsTab() {
 
                       <Button
                         variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
-                        onClick={() => setDeleteTarget({ id: tx.id, name: tx.description })}
+                        size="sm"
+                        className="h-7 text-xs px-2 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 gap-1"
+                        onClick={() =>
+                          setDeleteTarget({ id: tx.id, name: tx.description })
+                        }
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className="h-3 w-3" /> Delete
                       </Button>
                     </div>
                   </div>
@@ -367,16 +381,21 @@ export function TransactionsTab() {
                               <Button
                                 size="sm"
                                 className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1 px-2.5"
-                                onClick={() => handleTogglePendingTransaction(tx.id)}
+                                onClick={() =>
+                                  handleTogglePendingTransaction(tx.id)
+                                }
                               >
-                                <CheckCircle2 className="h-3.5 w-3.5" /> Mark Paid
+                                <CheckCircle2 className="h-3.5 w-3.5" /> Mark
+                                Paid
                               </Button>
                             ) : (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 className="h-7 text-[11px] text-muted-foreground hover:text-amber-500"
-                                onClick={() => handleTogglePendingTransaction(tx.id)}
+                                onClick={() =>
+                                  handleTogglePendingTransaction(tx.id)
+                                }
                                 title="Revert to Pending"
                               >
                                 Unpay
@@ -386,7 +405,12 @@ export function TransactionsTab() {
                               variant="ghost"
                               size="icon"
                               className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
-                              onClick={() => setDeleteTarget({ id: tx.id, name: tx.description })}
+                              onClick={() =>
+                                setDeleteTarget({
+                                  id: tx.id,
+                                  name: tx.description,
+                                })
+                              }
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
