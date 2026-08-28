@@ -81,7 +81,7 @@ export function TransactionsTab() {
       />
       {/* Header controls & filters */}
       <Card className="glass-card">
-        <CardContent className="p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+        <CardContent className="p-2 sm:p-2 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
           {/* Search box */}
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />

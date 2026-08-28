@@ -70,72 +70,74 @@ export function AddAccountModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          <div className="space-y-1.5">
-            <Label>Account Name</Label>
-            <Input
-              placeholder="e.g. Chase Freedom, Wealthfront Savings"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
             <div className="space-y-1.5">
-              <Label>Account Type</Label>
-              <Select
-                value={type}
-                onValueChange={(val) => setType(val as AccountItem["type"])}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="CHECKING">Checking</SelectItem>
-                  <SelectItem value="SAVINGS">Savings</SelectItem>
-                  <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
-                  <SelectItem value="INVESTMENT">Investment</SelectItem>
-                  <SelectItem value="CASH">Cash</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-1.5">
-              <Label>Initial Balance (₦)</Label>
+              <Label>Account Name</Label>
               <Input
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                value={balance}
-                onChange={(e) => setBalance(e.target.value)}
+                placeholder="e.g. Chase Freedom, Wealthfront Savings"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Account Type</Label>
+                <Select
+                  value={type}
+                  onValueChange={(val) => setType(val as AccountItem["type"])}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CHECKING">Checking</SelectItem>
+                    <SelectItem value="SAVINGS">Savings</SelectItem>
+                    <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
+                    <SelectItem value="INVESTMENT">Investment</SelectItem>
+                    <SelectItem value="CASH">Cash</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Initial Balance (₦)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={balance}
+                  onChange={(e) => setBalance(e.target.value)}
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Account Number (Last 4)</Label>
+                <Input
+                  placeholder="1234"
+                  maxLength={4}
+                  value={accountNumber}
+                  onChange={(e) => setAccountNumber(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Card/Accent Color</Label>
+                <Input
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className="h-11 p-1 cursor-pointer"
+                />
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Account Number (Last 4)</Label>
-              <Input
-                placeholder="1234"
-                maxLength={4}
-                value={accountNumber}
-                onChange={(e) => setAccountNumber(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label>Card/Accent Color</Label>
-              <Input
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="h-11 p-1 cursor-pointer"
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="mt-4">
+          <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
             </Button>

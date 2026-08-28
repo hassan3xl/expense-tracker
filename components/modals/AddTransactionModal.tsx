@@ -41,8 +41,8 @@ export function AddTransactionModal({
   accounts,
   categories,
 }: AddTransactionModalProps) {
-  const [type, setType] = useState<"EXPENSE" | "INCOME" | "TRANSFER">(
-    "EXPENSE",
+  const [type, setType] = useState<"INCOME" | "EXPENSE" | "TRANSFER">(
+    "INCOME",
   );
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
@@ -88,125 +88,140 @@ export function AddTransactionModal({
           </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4 py-2">
-          {/* Type selector toggle buttons */}
-          <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-zinc-950 rounded-xl border border-slate-200 dark:border-zinc-800">
-            <button
-              type="button"
-              onClick={() => setType("EXPENSE")}
-              className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
-                type === "EXPENSE"
-                  ? "bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/30"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-            >
-              <ArrowUpRight className="h-3.5 w-3.5" /> Expense
-            </button>
-            <button
-              type="button"
-              onClick={() => setType("INCOME")}
-              className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
-                type === "INCOME"
-                  ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-            >
-              <ArrowDownLeft className="h-3.5 w-3.5" /> Income
-            </button>
-            <button
-              type="button"
-              onClick={() => setType("TRANSFER")}
-              className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
-                type === "TRANSFER"
-                  ? "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
-              }`}
-            >
-              <RefreshCw className="h-3.5 w-3.5" /> Transfer
-            </button>
-          </div>
-
-          {/* Amount */}
-          <div className="space-y-1.5">
-            <Label>Amount (₦)</Label>
-            <Input
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              className="text-lg font-semibold"
-            />
-          </div>
-
-          {/* Description */}
-          <div className="space-y-1.5">
-            <Label>Description / Note</Label>
-            <Input
-              placeholder="e.g. Grocery shopping, Salary payout"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            />
-          </div>
-
-          {/* Account & Category */}
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1.5">
-              <Label>Account</Label>
-              <Select value={accountId} onValueChange={setAccountId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select account" />
-                </SelectTrigger>
-                <SelectContent>
-                  {accounts.map((acc) => (
-                    <SelectItem key={acc.id} value={acc.id}>
-                      {acc.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+            {/* Type selector toggle buttons (Income -> Expense -> Transfer) */}
+            <div className="grid grid-cols-3 gap-2 p-1 bg-slate-100 dark:bg-zinc-950 rounded-xl border border-slate-200 dark:border-zinc-800">
+              <button
+                type="button"
+                onClick={() => setType("INCOME")}
+                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
+                  type === "INCOME"
+                    ? "bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <ArrowDownLeft className="h-3.5 w-3.5" /> Income
+              </button>
+              <button
+                type="button"
+                onClick={() => setType("EXPENSE")}
+                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
+                  type === "EXPENSE"
+                    ? "bg-rose-500/20 text-rose-500 dark:text-rose-400 border border-rose-500/30"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <ArrowUpRight className="h-3.5 w-3.5" /> Expense
+              </button>
+              <button
+                type="button"
+                onClick={() => setType("TRANSFER")}
+                className={`flex items-center justify-center gap-1.5 py-2 px-3 rounded-lg text-xs font-semibold transition-all ${
+                  type === "TRANSFER"
+                    ? "bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 border border-cyan-500/30"
+                    : "text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200"
+                }`}
+              >
+                <RefreshCw className="h-3.5 w-3.5" /> Transfer
+              </button>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Category</Label>
-              <Select value={categoryId} onValueChange={setCategoryId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat.id} value={cat.id}>
-                      {cat.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+            {/* Explanation Box for Transfer */}
+            {type === "TRANSFER" && (
+              <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs text-cyan-700 dark:text-cyan-300 flex items-start gap-2.5 animate-in fade-in duration-200">
+                <RefreshCw className="h-4 w-4 shrink-0 text-cyan-500 mt-0.5" />
+                <div>
+                  <span className="font-bold">What is a Transfer?</span>
+                  <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+                    A transfer moves money between your own accounts (e.g. from Checking to Savings). It reallocates account balances without affecting your net earnings or overall expenses.
+                  </p>
+                </div>
+              </div>
+            )}
 
-          {/* Payee & Date */}
-          <div className="grid grid-cols-2 gap-3">
+            {/* Amount */}
             <div className="space-y-1.5">
-              <Label>Payee / Merchant</Label>
+              <Label>Amount (₦)</Label>
               <Input
-                placeholder="e.g. Amazon, Employer"
-                value={payee}
-                onChange={(e) => setPayee(e.target.value)}
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                required
+                className="text-lg font-semibold"
               />
             </div>
+
+            {/* Description */}
             <div className="space-y-1.5">
-              <Label>Date</Label>
+              <Label>Description / Note</Label>
               <Input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                placeholder="e.g. Grocery shopping, Salary payout"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
               />
+            </div>
+
+            {/* Account & Category */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Account</Label>
+                <Select value={accountId} onValueChange={setAccountId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select account" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {accounts.map((acc) => (
+                      <SelectItem key={acc.id} value={acc.id}>
+                        {acc.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Category</Label>
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Payee & Date */}
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Payee / Merchant</Label>
+                <Input
+                  placeholder="e.g. Amazon, Employer"
+                  value={payee}
+                  onChange={(e) => setPayee(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Date</Label>
+                <Input
+                  type="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </div>
             </div>
           </div>
 
-          <DialogFooter className="mt-4">
+          <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose}>
               Cancel
             </Button>

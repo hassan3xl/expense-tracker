@@ -55,22 +55,13 @@ export function BudgetsTab() {
       />
       {/* Alert Monitor Header */}
       <Card className="glass-card border-emerald-500/30">
-        <CardContent className="p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <CardContent className="p-2 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="h-9 w-9 rounded-xl bg-amber-500/10 flex items-center justify-center border border-amber-500/20 text-amber-400 shrink-0 mt-0.5 md:mt-0">
-              <ShieldAlert className="h-5 w-5" />
-            </div>
             <div>
               <div className="flex items-center gap-2">
                 <CardTitle className="text-base">
                   Automatic Budget Alert System
                 </CardTitle>
-                <Badge
-                  variant="outline"
-                  className="text-[10px] text-amber-400 border-amber-500/30"
-                >
-                  Uma & Bhuvana Alert Model
-                </Badge>
               </div>
               <p className="text-xs text-muted-foreground">
                 Monitors category expenditures and automatically flags threshold
@@ -78,9 +69,6 @@ export function BudgetsTab() {
               </p>
             </div>
           </div>
-          <Button onClick={() => setIsAddBudgetOpen(true)} variant="gradient" size="sm">
-            <Plus className="h-4 w-4" /> Add Budget
-          </Button>
         </CardContent>
       </Card>
 
@@ -171,12 +159,19 @@ export function BudgetsTab() {
             <ShieldAlert className="h-7 w-7" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-foreground">No Monthly Budgets Configured</h3>
+            <h3 className="text-lg font-bold text-foreground">
+              No Monthly Budgets Configured
+            </h3>
             <p className="text-xs text-muted-foreground max-w-sm mt-1">
-              Set spending limits per category to automatically monitor expenditure thresholds (50% and 80%).
+              Set spending limits per category to automatically monitor
+              expenditure thresholds (50% and 80%).
             </p>
           </div>
-          <Button onClick={() => setIsAddBudgetOpen(true)} variant="gradient" size="sm">
+          <Button
+            onClick={() => setIsAddBudgetOpen(true)}
+            variant="gradient"
+            size="sm"
+          >
             <Plus className="h-4 w-4" /> Create Your First Budget
           </Button>
         </Card>
@@ -196,7 +191,9 @@ export function BudgetsTab() {
               </Badge>
             );
             if (isOver) {
-              statusBadge = <Badge variant="destructive">Exceeded (100%+)</Badge>;
+              statusBadge = (
+                <Badge variant="destructive">Exceeded (100%+)</Badge>
+              );
             } else if (percent >= 80) {
               statusBadge = (
                 <Badge
@@ -225,7 +222,9 @@ export function BudgetsTab() {
                       className="h-3.5 w-3.5 rounded-full"
                       style={{ backgroundColor: b.categoryColor }}
                     />
-                    <CardTitle className="text-base">{b.categoryName}</CardTitle>
+                    <CardTitle className="text-base">
+                      {b.categoryName}
+                    </CardTitle>
                   </div>
                   {statusBadge}
                 </CardHeader>
