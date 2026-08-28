@@ -31,6 +31,7 @@ import { CategoryItem } from "../../lib/mock-data";
 import { useFinance } from "@/lib/finance-context";
 import { PageHeader } from "../ui/page-header";
 import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
+import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
 
 export function CategoriesTab() {
   const {
@@ -40,6 +41,8 @@ export function CategoriesTab() {
     handleDeleteCategory,
     isInitialized,
   } = useFinance();
+
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   if (!isInitialized) {
     return <DashboardSkeleton />;
@@ -144,7 +147,7 @@ export function CategoriesTab() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10"
-                    onClick={() => handleDeleteCategory(cat.id)}
+                    onClick={() => setDeleteTarget({ id: cat.id, name: cat.name })}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -197,7 +200,7 @@ export function CategoriesTab() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 text-muted-foreground hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-500/10"
-                    onClick={() => handleDeleteCategory(cat.id)}
+                    onClick={() => setDeleteTarget({ id: cat.id, name: cat.name })}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -262,7 +265,8 @@ export function CategoriesTab() {
             <DialogFooter className="mt-4">
               <Button
                 type="button"
-                variant="ghost"
+                variant="outline"
+                className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 dark:border-rose-500/30 dark:text-rose-400 font-semibold"
                 onClick={() => setIsModalOpen(false)}
               >
                 Cancel
@@ -274,6 +278,17 @@ export function CategoriesTab() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget) handleDeleteCategory(deleteTarget.id);
+        }}
+        title="Delete Category"
+        description="Are you sure you want to delete this category?"
+        itemName={deleteTarget?.name}
+      />
     </div>
   );
 }

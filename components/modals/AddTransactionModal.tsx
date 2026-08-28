@@ -47,26 +47,46 @@ export function AddTransactionModal({
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [accountId, setAccountId] = useState(accounts[0]?.id || "");
+  const [toAccountId, setToAccountId] = useState(
+    accounts[1]?.id || accounts[0]?.id || ""
+  );
   const [categoryId, setCategoryId] = useState(categories[0]?.id || "");
   const [payee, setPayee] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
+  const selectedFromAccount = accounts.find((a) => a.id === accountId);
+  const selectedToAccount = accounts.find((a) => a.id === toAccountId);
+
+  const parsedAmount = parseFloat(amount);
+  const isInvalidAmount = amount !== "" && (isNaN(parsedAmount) || parsedAmount <= 0);
+  const isInsufficient =
+    type === "TRANSFER" &&
+    selectedFromAccount &&
+    !isNaN(parsedAmount) &&
+    parsedAmount > selectedFromAccount.balance;
+  const isSameAccount =
+    type === "TRANSFER" && Boolean(accountId) && accountId === toAccountId;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) return;
+    if (isInsufficient || isSameAccount || isInvalidAmount) return;
 
     const account = accounts.find((a) => a.id === accountId);
+    const toAccount = accounts.find((a) => a.id === toAccountId);
     const category = categories.find((c) => c.id === categoryId);
 
     onAddTransaction({
       accountId,
       accountName: account?.name || "Account",
-      categoryId,
-      categoryName: category?.name || "Uncategorized",
-      categoryIcon: category?.icon || "tag",
-      amount: parseFloat(amount),
+      toAccountId: type === "TRANSFER" ? toAccountId : undefined,
+      toAccountName: type === "TRANSFER" ? toAccount?.name : undefined,
+      categoryId: type === "TRANSFER" ? undefined : categoryId,
+      categoryName: type === "TRANSFER" ? "Transfer" : category?.name || "Uncategorized",
+      categoryIcon: type === "TRANSFER" ? "refresh-cw" : category?.icon || "tag",
+      amount: Math.abs(parseFloat(amount)),
       type,
-      description: description || "Transaction",
+      description: description || (type === "TRANSFER" ? `Transfer to ${toAccount?.name || "Account"}` : "Transaction"),
       date: date || new Date().toISOString().split("T")[0],
       payee,
     });
@@ -134,17 +154,101 @@ export function AddTransactionModal({
                 <div>
                   <span className="font-bold">What is a Transfer?</span>
                   <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
-                    A transfer moves money between your own accounts (e.g. from Checking to Savings). It reallocates account balances without affecting your net earnings or overall expenses.
+                    A transfer moves money between your own accounts. Select the source account first to verify available balance.
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Amount */}
+            {/* Account Selectors (Account selected FIRST) */}
+            {type === "TRANSFER" ? (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label>From Account</Label>
+                    <Select value={accountId} onValueChange={setAccountId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((acc) => (
+                          <SelectItem key={acc.id} value={acc.id}>
+                            {acc.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <Label>To Account</Label>
+                    <Select value={toAccountId} onValueChange={setToAccountId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select account" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {accounts.map((acc) => (
+                          <SelectItem key={acc.id} value={acc.id}>
+                            {acc.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Available Balance Banner shown after selecting From Account */}
+                {selectedFromAccount && (
+                  <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-between text-xs text-emerald-700 dark:text-emerald-300 animate-in fade-in">
+                    <span className="font-medium">Available in {selectedFromAccount.name}:</span>
+                    <span className="font-bold font-mono text-emerald-600 dark:text-emerald-400">
+                      ₦{selectedFromAccount.balance.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label>Account</Label>
+                  <Select value={accountId} onValueChange={setAccountId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select account" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {accounts.map((acc) => (
+                        <SelectItem key={acc.id} value={acc.id}>
+                          {acc.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label>Category</Label>
+                  <Select value={categoryId} onValueChange={setCategoryId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            )}
+
+            {/* Amount (Positive only) */}
             <div className="space-y-1.5">
               <Label>Amount (₦)</Label>
               <Input
                 type="number"
+                min="0.01"
                 step="0.01"
                 placeholder="0.00"
                 value={amount}
@@ -154,50 +258,32 @@ export function AddTransactionModal({
               />
             </div>
 
+            {/* Validation Error Displays */}
+            {isInvalidAmount && (
+              <div className="p-2.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-semibold animate-in fade-in">
+                Transfer amount must be a positive number greater than ₦0.00.
+              </div>
+            )}
+            {isInsufficient && (
+              <div className="p-2.5 rounded-lg bg-rose-500/15 border border-rose-500/30 text-rose-400 text-xs font-semibold animate-in fade-in">
+                Insufficient funds! You only have ₦{selectedFromAccount?.balance.toLocaleString()} available in {selectedFromAccount?.name}.
+              </div>
+            )}
+            {isSameAccount && (
+              <div className="p-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 text-amber-400 text-xs font-semibold animate-in fade-in">
+                Source and destination accounts must be different.
+              </div>
+            )}
+
             {/* Description */}
             <div className="space-y-1.5">
               <Label>Description / Note</Label>
               <Input
-                placeholder="e.g. Grocery shopping, Salary payout"
+                placeholder={type === "TRANSFER" ? "e.g. Move money to Savings" : "e.g. Grocery shopping, Salary payout"}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
               />
-            </div>
-
-            {/* Account & Category */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label>Account</Label>
-                <Select value={accountId} onValueChange={setAccountId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select account" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {accounts.map((acc) => (
-                      <SelectItem key={acc.id} value={acc.id}>
-                        {acc.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-1.5">
-                <Label>Category</Label>
-                <Select value={categoryId} onValueChange={setCategoryId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>
-                        {cat.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
 
             {/* Payee & Date */}
@@ -205,7 +291,7 @@ export function AddTransactionModal({
               <div className="space-y-1.5">
                 <Label>Payee / Merchant</Label>
                 <Input
-                  placeholder="e.g. Amazon, Employer"
+                  placeholder="e.g. Self, Amazon"
                   value={payee}
                   onChange={(e) => setPayee(e.target.value)}
                 />
@@ -230,7 +316,11 @@ export function AddTransactionModal({
             >
               Cancel
             </Button>
-            <Button type="submit" variant="gradient">
+            <Button
+              type="submit"
+              variant="gradient"
+              disabled={Boolean(isInsufficient || isSameAccount || isInvalidAmount || !amount || parsedAmount <= 0)}
+            >
               Save Transaction
             </Button>
           </DialogFooter>

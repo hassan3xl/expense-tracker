@@ -141,6 +141,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     setAccounts((prev) =>
       prev.map((acc) => {
+        if (newTx.type === "TRANSFER") {
+          if (acc.id === newTx.accountId) {
+            return { ...acc, balance: acc.balance - newTx.amount };
+          }
+          if (newTx.toAccountId && acc.id === newTx.toAccountId) {
+            return { ...acc, balance: acc.balance + newTx.amount };
+          }
+          return acc;
+        }
+
         if (acc.id === newTx.accountId) {
           const delta = newTx.type === "INCOME" ? newTx.amount : -newTx.amount;
           return { ...acc, balance: acc.balance + delta };
@@ -169,6 +179,16 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
     setAccounts((prev) =>
       prev.map((acc) => {
+        if (tx.type === "TRANSFER") {
+          if (acc.id === tx.accountId) {
+            return { ...acc, balance: acc.balance + tx.amount };
+          }
+          if (tx.toAccountId && acc.id === tx.toAccountId) {
+            return { ...acc, balance: acc.balance - tx.amount };
+          }
+          return acc;
+        }
+
         if (acc.id === tx.accountId) {
           const delta = tx.type === "INCOME" ? -tx.amount : tx.amount;
           return { ...acc, balance: acc.balance + delta };

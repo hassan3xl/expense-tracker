@@ -21,6 +21,8 @@ export interface TransactionItem {
   id: string;
   accountId: string;
   accountName?: string;
+  toAccountId?: string;
+  toAccountName?: string;
   categoryId?: string;
   categoryName?: string;
   categoryIcon?: string;

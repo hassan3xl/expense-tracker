@@ -250,7 +250,7 @@ export function OverviewTab() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => router.push("/dashboard/analytics")}
+              onClick={() => router.push("/analytics")}
             >
               View Analytics
             </Button>
@@ -367,7 +367,7 @@ export function OverviewTab() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push("/dashboard/transactions")}
+              onClick={() => router.push("/transactions")}
             >
               See All
             </Button>
@@ -534,7 +534,7 @@ export function OverviewTab() {
             <Button
               variant="outline"
               className="w-full text-xs"
-              onClick={() => router.push("/dashboard/accounts")}
+              onClick={() => router.push("/accounts")}
             >
               Manage All Accounts
             </Button>

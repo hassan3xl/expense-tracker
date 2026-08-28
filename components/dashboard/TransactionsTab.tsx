@@ -32,6 +32,7 @@ import { formatCurrency, formatDate } from "../../lib/utils";
 import { PageHeader } from "../ui/page-header";
 import { useFinance } from "@/lib/finance-context";
 import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
+import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
 
 export function TransactionsTab() {
   const {
@@ -41,6 +42,8 @@ export function TransactionsTab() {
     handleDeleteTransaction,
     isInitialized,
   } = useFinance();
+
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
   if (!isInitialized) {
     return <DashboardSkeleton />;
@@ -215,7 +218,7 @@ export function TransactionsTab() {
                         variant="ghost"
                         size="icon"
                         className="h-7 w-7 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
-                        onClick={() => handleDeleteTransaction(tx.id)}
+                        onClick={() => setDeleteTarget({ id: tx.id, name: tx.description })}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -294,7 +297,7 @@ export function TransactionsTab() {
                             variant="ghost"
                             size="icon"
                             className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
-                            onClick={() => handleDeleteTransaction(tx.id)}
+                            onClick={() => setDeleteTarget({ id: tx.id, name: tx.description })}
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -308,6 +311,17 @@ export function TransactionsTab() {
           )}
         </CardContent>
       </Card>
+
+      <ConfirmDeleteModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget) handleDeleteTransaction(deleteTarget.id);
+        }}
+        title="Delete Transaction"
+        description="Are you sure you want to delete this transaction record? Your account balance will be updated automatically."
+        itemName={deleteTarget?.name}
+      />
     </div>
   );
 }
