@@ -87,7 +87,7 @@ export function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
               href={item.href}
               onClick={handleNavClick}
               className={cn(
-                "relative w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-medium transition-all duration-200 group text-left",
+                "relative w-full flex items-center justify-between px-3.5 py-2 rounded-xl text-sm font-medium transition-all duration-200 group text-left",
                 isActive
                   ? "bg-emerald-500/10 dark:bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30 font-semibold shadow-sm"
                   : "text-muted-foreground hover:text-foreground hover:bg-muted/60",

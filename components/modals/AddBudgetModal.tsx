@@ -99,7 +99,12 @@ export function AddBudgetModal({
           </div>
 
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={onClose}>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 dark:border-rose-500/30 dark:text-rose-400 font-semibold"
+              onClick={onClose}
+            >
               Cancel
             </Button>
             <Button type="submit" variant="gradient">
