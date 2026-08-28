@@ -3,17 +3,14 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useUser } from "@clerk/nextjs";
 import {
-  INITIAL_ACCOUNTS,
-  INITIAL_CATEGORIES,
-  INITIAL_TRANSACTIONS,
-  INITIAL_BUDGETS,
-  INITIAL_GOALS,
   AccountItem,
   CategoryItem,
   TransactionItem,
   BudgetItem,
   GoalItem,
 } from "./mock-data";
+import { Database, AlertTriangle, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface FinanceContextType {
   accounts: AccountItem[];
@@ -22,6 +19,7 @@ interface FinanceContextType {
   budgets: BudgetItem[];
   goals: GoalItem[];
   isInitialized: boolean;
+  dbError: string | null;
 
   // Modals state
   isAddTransactionOpen: boolean;
@@ -36,24 +34,25 @@ interface FinanceContextType {
   setIsMobileSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 
   // Action handlers
-  handleAddTransaction: (newTx: Omit<TransactionItem, "id">) => void;
-  handleDeleteTransaction: (id: string) => void;
-  handleAddCategory: (newCat: Omit<CategoryItem, "id">) => void;
-  handleEditCategory: (id: string, updated: Partial<CategoryItem>) => void;
-  handleDeleteCategory: (id: string) => void;
-  handleAddAccount: (newAcc: Omit<AccountItem, "id">) => void;
-  handleAddBudget: (newB: Omit<BudgetItem, "id">) => void;
-  handleAddGoal: (newG: Omit<GoalItem, "id">) => void;
-  handleUpdateGoalDeposit: (goalId: string, amount: number) => void;
+  handleAddTransaction: (newTx: Omit<TransactionItem, "id">) => Promise<void>;
+  handleDeleteTransaction: (id: string) => Promise<void>;
+  handleAddCategory: (newCat: Omit<CategoryItem, "id">) => Promise<void>;
+  handleEditCategory: (id: string, updated: Partial<CategoryItem>) => Promise<void>;
+  handleDeleteCategory: (id: string) => Promise<void>;
+  handleAddAccount: (newAcc: Omit<AccountItem, "id">) => Promise<void>;
+  handleAddBudget: (newB: Omit<BudgetItem, "id">) => Promise<void>;
+  handleAddGoal: (newG: Omit<GoalItem, "id">) => Promise<void>;
+  handleUpdateGoalDeposit: (goalId: string, amount: number) => Promise<void>;
 }
 
 const DEFAULT_FINANCE_CONTEXT: FinanceContextType = {
-  accounts: INITIAL_ACCOUNTS,
-  categories: INITIAL_CATEGORIES,
-  transactions: INITIAL_TRANSACTIONS,
-  budgets: INITIAL_BUDGETS,
-  goals: INITIAL_GOALS,
-  isInitialized: true,
+  accounts: [],
+  categories: [],
+  transactions: [],
+  budgets: [],
+  goals: [],
+  isInitialized: false,
+  dbError: null,
   isAddTransactionOpen: false,
   setIsAddTransactionOpen: () => {},
   isAddAccountOpen: false,
@@ -64,29 +63,29 @@ const DEFAULT_FINANCE_CONTEXT: FinanceContextType = {
   setIsAddGoalOpen: () => {},
   isMobileSidebarOpen: false,
   setIsMobileSidebarOpen: () => {},
-  handleAddTransaction: () => {},
-  handleDeleteTransaction: () => {},
-  handleAddCategory: () => {},
-  handleEditCategory: () => {},
-  handleDeleteCategory: () => {},
-  handleAddAccount: () => {},
-  handleAddBudget: () => {},
-  handleAddGoal: () => {},
-  handleUpdateGoalDeposit: () => {},
+  handleAddTransaction: async () => {},
+  handleDeleteTransaction: async () => {},
+  handleAddCategory: async () => {},
+  handleEditCategory: async () => {},
+  handleDeleteCategory: async () => {},
+  handleAddAccount: async () => {},
+  handleAddBudget: async () => {},
+  handleAddGoal: async () => {},
+  handleUpdateGoalDeposit: async () => {},
 };
 
 const FinanceContext = createContext<FinanceContextType>(DEFAULT_FINANCE_CONTEXT);
 
 export function FinanceProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useUser();
-  const userId = user?.id || "guest_user";
+  const { user, isLoaded } = useUser();
 
-  const [accounts, setAccounts] = useState<AccountItem[]>(INITIAL_ACCOUNTS);
-  const [categories, setCategories] = useState<CategoryItem[]>(INITIAL_CATEGORIES);
-  const [transactions, setTransactions] = useState<TransactionItem[]>(INITIAL_TRANSACTIONS);
-  const [budgets, setBudgets] = useState<BudgetItem[]>(INITIAL_BUDGETS);
-  const [goals, setGoals] = useState<GoalItem[]>(INITIAL_GOALS);
+  const [accounts, setAccounts] = useState<AccountItem[]>([]);
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [transactions, setTransactions] = useState<TransactionItem[]>([]);
+  const [budgets, setBudgets] = useState<BudgetItem[]>([]);
+  const [goals, setGoals] = useState<GoalItem[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [dbError, setDbError] = useState<string | null>(null);
 
   // Modal open states
   const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
@@ -95,237 +94,124 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Fetch cloud database data on mount or when user changes
+  // Fetch PostgreSQL database data directly
   const fetchDbData = async () => {
     try {
-      const res = await fetch("/api/sync");
-      if (res.ok) {
-        const data = await res.json();
-        if (data.accounts) setAccounts(data.accounts);
-        if (data.categories) setCategories(data.categories);
-        if (data.transactions) setTransactions(data.transactions);
-        if (data.budgets) setBudgets(data.budgets);
-        if (data.goals) setGoals(data.goals);
+      setDbError(null);
+      const res = await fetch("/api/sync", { cache: "no-store" });
+      
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        const msg = errJson.error || `PostgreSQL database request failed with status ${res.status}`;
+        setDbError(msg);
+        throw new Error(msg);
       }
-    } catch (e) {
-      console.error("Failed to fetch cloud database sync:", e);
+
+      const data = await res.json();
+      setAccounts(data.accounts || []);
+      setCategories(data.categories || []);
+      setTransactions(data.transactions || []);
+      setBudgets(data.budgets || []);
+      setGoals(data.goals || []);
+      setDbError(null);
+    } catch (e: any) {
+      console.error("Database connection failure:", e);
+      setDbError(e.message || "Failed to connect to PostgreSQL database");
     } finally {
       setIsInitialized(true);
     }
   };
 
   useEffect(() => {
-    if (user) {
-      fetchDbData();
-    } else {
-      setIsInitialized(true);
+    if (isLoaded) {
+      if (user) {
+        fetchDbData();
+      } else {
+        setIsInitialized(true);
+      }
     }
-  }, [user?.id]);
+  }, [isLoaded, user?.id]);
 
-  // Actions with DB persistence
+  // Action helpers that talk directly to PostgreSQL database
+  const executeDbAction = async (action: string, payload: any) => {
+    const res = await fetch("/api/sync/action", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, payload }),
+    });
+
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      const errorMsg = errJson.error || `PostgreSQL database action ${action} failed`;
+      setDbError(errorMsg);
+      throw new Error(errorMsg);
+    }
+
+    // Refresh state from DB to reflect exact database state
+    await fetchDbData();
+  };
+
   const handleAddTransaction = async (newTx: Omit<TransactionItem, "id">) => {
-    const txId = `tx-${Date.now()}`;
-    const tx: TransactionItem = { id: txId, ...newTx };
-    setTransactions((prev) => [tx, ...prev]);
-
-    setAccounts((prev) =>
-      prev.map((acc) => {
-        if (newTx.type === "TRANSFER") {
-          if (acc.id === newTx.accountId) {
-            return { ...acc, balance: acc.balance - newTx.amount };
-          }
-          if (newTx.toAccountId && acc.id === newTx.toAccountId) {
-            return { ...acc, balance: acc.balance + newTx.amount };
-          }
-          return acc;
-        }
-
-        if (acc.id === newTx.accountId) {
-          const delta = newTx.type === "INCOME" ? newTx.amount : -newTx.amount;
-          return { ...acc, balance: acc.balance + delta };
-        }
-        return acc;
-      })
-    );
-
-    if (newTx.type === "EXPENSE" && newTx.categoryId) {
-      setBudgets((prev) =>
-        prev.map((b) => {
-          if (b.categoryId === newTx.categoryId) {
-            return { ...b, spent: b.spent + newTx.amount };
-          }
-          return b;
-        })
-      );
-    }
-
-    try {
-      await fetch("/api/sync/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "ADD_TRANSACTION", payload: newTx }),
-      });
-      fetchDbData();
-    } catch (err) {
-      console.error("Sync action failed:", err);
-    }
+    await executeDbAction("ADD_TRANSACTION", newTx);
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    const tx = transactions.find((t) => t.id === id);
-    if (!tx) return;
-
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
-
-    setAccounts((prev) =>
-      prev.map((acc) => {
-        if (tx.type === "TRANSFER") {
-          if (acc.id === tx.accountId) {
-            return { ...acc, balance: acc.balance + tx.amount };
-          }
-          if (tx.toAccountId && acc.id === tx.toAccountId) {
-            return { ...acc, balance: acc.balance - tx.amount };
-          }
-          return acc;
-        }
-
-        if (acc.id === tx.accountId) {
-          const delta = tx.type === "INCOME" ? -tx.amount : tx.amount;
-          return { ...acc, balance: acc.balance + delta };
-        }
-        return acc;
-      })
-    );
-
-    try {
-      await fetch("/api/sync/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "DELETE_TRANSACTION", payload: { id } }),
-      });
-      fetchDbData();
-    } catch (err) {
-      console.error("Sync action failed:", err);
-    }
+    await executeDbAction("DELETE_TRANSACTION", { id });
   };
 
   const handleAddCategory = async (newCat: Omit<CategoryItem, "id">) => {
-    const cat: CategoryItem = { id: `cat-${Date.now()}`, ...newCat };
-    setCategories((prev) => [...prev, cat]);
-
-    try {
-      await fetch("/api/sync/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "ADD_CATEGORY", payload: newCat }),
-      });
-      fetchDbData();
-    } catch (err) {
-      console.error("Sync action failed:", err);
-    }
+    await executeDbAction("ADD_CATEGORY", newCat);
   };
 
   const handleEditCategory = async (id: string, updated: Partial<CategoryItem>) => {
-    setCategories((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, ...updated } : c))
-    );
-
-    try {
-      await fetch("/api/sync/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "EDIT_CATEGORY", payload: { id, ...updated } }),
-      });
-      fetchDbData();
-    } catch (err) {
-      console.error("Sync action failed:", err);
-    }
+    await executeDbAction("EDIT_CATEGORY", { id, ...updated });
   };
 
   const handleDeleteCategory = async (id: string) => {
-    setCategories((prev) => prev.filter((c) => c.id !== id));
-
-    try {
-      await fetch("/api/sync/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "DELETE_CATEGORY", payload: { id } }),
-      });
-      fetchDbData();
-    } catch (err) {
-      console.error("Sync action failed:", err);
-    }
+    await executeDbAction("DELETE_CATEGORY", { id });
   };
 
   const handleAddAccount = async (newAcc: Omit<AccountItem, "id">) => {
-    const acc: AccountItem = { id: `acc-${Date.now()}`, ...newAcc };
-    setAccounts((prev) => [...prev, acc]);
-
-    try {
-      await fetch("/api/sync/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "ADD_ACCOUNT", payload: newAcc }),
-      });
-      fetchDbData();
-    } catch (err) {
-      console.error("Sync action failed:", err);
-    }
+    await executeDbAction("ADD_ACCOUNT", newAcc);
   };
 
   const handleAddBudget = async (newB: Omit<BudgetItem, "id">) => {
-    const b: BudgetItem = { id: `b-${Date.now()}`, ...newB };
-    setBudgets((prev) => [...prev, b]);
-
-    try {
-      await fetch("/api/sync/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "ADD_BUDGET", payload: newB }),
-      });
-      fetchDbData();
-    } catch (err) {
-      console.error("Sync action failed:", err);
-    }
+    await executeDbAction("ADD_BUDGET", newB);
   };
 
   const handleAddGoal = async (newG: Omit<GoalItem, "id">) => {
-    const g: GoalItem = { id: `g-${Date.now()}`, ...newG };
-    setGoals((prev) => [...prev, g]);
-
-    try {
-      await fetch("/api/sync/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "ADD_GOAL", payload: newG }),
-      });
-      fetchDbData();
-    } catch (err) {
-      console.error("Sync action failed:", err);
-    }
+    await executeDbAction("ADD_GOAL", newG);
   };
 
   const handleUpdateGoalDeposit = async (goalId: string, amount: number) => {
-    setGoals((prev) =>
-      prev.map((g) => {
-        if (g.id === goalId) {
-          return { ...g, currentAmount: g.currentAmount + amount };
-        }
-        return g;
-      })
-    );
-
-    try {
-      await fetch("/api/sync/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "UPDATE_GOAL_DEPOSIT", payload: { goalId, amount } }),
-      });
-      fetchDbData();
-    } catch (err) {
-      console.error("Sync action failed:", err);
-    }
+    await executeDbAction("UPDATE_GOAL_DEPOSIT", { goalId, amount });
   };
+
+  // If database fails, render Database Error screen
+  if (dbError) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
+        <div className="max-w-md w-full glass-card p-8 rounded-2xl border border-rose-500/30 text-center space-y-4">
+          <div className="h-14 w-14 rounded-2xl bg-rose-500/20 text-rose-500 flex items-center justify-center mx-auto border border-rose-500/30">
+            <AlertTriangle className="h-7 w-7" />
+          </div>
+          <h2 className="text-xl font-bold text-slate-100">PostgreSQL Connection Error</h2>
+          <p className="text-sm text-rose-300 bg-rose-950/50 p-3 rounded-xl border border-rose-900/50 font-mono text-left overflow-auto">
+            {dbError}
+          </p>
+          <p className="text-xs text-slate-400">
+            Browser local storage fallback has been removed. The application requires an active PostgreSQL database connection to operate.
+          </p>
+          <Button
+            onClick={fetchDbData}
+            className="w-full bg-rose-600 hover:bg-rose-500 text-white font-semibold gap-2"
+          >
+            <RefreshCw className="h-4 w-4" /> Retry PostgreSQL Connection
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <FinanceContext.Provider
@@ -336,6 +222,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         budgets: budgets || [],
         goals: goals || [],
         isInitialized,
+        dbError,
         isAddTransactionOpen,
         setIsAddTransactionOpen,
         isAddAccountOpen,
