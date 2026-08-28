@@ -60,40 +60,22 @@ export function TransactionCard({
         isIncome
           ? "border-l-[6px] border-l-emerald-500 dark:border-l-emerald-400"
           : isExpense
-          ? "border-l-[6px] border-l-rose-500 dark:border-l-rose-400"
-          : "border-l-[6px] border-l-cyan-500 dark:border-l-cyan-400"
+            ? "border-l-[6px] border-l-rose-500 dark:border-l-rose-400"
+            : "border-l-[6px] border-l-cyan-500 dark:border-l-cyan-400"
       } ${compact ? "p-3.5 space-y-2.5" : "p-4 sm:p-5 space-y-3.5"}`}
     >
       {/* Top Header: Icon + Info & Amount */}
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3 min-w-0">
           {/* Type Circle Icon */}
-          <div
-            className={`h-10 w-10 sm:h-11 sm:w-11 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 ${
-              isIncome
-                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                : isExpense
-                ? "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                : "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/20"
-            }`}
-          >
-            {isIncome && <ArrowDownLeft className="h-5 w-5 sm:h-6 sm:w-6" />}
-            {isExpense && <ArrowUpRight className="h-5 w-5 sm:h-6 sm:w-6" />}
-            {isTransfer && <RefreshCw className="h-5 w-5 sm:h-6 sm:w-6" />}
-          </div>
 
           <div className="min-w-0 space-y-1">
             {/* Description / Main Title */}
-            <div className="font-bold text-sm sm:text-base text-foreground tracking-tight truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-              {description}
-            </div>
 
             {/* Payee / Merchant Section (Prominently displayed) */}
             <div className="flex items-center gap-1.5 flex-wrap">
               {payee ? (
                 <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-zinc-900 border border-slate-200/80 dark:border-zinc-800 text-[11px] font-medium text-slate-700 dark:text-zinc-300">
-                  <Store className="h-3 w-3 text-emerald-500 dark:text-emerald-400 shrink-0" />
-                  <span className="text-muted-foreground font-normal">Payee / Merchant:</span>
                   <span className="font-semibold text-foreground truncate max-w-[160px] sm:max-w-[220px]">
                     {payee}
                   </span>
@@ -105,6 +87,9 @@ export function TransactionCard({
                 </div>
               )}
             </div>
+            <div className="font-bold text-sm sm:text-base text-foreground tracking-tight truncate group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+              {description}
+            </div>
           </div>
         </div>
 
@@ -115,8 +100,8 @@ export function TransactionCard({
               isIncome
                 ? "text-emerald-600 dark:text-emerald-400"
                 : isExpense
-                ? "text-rose-600 dark:text-rose-400"
-                : "text-foreground"
+                  ? "text-rose-600 dark:text-rose-400"
+                  : "text-foreground"
             }`}
           >
             {isIncome ? "+" : isExpense ? "-" : ""}
@@ -156,7 +141,9 @@ export function TransactionCard({
             {isTransfer && toAccountName && (
               <>
                 <ArrowRight className="h-3 w-3 text-slate-400 shrink-0" />
-                <span className="truncate text-cyan-600 dark:text-cyan-400">{toAccountName}</span>
+                <span className="truncate text-cyan-600 dark:text-cyan-400">
+                  {toAccountName}
+                </span>
               </>
             )}
           </div>
@@ -194,7 +181,8 @@ export function TransactionCard({
                 className="h-8 text-xs px-2.5 text-slate-700 dark:text-zinc-300 font-semibold gap-1 rounded-xl"
                 onClick={() => onTogglePending(id)}
               >
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> Mark Paid
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> Mark
+                Paid
               </Button>
             )}
 
