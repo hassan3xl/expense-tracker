@@ -8,6 +8,9 @@ import {
   Clock,
   CheckCircle2,
   Coins,
+  LayoutGrid,
+  List,
+  Store,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
@@ -35,6 +38,7 @@ import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
 import { CollectPaymentModal } from "@/components/modals/CollectPaymentModal";
 import { TransactionItem } from "@/lib/mock-data";
+import { TransactionCard } from "./TransactionCard";
 
 export function TransactionsTab() {
   const {
@@ -58,6 +62,7 @@ export function TransactionsTab() {
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
   const [accountFilter, setAccountFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
+  const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
 
   if (!isInitialized) {
     return <DashboardSkeleton />;
@@ -201,7 +206,7 @@ export function TransactionsTab() {
 
       {/* Transactions List */}
       <Card className="glass-card">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <CardHeader className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3">
           <div>
             <CardTitle className="text-base">Transactions List</CardTitle>
             <p className="text-xs text-muted-foreground">
@@ -209,256 +214,199 @@ export function TransactionsTab() {
               records (Sorted most recent first)
             </p>
           </div>
+
+          {/* Cards / Table View Toggle Switcher */}
+          <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-900/90 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 self-start sm:self-auto">
+            <Button
+              variant={viewMode === "cards" ? "secondary" : "ghost"}
+              size="sm"
+              className={`h-8 px-3 text-xs font-semibold gap-1.5 rounded-lg transition-all ${
+                viewMode === "cards"
+                  ? "bg-white dark:bg-zinc-800 text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setViewMode("cards")}
+            >
+              <LayoutGrid className="h-3.5 w-3.5 text-emerald-500" /> Card View
+            </Button>
+            <Button
+              variant={viewMode === "table" ? "secondary" : "ghost"}
+              size="sm"
+              className={`h-8 px-3 text-xs font-semibold gap-1.5 rounded-lg transition-all ${
+                viewMode === "table"
+                  ? "bg-white dark:bg-zinc-800 text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              onClick={() => setViewMode("table")}
+            >
+              <List className="h-3.5 w-3.5 text-emerald-500" /> Table View
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent className="pt-0">
+        <CardContent className="pt-2">
           {filteredTransactions.length === 0 ? (
-            <div className="text-center py-8 text-xs sm:text-sm text-muted-foreground">
+            <div className="text-center py-10 text-xs sm:text-sm text-muted-foreground">
               No transactions found matching your filters.
             </div>
+          ) : viewMode === "cards" ? (
+            /* Cards View (Grid for both Mobile and Desktop) */
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
+              {filteredTransactions.map((tx) => (
+                <TransactionCard
+                  key={tx.id}
+                  transaction={tx}
+                  onCollect={(target) => setCollectTarget(target)}
+                  onTogglePending={(id) => handleTogglePendingTransaction(id)}
+                  onDelete={(id, name) => setDeleteTarget({ id, name })}
+                />
+              ))}
+            </div>
           ) : (
-            <>
-              {/* Mobile Card View (block md:hidden) */}
-              <div className="block md:hidden space-y-3">
-                {filteredTransactions.map((tx) => (
-                  <div
-                    key={tx.id}
-                    className={`p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 space-y-2.5 ${
-                      tx.type === "INCOME"
-                        ? "border-l-[5px] border-l-emerald-500 dark:border-l-emerald-400"
-                        : tx.type === "EXPENSE"
-                        ? "border-l-[5px] border-l-rose-500 dark:border-l-rose-400"
-                        : "border-l-[5px] border-l-cyan-500 dark:border-l-cyan-400"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1 space-y-1">
-                        <div className="font-bold text-xs sm:text-sm text-foreground truncate">
-                          {tx.description}
-                        </div>
-                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground flex-wrap">
-                          <Badge
-                            variant="secondary"
-                            className="text-[9px] px-1.5 py-0 font-normal"
-                          >
-                            {tx.categoryName || "General"}
+            /* Table View */
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-24">Type</TableHead>
+                    <TableHead>Description & Payee</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Account</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="w-48 text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredTransactions.map((tx) => (
+                    <TableRow
+                      key={tx.id}
+                      className={`transition-colors ${
+                        tx.type === "INCOME"
+                          ? "border-l-4 border-l-emerald-500"
+                          : tx.type === "EXPENSE"
+                          ? "border-l-4 border-l-rose-500"
+                          : "border-l-4 border-l-cyan-500"
+                      }`}
+                    >
+                      <TableCell>
+                        {tx.type === "INCOME" && (
+                          <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold text-[10px]">
+                            Income
                           </Badge>
-                          {tx.isPending ? (
-                            <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[9px] px-1.5 py-0 gap-1 font-semibold">
-                              <Clock className="h-2.5 w-2.5" /> Pending
-                            </Badge>
-                          ) : (
-                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[9px] px-1.5 py-0 font-normal">
-                              Paid
+                        )}
+                        {tx.type === "EXPENSE" && (
+                          <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-bold text-[10px]">
+                            Expense
+                          </Badge>
+                        )}
+                        {tx.type === "TRANSFER" && (
+                          <Badge className="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 font-bold text-[10px]">
+                            Transfer
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="font-semibold text-foreground flex items-center gap-2">
+                          {tx.description}
+                          {tx.isPending && (
+                            <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] gap-1 font-semibold">
+                              <Clock className="h-3 w-3" /> Pending
                             </Badge>
                           )}
-                          <span>•</span>
-                          <span className="truncate max-w-[110px]">
-                            {tx.accountName}
-                          </span>
                         </div>
-                      </div>
-
-                      <div className="text-right shrink-0">
-                        <div
-                          className={`font-bold text-xs sm:text-sm ${
-                            tx.type === "INCOME"
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : tx.type === "EXPENSE"
-                              ? "text-rose-600 dark:text-rose-400"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {tx.type === "INCOME"
-                            ? "+"
-                            : tx.type === "EXPENSE"
-                            ? "-"
-                            : ""}
-                          {formatCurrency(tx.amount)}
-                        </div>
-                        <div className="text-[10px] text-muted-foreground font-mono">
-                          {formatDate(tx.date)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-end gap-2 pt-1.5 border-t border-slate-200/60 dark:border-zinc-800/60">
-                      {tx.isPending && (
-                        <>
-                          <Button
-                            size="sm"
-                            className="h-7 text-[10px] px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-1"
-                            onClick={() => setCollectTarget(tx)}
-                          >
-                            <Coins className="h-3 w-3" /> Collect Payment
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-[10px] px-2 text-slate-700 dark:text-zinc-300 font-semibold gap-1"
-                            onClick={() => handleTogglePendingTransaction(tx.id)}
-                          >
-                            <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Mark Paid
-                          </Button>
-                        </>
-                      )}
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 text-xs px-2 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 gap-1"
-                        onClick={() =>
-                          setDeleteTarget({ id: tx.id, name: tx.description })
-                        }
-                      >
-                        <Trash2 className="h-3 w-3" /> Delete
-                      </Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Desktop Table View (hidden md:block) */}
-              <div className="hidden md:block">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-24">Type</TableHead>
-                      <TableHead>Description</TableHead>
-                      <TableHead>Category</TableHead>
-                      <TableHead>Account</TableHead>
-                      <TableHead>Date</TableHead>
-                      <TableHead className="text-right">Amount</TableHead>
-                      <TableHead className="w-48 text-right">Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredTransactions.map((tx) => (
-                      <TableRow
-                        key={tx.id}
-                        className={`transition-colors ${
+                        {tx.payee ? (
+                          <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
+                            <Store className="h-3 w-3 shrink-0" /> Payee / Merchant: {tx.payee}
+                          </div>
+                        ) : (
+                          <div className="text-xs text-muted-foreground italic mt-0.5">
+                            No payee specified
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="text-xs">
+                          {tx.categoryName || "General"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground">
+                        {tx.accountName}
+                      </TableCell>
+                      <TableCell className="text-xs text-muted-foreground font-mono">
+                        {formatDate(tx.date)}
+                      </TableCell>
+                      <TableCell
+                        className={`text-right font-bold text-sm ${
                           tx.type === "INCOME"
-                            ? "border-l-4 border-l-emerald-500"
+                            ? "text-emerald-600 dark:text-emerald-400"
                             : tx.type === "EXPENSE"
-                            ? "border-l-4 border-l-rose-500"
-                            : "border-l-4 border-l-cyan-500"
+                            ? "text-rose-600 dark:text-rose-400"
+                            : "text-foreground"
                         }`}
                       >
-                        <TableCell>
-                          {tx.type === "INCOME" && (
-                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold text-[10px]">
-                              Income
-                            </Badge>
-                          )}
-                          {tx.type === "EXPENSE" && (
-                            <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-bold text-[10px]">
-                              Expense
-                            </Badge>
-                          )}
-                          {tx.type === "TRANSFER" && (
-                            <Badge className="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 font-bold text-[10px]">
-                              Transfer
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-semibold text-foreground flex items-center gap-2">
-                            {tx.description}
-                            {tx.isPending && (
-                              <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] gap-1 font-semibold">
-                                <Clock className="h-3 w-3" /> Pending
-                              </Badge>
-                            )}
-                          </div>
-                          {tx.payee && (
-                            <div className="text-xs text-muted-foreground">
-                              {tx.payee}
-                            </div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="secondary" className="text-xs">
-                            {tx.categoryName || "General"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {tx.accountName}
-                        </TableCell>
-                        <TableCell className="text-xs text-muted-foreground">
-                          {formatDate(tx.date)}
-                        </TableCell>
-                        <TableCell
-                          className={`text-right font-bold text-sm ${
-                            tx.type === "INCOME"
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : tx.type === "EXPENSE"
-                              ? "text-rose-600 dark:text-rose-400"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {tx.type === "INCOME"
-                            ? "+"
-                            : tx.type === "EXPENSE"
-                            ? "-"
-                            : ""}
-                          {formatCurrency(tx.amount)}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-1.5">
-                            {tx.isPending ? (
-                              <>
-                                <Button
-                                  size="sm"
-                                  className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-1 px-2.5"
-                                  onClick={() => setCollectTarget(tx)}
-                                >
-                                  <Coins className="h-3.5 w-3.5" /> Collect
-                                </Button>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-7 text-xs font-semibold gap-1 px-2"
-                                  onClick={() =>
-                                    handleTogglePendingTransaction(tx.id)
-                                  }
-                                >
-                                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
-                                  Full Paid
-                                </Button>
-                              </>
-                            ) : (
+                        {tx.type === "INCOME"
+                          ? "+"
+                          : tx.type === "EXPENSE"
+                          ? "-"
+                          : ""}
+                        {formatCurrency(tx.amount)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end gap-1.5">
+                          {tx.isPending ? (
+                            <>
                               <Button
-                                variant="ghost"
                                 size="sm"
-                                className="h-7 text-[11px] text-muted-foreground hover:text-amber-500"
+                                className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-1 px-2.5"
+                                onClick={() => setCollectTarget(tx)}
+                              >
+                                <Coins className="h-3.5 w-3.5" /> Collect
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 text-xs font-semibold gap-1 px-2"
                                 onClick={() =>
                                   handleTogglePendingTransaction(tx.id)
                                 }
-                                title="Revert to Pending"
                               >
-                                Unpay
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                                Full Paid
                               </Button>
-                            )}
+                            </>
+                          ) : (
                             <Button
                               variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
+                              size="sm"
+                              className="h-7 text-[11px] text-muted-foreground hover:text-amber-500"
                               onClick={() =>
-                                setDeleteTarget({
-                                  id: tx.id,
-                                  name: tx.description,
-                                })
+                                handleTogglePendingTransaction(tx.id)
                               }
+                              title="Revert to Pending"
                             >
-                              <Trash2 className="h-4 w-4" />
+                              Unpay
                             </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
+                            onClick={() =>
+                              setDeleteTarget({
+                                id: tx.id,
+                                name: tx.description,
+                              })
+                            }
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           )}
         </CardContent>
       </Card>

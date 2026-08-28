@@ -9,7 +9,9 @@ import {
   ArrowDownLeft,
   PieChart as PieChartIcon,
   Plus,
+  Store,
 } from "lucide-react";
+import { TransactionCard } from "./TransactionCard";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -376,45 +378,14 @@ export function OverviewTab() {
             ) : (
               <>
                 {/* Mobile View */}
-                <div className="block md:hidden space-y-2.5">
+                <div className="block md:hidden space-y-3">
                   {transactions.slice(0, 5).map((tx) => (
-                    <div
+                    <TransactionCard
                       key={tx.id}
-                      className="p-3 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 flex items-center justify-between gap-3"
-                    >
-                      <div className="min-w-0">
-                        <div className="font-semibold text-xs sm:text-sm text-foreground truncate">
-                          {tx.description}
-                        </div>
-                        <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground">
-                          <Badge
-                            variant="secondary"
-                            className="text-[9px] px-1.5 py-0"
-                          >
-                            {tx.categoryName || "General"}
-                          </Badge>
-                          <span>•</span>
-                          <span className="truncate">
-                            {tx.accountName || "Account"}
-                          </span>
-                        </div>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <div
-                          className={`font-bold text-xs sm:text-sm ${
-                            tx.type === "INCOME"
-                              ? "text-emerald-600 dark:text-emerald-400"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {tx.type === "INCOME" ? "+" : "-"}
-                          {formatCurrency(tx.amount)}
-                        </div>
-                        <div className="text-[10px] text-muted-foreground font-mono">
-                          {formatDate(tx.date)}
-                        </div>
-                      </div>
-                    </div>
+                      transaction={tx}
+                      showActions={false}
+                      compact={true}
+                    />
                   ))}
                 </div>
 
@@ -423,7 +394,7 @@ export function OverviewTab() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Description</TableHead>
+                        <TableHead>Description & Payee</TableHead>
                         <TableHead>Account</TableHead>
                         <TableHead>Category</TableHead>
                         <TableHead>Date</TableHead>
@@ -434,11 +405,11 @@ export function OverviewTab() {
                       {transactions.slice(0, 5).map((tx) => (
                         <TableRow key={tx.id}>
                           <TableCell className="font-semibold text-foreground">
-                            {tx.description}
+                            <div>{tx.description}</div>
                             {tx.payee && (
-                              <span className="block text-[11px] text-muted-foreground font-normal">
-                                {tx.payee}
-                              </span>
+                              <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
+                                <Store className="h-3 w-3 shrink-0" /> Payee / Merchant: {tx.payee}
+                              </div>
                             )}
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
