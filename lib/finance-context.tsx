@@ -46,6 +46,11 @@ interface FinanceContextType {
   handleAddGoal: (newG: Omit<GoalItem, "id">) => Promise<void>;
   handleUpdateGoalDeposit: (goalId: string, amount: number) => Promise<void>;
   handleTogglePendingTransaction: (id: string) => Promise<void>;
+  handlePartialCollectTransaction: (
+    id: string,
+    amountCollected: number,
+    accountId: string
+  ) => Promise<void>;
 }
 
 const DEFAULT_FINANCE_CONTEXT: FinanceContextType = {
@@ -78,6 +83,7 @@ const DEFAULT_FINANCE_CONTEXT: FinanceContextType = {
   handleAddGoal: async () => {},
   handleUpdateGoalDeposit: async () => {},
   handleTogglePendingTransaction: async () => {},
+  handlePartialCollectTransaction: async () => {},
 };
 
 const FinanceContext = createContext<FinanceContextType>(DEFAULT_FINANCE_CONTEXT);
@@ -212,6 +218,18 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     await executeDbAction("TOGGLE_PENDING_TRANSACTION", { id });
   };
 
+  const handlePartialCollectTransaction = async (
+    id: string,
+    amountCollected: number,
+    accountId: string
+  ) => {
+    await executeDbAction("PARTIAL_COLLECT_TRANSACTION", {
+      id,
+      amountCollected,
+      accountId,
+    });
+  };
+
   // If database fails, render Database Error screen
   if (dbError) {
     return (
@@ -270,6 +288,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         handleAddGoal,
         handleUpdateGoalDeposit,
         handleTogglePendingTransaction,
+        handlePartialCollectTransaction,
       }}
     >
       {children}

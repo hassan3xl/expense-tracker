@@ -4,12 +4,10 @@ import React, { useState } from "react";
 import {
   Search,
   Plus,
-  ArrowUpRight,
-  ArrowDownLeft,
   Trash2,
-  RefreshCw,
   Clock,
   CheckCircle2,
+  Coins,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
@@ -35,6 +33,8 @@ import { PageHeader } from "../ui/page-header";
 import { useFinance } from "@/lib/finance-context";
 import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
+import { CollectPaymentModal } from "@/components/modals/CollectPaymentModal";
+import { TransactionItem } from "@/lib/mock-data";
 
 export function TransactionsTab() {
   const {
@@ -43,6 +43,7 @@ export function TransactionsTab() {
     setIsAddTransactionOpen,
     handleDeleteTransaction,
     handleTogglePendingTransaction,
+    handlePartialCollectTransaction,
     isInitialized,
   } = useFinance();
 
@@ -50,6 +51,8 @@ export function TransactionsTab() {
     id: string;
     name: string;
   } | null>(null);
+
+  const [collectTarget, setCollectTarget] = useState<TransactionItem | null>(null);
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
@@ -64,6 +67,7 @@ export function TransactionsTab() {
     .filter((tx) => tx.isPending && tx.type === "INCOME")
     .reduce((sum, tx) => sum + tx.amount, 0);
 
+  // Filter and sort transactions strictly most recent first
   const filteredTransactions = transactions
     .filter((tx) => {
       const matchesSearch =
@@ -82,7 +86,12 @@ export function TransactionsTab() {
 
       return matchesSearch && matchesType && matchesAccount && matchesStatus;
     })
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort((a, b) => {
+      const timeA = new Date(a.date).getTime();
+      const timeB = new Date(b.date).getTime();
+      if (timeB !== timeA) return timeB - timeA;
+      return (b.id || "").localeCompare(a.id || "");
+    });
 
   return (
     <div className="space-y-4 sm:space-y-6">
@@ -183,7 +192,7 @@ export function TransactionsTab() {
                 <span className="font-bold text-amber-600 dark:text-amber-400">
                   {formatCurrency(pendingIncomeTotal)}
                 </span>
-                . Click "Mark as Paid" on a transaction when funds arrive.
+                . Collect payments partially or mark as paid as funds arrive.
               </p>
             </div>
           </div>
@@ -213,52 +222,39 @@ export function TransactionsTab() {
                 {filteredTransactions.map((tx) => (
                   <div
                     key={tx.id}
-                    className="p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 space-y-2.5"
+                    className={`p-3.5 rounded-xl bg-slate-50 dark:bg-zinc-950/60 border border-slate-200 dark:border-zinc-800/80 space-y-2.5 ${
+                      tx.type === "INCOME"
+                        ? "border-l-[5px] border-l-emerald-500 dark:border-l-emerald-400"
+                        : tx.type === "EXPENSE"
+                        ? "border-l-[5px] border-l-rose-500 dark:border-l-rose-400"
+                        : "border-l-[5px] border-l-cyan-500 dark:border-l-cyan-400"
+                    }`}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2.5 min-w-0 flex-1">
-                        <div className="h-9 w-9 rounded-xl flex-shrink-0 flex items-center justify-center">
-                          {tx.type === "INCOME" && (
-                            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
-                              <ArrowDownLeft className="h-4 w-4" />
-                            </div>
-                          )}
-                          {tx.type === "EXPENSE" && (
-                            <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500 dark:text-rose-400 border border-rose-500/20">
-                              <ArrowUpRight className="h-4 w-4" />
-                            </div>
-                          )}
-                          {tx.type === "TRANSFER" && (
-                            <div className="h-8 w-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-500 dark:text-cyan-400 border border-cyan-500/20">
-                              <RefreshCw className="h-4 w-4" />
-                            </div>
-                          )}
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="font-bold text-xs sm:text-sm text-foreground truncate">
+                          {tx.description}
                         </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="font-semibold text-xs sm:text-sm text-foreground truncate">
-                            {tx.description}
-                          </div>
-                          <div className="flex items-center gap-1.5 mt-0.5 text-[10px] text-muted-foreground flex-wrap">
-                            <Badge
-                              variant="secondary"
-                              className="text-[9px] px-1.5 py-0 font-normal"
-                            >
-                              {tx.categoryName}
+                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground flex-wrap">
+                          <Badge
+                            variant="secondary"
+                            className="text-[9px] px-1.5 py-0 font-normal"
+                          >
+                            {tx.categoryName || "General"}
+                          </Badge>
+                          {tx.isPending ? (
+                            <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[9px] px-1.5 py-0 gap-1 font-semibold">
+                              <Clock className="h-2.5 w-2.5" /> Pending
                             </Badge>
-                            {tx.isPending ? (
-                              <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[9px] px-1.5 py-0 gap-1 font-semibold">
-                                <Clock className="h-2.5 w-2.5" /> Pending
-                              </Badge>
-                            ) : (
-                              <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[9px] px-1.5 py-0 font-normal">
-                                Paid
-                              </Badge>
-                            )}
-                            <span>•</span>
-                            <span className="truncate max-w-[100px]">
-                              {tx.accountName}
-                            </span>
-                          </div>
+                          ) : (
+                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[9px] px-1.5 py-0 font-normal">
+                              Paid
+                            </Badge>
+                          )}
+                          <span>•</span>
+                          <span className="truncate max-w-[110px]">
+                            {tx.accountName}
+                          </span>
                         </div>
                       </div>
 
@@ -267,10 +263,16 @@ export function TransactionsTab() {
                           className={`font-bold text-xs sm:text-sm ${
                             tx.type === "INCOME"
                               ? "text-emerald-600 dark:text-emerald-400"
+                              : tx.type === "EXPENSE"
+                              ? "text-rose-600 dark:text-rose-400"
                               : "text-foreground"
                           }`}
                         >
-                          {tx.type === "INCOME" ? "+" : "-"}
+                          {tx.type === "INCOME"
+                            ? "+"
+                            : tx.type === "EXPENSE"
+                            ? "-"
+                            : ""}
                           {formatCurrency(tx.amount)}
                         </div>
                         <div className="text-[10px] text-muted-foreground font-mono">
@@ -281,13 +283,23 @@ export function TransactionsTab() {
 
                     <div className="flex items-center justify-end gap-2 pt-1.5 border-t border-slate-200/60 dark:border-zinc-800/60">
                       {tx.isPending && (
-                        <Button
-                          size="sm"
-                          className="h-7 text-[10px] px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1"
-                          onClick={() => handleTogglePendingTransaction(tx.id)}
-                        >
-                          <CheckCircle2 className="h-3 w-3" /> Mark Paid
-                        </Button>
+                        <>
+                          <Button
+                            size="sm"
+                            className="h-7 text-[10px] px-2.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-1"
+                            onClick={() => setCollectTarget(tx)}
+                          >
+                            <Coins className="h-3 w-3" /> Collect Payment
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-7 text-[10px] px-2 text-slate-700 dark:text-zinc-300 font-semibold gap-1"
+                            onClick={() => handleTogglePendingTransaction(tx.id)}
+                          >
+                            <CheckCircle2 className="h-3 w-3 text-emerald-500" /> Mark Paid
+                          </Button>
+                        </>
                       )}
 
                       <Button
@@ -310,33 +322,42 @@ export function TransactionsTab() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Type</TableHead>
+                      <TableHead className="w-24">Type</TableHead>
                       <TableHead>Description</TableHead>
                       <TableHead>Category</TableHead>
                       <TableHead>Account</TableHead>
                       <TableHead>Date</TableHead>
                       <TableHead className="text-right">Amount</TableHead>
-                      <TableHead className="w-12"></TableHead>
+                      <TableHead className="w-48 text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filteredTransactions.map((tx) => (
-                      <TableRow key={tx.id}>
+                      <TableRow
+                        key={tx.id}
+                        className={`transition-colors ${
+                          tx.type === "INCOME"
+                            ? "border-l-4 border-l-emerald-500"
+                            : tx.type === "EXPENSE"
+                            ? "border-l-4 border-l-rose-500"
+                            : "border-l-4 border-l-cyan-500"
+                        }`}
+                      >
                         <TableCell>
                           {tx.type === "INCOME" && (
-                            <div className="h-8 w-8 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 dark:text-emerald-400 border border-emerald-500/20">
-                              <ArrowDownLeft className="h-4 w-4" />
-                            </div>
+                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 font-bold text-[10px]">
+                              Income
+                            </Badge>
                           )}
                           {tx.type === "EXPENSE" && (
-                            <div className="h-8 w-8 rounded-lg bg-rose-500/10 flex items-center justify-center text-rose-500 dark:text-rose-400 border border-rose-500/20">
-                              <ArrowUpRight className="h-4 w-4" />
-                            </div>
+                            <Badge className="bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 font-bold text-[10px]">
+                              Expense
+                            </Badge>
                           )}
                           {tx.type === "TRANSFER" && (
-                            <div className="h-8 w-8 rounded-lg bg-cyan-500/10 flex items-center justify-center text-cyan-500 dark:text-cyan-400 border border-cyan-500/20">
-                              <RefreshCw className="h-4 w-4" />
-                            </div>
+                            <Badge className="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20 font-bold text-[10px]">
+                              Transfer
+                            </Badge>
                           )}
                         </TableCell>
                         <TableCell>
@@ -356,7 +377,7 @@ export function TransactionsTab() {
                         </TableCell>
                         <TableCell>
                           <Badge variant="secondary" className="text-xs">
-                            {tx.categoryName}
+                            {tx.categoryName || "General"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-xs text-muted-foreground">
@@ -369,25 +390,41 @@ export function TransactionsTab() {
                           className={`text-right font-bold text-sm ${
                             tx.type === "INCOME"
                               ? "text-emerald-600 dark:text-emerald-400"
+                              : tx.type === "EXPENSE"
+                              ? "text-rose-600 dark:text-rose-400"
                               : "text-foreground"
                           }`}
                         >
-                          {tx.type === "INCOME" ? "+" : "-"}
+                          {tx.type === "INCOME"
+                            ? "+"
+                            : tx.type === "EXPENSE"
+                            ? "-"
+                            : ""}
                           {formatCurrency(tx.amount)}
                         </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1">
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1.5">
                             {tx.isPending ? (
-                              <Button
-                                size="sm"
-                                className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1 px-2.5"
-                                onClick={() =>
-                                  handleTogglePendingTransaction(tx.id)
-                                }
-                              >
-                                <CheckCircle2 className="h-3.5 w-3.5" /> Mark
-                                Paid
-                              </Button>
+                              <>
+                                <Button
+                                  size="sm"
+                                  className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-bold gap-1 px-2.5"
+                                  onClick={() => setCollectTarget(tx)}
+                                >
+                                  <Coins className="h-3.5 w-3.5" /> Collect
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-7 text-xs font-semibold gap-1 px-2"
+                                  onClick={() =>
+                                    handleTogglePendingTransaction(tx.id)
+                                  }
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                                  Full Paid
+                                </Button>
+                              </>
                             ) : (
                               <Button
                                 variant="ghost"
@@ -426,6 +463,16 @@ export function TransactionsTab() {
         </CardContent>
       </Card>
 
+      {/* Collect Partial/Full Payment Modal */}
+      <CollectPaymentModal
+        isOpen={Boolean(collectTarget)}
+        onClose={() => setCollectTarget(null)}
+        transaction={collectTarget}
+        accounts={accounts}
+        onConfirm={handlePartialCollectTransaction}
+      />
+
+      {/* Delete Confirmation Modal */}
       <ConfirmDeleteModal
         isOpen={Boolean(deleteTarget)}
         onClose={() => setDeleteTarget(null)}

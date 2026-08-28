@@ -203,6 +203,73 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true });
       }
 
+      case "PARTIAL_COLLECT_TRANSACTION": {
+        const { id, amountCollected, accountId } = payload;
+        const existingTx = await db.transaction.findUnique({
+          where: { id },
+        });
+
+        if (!existingTx || existingTx.userId !== dbUser.id) {
+          return NextResponse.json({ error: "Transaction not found" }, { status: 404 });
+        }
+
+        const collectAmount = Math.abs(parseFloat(amountCollected) || 0);
+        if (collectAmount <= 0) {
+          return NextResponse.json(
+            { error: "Invalid collection amount" },
+            { status: 400 }
+          );
+        }
+
+        const targetAccId = accountId || existingTx.accountId;
+        const remainingAfter = Math.max(0, existingTx.amount - collectAmount);
+        const isFullyPaid = remainingAfter <= 0.001;
+
+        await db.$transaction(async (tx) => {
+          // 1. Create a completed Income transaction entry for the collected amount
+          await tx.transaction.create({
+            data: {
+              userId: dbUser.id,
+              accountId: targetAccId,
+              categoryId: existingTx.categoryId,
+              amount: collectAmount,
+              type: "INCOME",
+              description: `Collected Payment: ${existingTx.description}`,
+              date: new Date(),
+              payee: existingTx.payee || null,
+              isPending: false,
+            },
+          });
+
+          // 2. Increment target account balance by collected amount
+          await tx.account.update({
+            where: { id: targetAccId },
+            data: { balance: { increment: collectAmount } },
+          });
+
+          // 3. Update or clear the original pending transaction
+          if (isFullyPaid) {
+            await tx.transaction.update({
+              where: { id },
+              data: {
+                amount: 0,
+                isPending: false,
+              },
+            });
+          } else {
+            await tx.transaction.update({
+              where: { id },
+              data: {
+                amount: remainingAfter,
+                isPending: true,
+              },
+            });
+          }
+        });
+
+        return NextResponse.json({ success: true });
+      }
+
       case "DELETE_TRANSACTION": {
         const { id } = payload;
         const existingTx = await db.transaction.findUnique({
