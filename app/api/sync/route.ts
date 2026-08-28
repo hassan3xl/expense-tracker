@@ -53,7 +53,7 @@ export async function GET() {
               {
                 name: "Main Checking",
                 type: "CHECKING",
-                balance: 250000.0,
+                balance: 0.0,
                 currency: "NGN",
                 accountNumber: "*4921",
                 color: "#10b981",
@@ -62,7 +62,7 @@ export async function GET() {
               {
                 name: "High-Yield Savings",
                 type: "SAVINGS",
-                balance: 1200000.0,
+                balance: 0.0,
                 currency: "NGN",
                 accountNumber: "*8832",
                 color: "#6366f1",

@@ -50,7 +50,7 @@ export function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
   const SidebarContent = (
     <div className="flex flex-col h-full p-4 sm:p-5">
       {/* Brand Header */}
-      <div className="flex items-center justify-between px-2 py-3.5 mb-4 border-b border-border/60">
+      <div className="flex items-center justify-between px-2 py-1 mb-4 border-b border-border/60">
         <div>
           <h1 className="font-extrabold text-xl tracking-tight text-foreground flex items-center gap-1.5">
             Finance
@@ -130,7 +130,7 @@ export function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
   return (
     <>
       {/* Desktop Persistent Solid Sidebar */}
-      <aside className="w-64 shrink-0 hidden lg:flex flex-col border-r border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 min-h-screen transition-colors">
+      <aside className="w-74 shrink-0 hidden lg:flex flex-col border-r border-slate-200 dark:border-zinc-800/80 bg-white dark:bg-zinc-950 h-screen sticky top-0 overflow-hidden transition-colors">
         {SidebarContent}
       </aside>
 
