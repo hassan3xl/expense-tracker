@@ -56,7 +56,8 @@ model Account {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
-  transactions Transaction[]
+  transfersFrom Transaction[] @relation("TransferFromAccount")
+  transfersTo   Transaction[] @relation("TransferToAccount")
 
   @@index([userId])
 }
@@ -84,7 +85,9 @@ model Transaction {
   userId       String
   user         User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   accountId    String
-  account      Account         @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  account      Account         @relation("TransferFromAccount", fields: [accountId], references: [id], onDelete: Cascade)
+  toAccountId  String?
+  toAccount    Account?        @relation("TransferToAccount", fields: [toAccountId], references: [id], onDelete: SetNull)
   categoryId   String?
   category     Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
   
@@ -101,6 +104,7 @@ model Transaction {
 
   @@index([userId])
   @@index([accountId])
+  @@index([toAccountId])
   @@index([categoryId])
   @@index([date])
 }

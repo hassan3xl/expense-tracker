@@ -95,46 +95,35 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
-  // Load per-user isolated data on user change
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-
+  // Fetch cloud database data on mount or when user changes
+  const fetchDbData = async () => {
     try {
-      const storedAccounts = localStorage.getItem(`finance_tracker_${userId}_accounts`);
-      const storedCategories = localStorage.getItem(`finance_tracker_${userId}_categories`);
-      const storedTransactions = localStorage.getItem(`finance_tracker_${userId}_transactions`);
-      const storedBudgets = localStorage.getItem(`finance_tracker_${userId}_budgets`);
-      const storedGoals = localStorage.getItem(`finance_tracker_${userId}_goals`);
-
-      setAccounts(storedAccounts ? JSON.parse(storedAccounts) : INITIAL_ACCOUNTS);
-      setCategories(storedCategories ? JSON.parse(storedCategories) : INITIAL_CATEGORIES);
-      setTransactions(storedTransactions ? JSON.parse(storedTransactions) : INITIAL_TRANSACTIONS);
-      setBudgets(storedBudgets ? JSON.parse(storedBudgets) : INITIAL_BUDGETS);
-      setGoals(storedGoals ? JSON.parse(storedGoals) : INITIAL_GOALS);
+      const res = await fetch("/api/sync");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.accounts) setAccounts(data.accounts);
+        if (data.categories) setCategories(data.categories);
+        if (data.transactions) setTransactions(data.transactions);
+        if (data.budgets) setBudgets(data.budgets);
+        if (data.goals) setGoals(data.goals);
+      }
     } catch (e) {
-      console.error("Failed to load user storage:", e);
+      console.error("Failed to fetch cloud database sync:", e);
     } finally {
       setIsInitialized(true);
     }
-  }, [userId]);
+  };
 
-  // Persist user isolated data whenever state updates
   useEffect(() => {
-    if (!isInitialized || typeof window === "undefined") return;
-
-    try {
-      localStorage.setItem(`finance_tracker_${userId}_accounts`, JSON.stringify(accounts));
-      localStorage.setItem(`finance_tracker_${userId}_categories`, JSON.stringify(categories));
-      localStorage.setItem(`finance_tracker_${userId}_transactions`, JSON.stringify(transactions));
-      localStorage.setItem(`finance_tracker_${userId}_budgets`, JSON.stringify(budgets));
-      localStorage.setItem(`finance_tracker_${userId}_goals`, JSON.stringify(goals));
-    } catch (e) {
-      console.error("Failed to persist user storage:", e);
+    if (user) {
+      fetchDbData();
+    } else {
+      setIsInitialized(true);
     }
-  }, [accounts, categories, transactions, budgets, goals, userId, isInitialized]);
+  }, [user?.id]);
 
-  // Actions
-  const handleAddTransaction = (newTx: Omit<TransactionItem, "id">) => {
+  // Actions with DB persistence
+  const handleAddTransaction = async (newTx: Omit<TransactionItem, "id">) => {
     const txId = `tx-${Date.now()}`;
     const tx: TransactionItem = { id: txId, ...newTx };
     setTransactions((prev) => [tx, ...prev]);
@@ -169,9 +158,20 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         })
       );
     }
+
+    try {
+      await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "ADD_TRANSACTION", payload: newTx }),
+      });
+      fetchDbData();
+    } catch (err) {
+      console.error("Sync action failed:", err);
+    }
   };
 
-  const handleDeleteTransaction = (id: string) => {
+  const handleDeleteTransaction = async (id: string) => {
     const tx = transactions.find((t) => t.id === id);
     if (!tx) return;
 
@@ -196,39 +196,116 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         return acc;
       })
     );
+
+    try {
+      await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "DELETE_TRANSACTION", payload: { id } }),
+      });
+      fetchDbData();
+    } catch (err) {
+      console.error("Sync action failed:", err);
+    }
   };
 
-  const handleAddCategory = (newCat: Omit<CategoryItem, "id">) => {
+  const handleAddCategory = async (newCat: Omit<CategoryItem, "id">) => {
     const cat: CategoryItem = { id: `cat-${Date.now()}`, ...newCat };
     setCategories((prev) => [...prev, cat]);
+
+    try {
+      await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "ADD_CATEGORY", payload: newCat }),
+      });
+      fetchDbData();
+    } catch (err) {
+      console.error("Sync action failed:", err);
+    }
   };
 
-  const handleEditCategory = (id: string, updated: Partial<CategoryItem>) => {
+  const handleEditCategory = async (id: string, updated: Partial<CategoryItem>) => {
     setCategories((prev) =>
       prev.map((c) => (c.id === id ? { ...c, ...updated } : c))
     );
+
+    try {
+      await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "EDIT_CATEGORY", payload: { id, ...updated } }),
+      });
+      fetchDbData();
+    } catch (err) {
+      console.error("Sync action failed:", err);
+    }
   };
 
-  const handleDeleteCategory = (id: string) => {
+  const handleDeleteCategory = async (id: string) => {
     setCategories((prev) => prev.filter((c) => c.id !== id));
+
+    try {
+      await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "DELETE_CATEGORY", payload: { id } }),
+      });
+      fetchDbData();
+    } catch (err) {
+      console.error("Sync action failed:", err);
+    }
   };
 
-  const handleAddAccount = (newAcc: Omit<AccountItem, "id">) => {
+  const handleAddAccount = async (newAcc: Omit<AccountItem, "id">) => {
     const acc: AccountItem = { id: `acc-${Date.now()}`, ...newAcc };
     setAccounts((prev) => [...prev, acc]);
+
+    try {
+      await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "ADD_ACCOUNT", payload: newAcc }),
+      });
+      fetchDbData();
+    } catch (err) {
+      console.error("Sync action failed:", err);
+    }
   };
 
-  const handleAddBudget = (newB: Omit<BudgetItem, "id">) => {
+  const handleAddBudget = async (newB: Omit<BudgetItem, "id">) => {
     const b: BudgetItem = { id: `b-${Date.now()}`, ...newB };
     setBudgets((prev) => [...prev, b]);
+
+    try {
+      await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "ADD_BUDGET", payload: newB }),
+      });
+      fetchDbData();
+    } catch (err) {
+      console.error("Sync action failed:", err);
+    }
   };
 
-  const handleAddGoal = (newG: Omit<GoalItem, "id">) => {
+  const handleAddGoal = async (newG: Omit<GoalItem, "id">) => {
     const g: GoalItem = { id: `g-${Date.now()}`, ...newG };
     setGoals((prev) => [...prev, g]);
+
+    try {
+      await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "ADD_GOAL", payload: newG }),
+      });
+      fetchDbData();
+    } catch (err) {
+      console.error("Sync action failed:", err);
+    }
   };
 
-  const handleUpdateGoalDeposit = (goalId: string, amount: number) => {
+  const handleUpdateGoalDeposit = async (goalId: string, amount: number) => {
     setGoals((prev) =>
       prev.map((g) => {
         if (g.id === goalId) {
@@ -237,6 +314,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         return g;
       })
     );
+
+    try {
+      await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "UPDATE_GOAL_DEPOSIT", payload: { goalId, amount } }),
+      });
+      fetchDbData();
+    } catch (err) {
+      console.error("Sync action failed:", err);
+    }
   };
 
   return (
