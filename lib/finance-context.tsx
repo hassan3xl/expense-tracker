@@ -40,9 +40,12 @@ interface FinanceContextType {
   handleEditCategory: (id: string, updated: Partial<CategoryItem>) => Promise<void>;
   handleDeleteCategory: (id: string) => Promise<void>;
   handleAddAccount: (newAcc: Omit<AccountItem, "id">) => Promise<void>;
+  handleEditAccount: (id: string, updated: Partial<AccountItem>) => Promise<void>;
+  handleDeleteAccount: (id: string) => Promise<void>;
   handleAddBudget: (newB: Omit<BudgetItem, "id">) => Promise<void>;
   handleAddGoal: (newG: Omit<GoalItem, "id">) => Promise<void>;
   handleUpdateGoalDeposit: (goalId: string, amount: number) => Promise<void>;
+  handleTogglePendingTransaction: (id: string) => Promise<void>;
 }
 
 const DEFAULT_FINANCE_CONTEXT: FinanceContextType = {
@@ -69,9 +72,12 @@ const DEFAULT_FINANCE_CONTEXT: FinanceContextType = {
   handleEditCategory: async () => {},
   handleDeleteCategory: async () => {},
   handleAddAccount: async () => {},
+  handleEditAccount: async () => {},
+  handleDeleteAccount: async () => {},
   handleAddBudget: async () => {},
   handleAddGoal: async () => {},
   handleUpdateGoalDeposit: async () => {},
+  handleTogglePendingTransaction: async () => {},
 };
 
 const FinanceContext = createContext<FinanceContextType>(DEFAULT_FINANCE_CONTEXT);
@@ -134,21 +140,28 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
   // Action helpers that talk directly to PostgreSQL database
   const executeDbAction = async (action: string, payload: any) => {
-    const res = await fetch("/api/sync/action", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ action, payload }),
-    });
+    try {
+      const res = await fetch("/api/sync/action", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action, payload }),
+      });
 
-    if (!res.ok) {
-      const errJson = await res.json().catch(() => ({}));
-      const errorMsg = errJson.error || `PostgreSQL database action ${action} failed`;
-      setDbError(errorMsg);
-      throw new Error(errorMsg);
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        const errorMsg = errJson.error || `PostgreSQL database action ${action} failed`;
+        console.error(`DB Action Error [${action}]:`, errorMsg);
+        if (res.status === 503) {
+          setDbError(errorMsg);
+        }
+        return;
+      }
+
+      // Refresh state from DB to reflect exact database state
+      await fetchDbData();
+    } catch (err: any) {
+      console.error(`Failed to execute DB action [${action}]:`, err);
     }
-
-    // Refresh state from DB to reflect exact database state
-    await fetchDbData();
   };
 
   const handleAddTransaction = async (newTx: Omit<TransactionItem, "id">) => {
@@ -175,6 +188,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     await executeDbAction("ADD_ACCOUNT", newAcc);
   };
 
+  const handleEditAccount = async (id: string, updated: Partial<AccountItem>) => {
+    await executeDbAction("EDIT_ACCOUNT", { id, ...updated });
+  };
+
+  const handleDeleteAccount = async (id: string) => {
+    await executeDbAction("DELETE_ACCOUNT", { id });
+  };
+
   const handleAddBudget = async (newB: Omit<BudgetItem, "id">) => {
     await executeDbAction("ADD_BUDGET", newB);
   };
@@ -185,6 +206,10 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
 
   const handleUpdateGoalDeposit = async (goalId: string, amount: number) => {
     await executeDbAction("UPDATE_GOAL_DEPOSIT", { goalId, amount });
+  };
+
+  const handleTogglePendingTransaction = async (id: string) => {
+    await executeDbAction("TOGGLE_PENDING_TRANSACTION", { id });
   };
 
   // If database fails, render Database Error screen
@@ -239,9 +264,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         handleEditCategory,
         handleDeleteCategory,
         handleAddAccount,
+        handleEditAccount,
+        handleDeleteAccount,
         handleAddBudget,
         handleAddGoal,
         handleUpdateGoalDeposit,
+        handleTogglePendingTransaction,
       }}
     >
       {children}

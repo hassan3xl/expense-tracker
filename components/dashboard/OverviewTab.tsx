@@ -158,9 +158,6 @@ export function OverviewTab() {
               {formatCurrency(totalNetWorth)}
             </div>
             <div className="flex items-center gap-1.5 mt-2">
-              <Badge variant="income" className="gap-1 text-[11px] py-0">
-                <TrendingUp className="h-3 w-3" /> Live
-              </Badge>
               <span className="text-[11px] text-muted-foreground">
                 Total account balance
               </span>
@@ -268,7 +265,12 @@ export function OverviewTab() {
                   fontSize={12}
                   tickLine={false}
                 />
-                <YAxis stroke="currentColor" className="text-muted-foreground text-xs" fontSize={12} tickLine={false} />
+                <YAxis
+                  stroke="currentColor"
+                  className="text-muted-foreground text-xs"
+                  fontSize={12}
+                  tickLine={false}
+                />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "var(--card)",
@@ -298,7 +300,9 @@ export function OverviewTab() {
         <Card className="glass-card flex flex-col">
           <CardHeader>
             <CardTitle className="text-base">Spending Breakdown</CardTitle>
-            <p className="text-xs text-muted-foreground">Top categories this month</p>
+            <p className="text-xs text-muted-foreground">
+              Top categories this month
+            </p>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col justify-center items-center">
             {categoryBreakdown.length === 0 ? (

@@ -8,6 +8,8 @@ import {
   ArrowDownLeft,
   Trash2,
   RefreshCw,
+  Clock,
+  CheckCircle2,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
@@ -23,9 +25,9 @@ import {
 import {
   Table,
   TableHeader,
-  TableBody,
   TableRow,
   TableHead,
+  TableBody,
   TableCell,
 } from "../ui/table";
 import { formatCurrency, formatDate } from "../../lib/utils";
@@ -40,18 +42,24 @@ export function TransactionsTab() {
     accounts = [],
     setIsAddTransactionOpen,
     handleDeleteTransaction,
+    handleTogglePendingTransaction,
     isInitialized,
   } = useFinance();
 
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string } | null>(null);
 
+  const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("ALL");
+  const [accountFilter, setAccountFilter] = useState<string>("ALL");
+  const [statusFilter, setStatusFilter] = useState<string>("ALL");
+
   if (!isInitialized) {
     return <DashboardSkeleton />;
   }
 
-  const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<string>("ALL");
-  const [accountFilter, setAccountFilter] = useState<string>("ALL");
+  const pendingIncomeTotal = transactions
+    .filter((tx) => tx.isPending && tx.type === "INCOME")
+    .reduce((sum, tx) => sum + tx.amount, 0);
 
   const filteredTransactions = transactions.filter((tx) => {
     const matchesSearch =
@@ -63,8 +71,12 @@ export function TransactionsTab() {
     const matchesType = typeFilter === "ALL" || tx.type === typeFilter;
     const matchesAccount =
       accountFilter === "ALL" || tx.accountId === accountFilter;
+    const matchesStatus =
+      statusFilter === "ALL" ||
+      (statusFilter === "PENDING" && tx.isPending) ||
+      (statusFilter === "CLEARED" && !tx.isPending);
 
-    return matchesSearch && matchesType && matchesAccount;
+    return matchesSearch && matchesType && matchesAccount && matchesStatus;
   });
 
   return (
@@ -126,6 +138,18 @@ export function TransactionsTab() {
               </SelectContent>
             </Select>
 
+            {/* Status selector */}
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-36 h-10 text-xs sm:text-sm">
+                <SelectValue placeholder="All Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Status</SelectItem>
+                <SelectItem value="CLEARED">Cleared / Paid</SelectItem>
+                <SelectItem value="PENDING">Pending Payment</SelectItem>
+              </SelectContent>
+            </Select>
+
             <Button
               onClick={() => setIsAddTransactionOpen(true)}
               variant="gradient"
@@ -137,6 +161,26 @@ export function TransactionsTab() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Pending Income Alert Banner */}
+      {pendingIncomeTotal > 0 && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-between gap-4 animate-in fade-in">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/30 shrink-0">
+              <Clock className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm text-foreground">Expected Pending Income</h4>
+              <p className="text-xs text-muted-foreground">
+                You have unpaid freelance jobs / invoices totaling{" "}
+                <span className="font-bold text-amber-600 dark:text-amber-400">
+                  {formatCurrency(pendingIncomeTotal)}
+                </span>. Click "Mark as Paid" on a transaction when funds arrive.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Transactions List */}
       <Card className="glass-card">
@@ -185,20 +229,29 @@ export function TransactionsTab() {
                         <div className="font-semibold text-xs sm:text-sm text-foreground truncate">
                           {tx.description}
                         </div>
-                        <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-muted-foreground flex-wrap">
                           <Badge
                             variant="secondary"
                             className="text-[9px] px-1.5 py-0 font-normal"
                           >
                             {tx.categoryName}
                           </Badge>
+                          {tx.isPending ? (
+                            <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[9px] px-1.5 py-0 gap-1 font-semibold">
+                              <Clock className="h-2.5 w-2.5" /> Pending
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 text-[9px] px-1.5 py-0 font-normal">
+                              Paid
+                            </Badge>
+                          )}
                           <span>•</span>
                           <span className="truncate">{tx.accountName}</span>
                         </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 flex-shrink-0">
+                    <div className="flex items-center gap-1.5 flex-shrink-0">
                       <div className="text-right">
                         <div
                           className={`font-bold text-xs sm:text-sm ${
@@ -214,6 +267,17 @@ export function TransactionsTab() {
                           {formatDate(tx.date)}
                         </div>
                       </div>
+
+                      {tx.isPending && (
+                        <Button
+                          size="sm"
+                          className="h-7 text-[10px] px-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1"
+                          onClick={() => handleTogglePendingTransaction(tx.id)}
+                        >
+                          <CheckCircle2 className="h-3 w-3" /> Mark Paid
+                        </Button>
+                      )}
+
                       <Button
                         variant="ghost"
                         size="icon"
@@ -262,8 +326,13 @@ export function TransactionsTab() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <div className="font-semibold text-foreground">
+                          <div className="font-semibold text-foreground flex items-center gap-2">
                             {tx.description}
+                            {tx.isPending && (
+                              <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] gap-1 font-semibold">
+                                <Clock className="h-3 w-3" /> Pending
+                              </Badge>
+                            )}
                           </div>
                           {tx.payee && (
                             <div className="text-xs text-muted-foreground">
@@ -293,14 +362,35 @@ export function TransactionsTab() {
                           {formatCurrency(tx.amount)}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
-                            onClick={() => setDeleteTarget({ id: tx.id, name: tx.description })}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
+                          <div className="flex items-center gap-1">
+                            {tx.isPending ? (
+                              <Button
+                                size="sm"
+                                className="h-7 text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold gap-1 px-2.5"
+                                onClick={() => handleTogglePendingTransaction(tx.id)}
+                              >
+                                <CheckCircle2 className="h-3.5 w-3.5" /> Mark Paid
+                              </Button>
+                            ) : (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-[11px] text-muted-foreground hover:text-amber-500"
+                                onClick={() => handleTogglePendingTransaction(tx.id)}
+                                title="Revert to Pending"
+                              >
+                                Unpay
+                              </Button>
+                            )}
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-rose-500 hover:bg-rose-500/10"
+                              onClick={() => setDeleteTarget({ id: tx.id, name: tx.description })}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}

@@ -1,14 +1,7 @@
 "use client";
 
-import React from "react";
-import {
-  Plus,
-  Wallet,
-  CreditCard,
-  Landmark,
-  TrendingUp,
-  ShieldCheck,
-} from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Wallet, Pencil } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -16,9 +9,26 @@ import { formatCurrency } from "../../lib/utils";
 import { useFinance } from "@/lib/finance-context";
 import { PageHeader } from "../ui/page-header";
 import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
+import { EditAccountModal } from "@/components/modals/EditAccountModal";
+import { ConfirmDeleteModal } from "@/components/modals/ConfirmDeleteModal";
+import { AccountItem } from "@/lib/mock-data";
 
 export function AccountsTab() {
-  const { accounts = [], setIsAddAccountOpen, isInitialized } = useFinance();
+  const {
+    accounts = [],
+    setIsAddAccountOpen,
+    handleEditAccount,
+    handleDeleteAccount,
+    isInitialized,
+  } = useFinance();
+
+  const [editingAccount, setEditingAccount] = useState<AccountItem | null>(
+    null,
+  );
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   if (!isInitialized) {
     return <DashboardSkeleton />;
@@ -49,6 +59,7 @@ export function AccountsTab() {
           </Button>
         }
       />
+
       {/* Account Overview Header Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="glass-card">
@@ -77,20 +88,10 @@ export function AccountsTab() {
             <div className="text-2xl font-extrabold text-rose-400">
               {formatCurrency(totalLiabilities)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Credit cards & loans</p>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card flex items-center justify-between p-6">
-          <div>
-            <CardTitle className="text-sm">Add New Account</CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Connect card or bank account
+            <p className="text-xs text-muted-foreground mt-1">
+              Credit cards & loans
             </p>
-          </div>
-          <Button onClick={() => setIsAddAccountOpen(true)} variant="gradient" size="sm">
-            <Plus className="h-4 w-4" /> Add Account
-          </Button>
+          </CardContent>
         </Card>
       </div>
 
@@ -101,12 +102,19 @@ export function AccountsTab() {
             <Wallet className="h-7 w-7" />
           </div>
           <div>
-            <h3 className="text-lg font-bold text-foreground">No Linked Accounts Yet</h3>
+            <h3 className="text-lg font-bold text-foreground">
+              No Accounts Found
+            </h3>
             <p className="text-xs text-muted-foreground max-w-sm mt-1">
-              Start by adding your bank account, checking, savings, cash, or credit card to track your live balance.
+              Start by adding your bank account, checking, savings, cash, or
+              credit card to track your live balance.
             </p>
           </div>
-          <Button onClick={() => setIsAddAccountOpen(true)} variant="gradient" size="sm">
+          <Button
+            onClick={() => setIsAddAccountOpen(true)}
+            variant="gradient"
+            size="sm"
+          >
             <Plus className="h-4 w-4" /> Add Your First Account
           </Button>
         </Card>
@@ -124,7 +132,7 @@ export function AccountsTab() {
               />
 
               <div>
-                <CardHeader className="flex flex-row items-center justify-between pt-6">
+                <CardHeader className="flex flex-row items-center justify-between pt-6 pb-2">
                   <div>
                     <Badge
                       variant="secondary"
@@ -134,57 +142,67 @@ export function AccountsTab() {
                     </Badge>
                     <CardTitle className="text-lg">{acc.name}</CardTitle>
                   </div>
-                  <div
-                    className="h-10 w-10 rounded-xl flex items-center justify-center border border-slate-200 dark:border-zinc-700/60"
-                    style={{
-                      backgroundColor: `${acc.color}15`,
-                      color: acc.color,
-                    }}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 px-2.5 text-xs gap-1.5 border-slate-200 dark:border-zinc-700/80 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                    onClick={() => setEditingAccount(acc)}
                   >
-                    {acc.type === "CHECKING" && <Landmark className="h-5 w-5" />}
-                    {acc.type === "SAVINGS" && <Wallet className="h-5 w-5" />}
-                    {acc.type === "CREDIT_CARD" && (
-                      <CreditCard className="h-5 w-5" />
-                    )}
-                    {acc.type === "INVESTMENT" && (
-                      <TrendingUp className="h-5 w-5" />
-                    )}
-                  </div>
+                    <Pencil className="h-3.5 w-3.5 text-slate-500 dark:text-slate-400" />{" "}
+                    Edit
+                  </Button>
                 </CardHeader>
 
-                <CardContent className="space-y-4">
+                <CardContent className="pt-2 pb-6">
                   <div>
                     <span className="text-xs text-muted-foreground font-medium">
                       Current Balance
                     </span>
                     <div
                       className={`text-2xl font-black ${
-                        acc.balance < 0 ? "text-rose-500 dark:text-rose-400" : "text-foreground"
+                        acc.balance < 0
+                          ? "text-rose-500 dark:text-rose-400"
+                          : "text-foreground"
                       }`}
                     >
                       {formatCurrency(acc.balance)}
                     </div>
                   </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-zinc-800/80 text-xs text-muted-foreground">
-                    <span>Account Number</span>
-                    <span className="font-mono text-foreground font-semibold">
-                      {acc.accountNumber || "•••• ----"}
-                    </span>
-                  </div>
                 </CardContent>
-              </div>
-
-              <div className="p-4 pt-0">
-                <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-semibold bg-emerald-500/10 p-2 rounded-lg border border-emerald-500/20">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Synchronized with
-                  User Account
-                </div>
               </div>
             </Card>
           ))}
         </div>
       )}
+
+      {/* Edit Account Modal */}
+      <EditAccountModal
+        account={editingAccount}
+        isOpen={Boolean(editingAccount)}
+        onClose={() => setEditingAccount(null)}
+        onEditAccount={(id, updated) => handleEditAccount(id, updated)}
+        onDeleteAccount={(id) => {
+          const acc = accounts.find((a) => a.id === id);
+          if (acc) {
+            setDeleteTarget({ id: acc.id, name: acc.name });
+          }
+        }}
+      />
+
+      {/* Confirm Delete Account Modal */}
+      <ConfirmDeleteModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget) {
+            handleDeleteAccount(deleteTarget.id);
+            setDeleteTarget(null);
+          }
+        }}
+        title="Delete Account"
+        description="Are you sure you want to delete this account? All associated transactions will also be permanently removed."
+        itemName={deleteTarget?.name}
+      />
     </div>
   );
 }

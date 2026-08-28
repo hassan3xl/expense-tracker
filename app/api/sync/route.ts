@@ -40,6 +40,42 @@ export async function GET() {
       },
     });
 
+    // If not found by clerkUserId, check if a user record exists with the same primary email
+    if (!dbUser && primaryEmail) {
+      const existingUserByEmail = await db.user.findUnique({
+        where: { email: primaryEmail },
+      });
+
+      if (existingUserByEmail) {
+        dbUser = await db.user.update({
+          where: { id: existingUserByEmail.id },
+          data: {
+            clerkUserId: clerkUser.id,
+            name: `${clerkUser.firstName || ""} ${clerkUser.lastName || ""}`.trim() || existingUserByEmail.name,
+            imageUrl: clerkUser.imageUrl || existingUserByEmail.imageUrl,
+          },
+          include: {
+            accounts: true,
+            categories: true,
+            transactions: {
+              include: {
+                account: true,
+                toAccount: true,
+                category: true,
+              },
+              orderBy: { date: "desc" },
+            },
+            budgets: {
+              include: {
+                category: true,
+              },
+            },
+            goals: true,
+          },
+        });
+      }
+    }
+
     // If user does not exist in DB yet, seed initial data for them
     if (!dbUser) {
       dbUser = await db.user.create({
@@ -135,6 +171,7 @@ export async function GET() {
       description: tx.description,
       date: tx.date.toISOString().split("T")[0],
       payee: tx.payee || undefined,
+      isPending: tx.isPending,
     }));
 
     const budgets = dbUser.budgets.map((b) => ({

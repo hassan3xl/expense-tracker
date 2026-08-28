@@ -98,6 +98,7 @@ model Transaction {
   payee        String?
   notes        String?
   isRecurring  Boolean         @default(false)
+  isPending    Boolean         @default(false)
   
   createdAt    DateTime        @default(now())
   updatedAt    DateTime        @updatedAt

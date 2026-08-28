@@ -32,6 +32,7 @@ export interface TransactionItem {
   date: string;
   payee?: string;
   isRecurring?: boolean;
+  isPending?: boolean;
 }
 
 export interface BudgetItem {

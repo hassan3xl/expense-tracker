@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -20,40 +20,48 @@ import {
   SelectValue,
 } from "../ui/select";
 import { AccountItem } from "../../lib/mock-data";
+import { formatCurrency } from "@/lib/utils";
+import { Trash2 } from "lucide-react";
 
-interface AddAccountModalProps {
+interface EditAccountModalProps {
+  account: AccountItem | null;
   isOpen: boolean;
   onClose: () => void;
-  onAddAccount: (acc: Omit<AccountItem, "id">) => void;
+  onEditAccount: (id: string, updated: Partial<AccountItem>) => void;
+  onDeleteAccount: (id: string) => void;
 }
 
-export function AddAccountModal({
+export function EditAccountModal({
+  account,
   isOpen,
   onClose,
-  onAddAccount,
-}: AddAccountModalProps) {
+  onEditAccount,
+  onDeleteAccount,
+}: EditAccountModalProps) {
   const [name, setName] = useState("");
   const [type, setType] = useState<AccountItem["type"]>("CHECKING");
-  const [balance, setBalance] = useState("");
   const [color, setColor] = useState("#3b82f6");
+
+  useEffect(() => {
+    if (account) {
+      setName(account.name);
+      setType(account.type);
+      setColor(account.color || "#3b82f6");
+    }
+  }, [account]);
+
+  if (!account) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
 
-    const parsedBalance = parseFloat(balance);
-    const validBalance = isNaN(parsedBalance) ? 0 : parsedBalance;
-
-    onAddAccount({
+    onEditAccount(account.id, {
       name: name.trim(),
       type,
-      balance: validBalance,
-      currency: "NGN",
       color,
     });
 
-    setName("");
-    setBalance("");
     onClose();
   };
 
@@ -61,9 +69,9 @@ export function AddAccountModal({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Add Financial Account</DialogTitle>
+          <DialogTitle>Edit Account Details</DialogTitle>
           <DialogDescription>
-            Create a new checking, savings, cash, or credit card account.
+            Update your account name, type, and accent color.
           </DialogDescription>
         </DialogHeader>
 
@@ -72,7 +80,7 @@ export function AddAccountModal({
             <div className="space-y-1.5">
               <Label>Account Name</Label>
               <Input
-                placeholder="e.g. Main Checking, Savings Vault"
+                placeholder="e.g. Main Checking"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
@@ -100,41 +108,52 @@ export function AddAccountModal({
               </div>
 
               <div className="space-y-1.5">
-                <Label>Initial Balance (₦)</Label>
+                <Label>Card Accent Color</Label>
                 <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={balance}
-                  onChange={(e) => setBalance(e.target.value)}
-                  required
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  className="h-10 p-1 cursor-pointer w-full"
                 />
               </div>
             </div>
 
-            <div className="space-y-1.5">
-              <Label>Card Accent Color</Label>
-              <Input
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="h-11 p-1 cursor-pointer w-full"
-              />
+            {/* Read-only balance display */}
+            <div className="p-3.5 rounded-xl bg-slate-100 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 space-y-1">
+              <Label className="text-xs text-muted-foreground">Current Account Balance (Read-Only)</Label>
+              <div className="text-xl font-bold font-mono text-foreground">
+                {formatCurrency(account.balance)}
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1">
+                Account balance updates automatically when you record income, expense, or transfer transactions.
+              </p>
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="flex items-center justify-between gap-2 sm:justify-between w-full">
             <Button
               type="button"
               variant="outline"
-              className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 dark:border-rose-500/30 dark:text-rose-400 font-semibold"
-              onClick={onClose}
+              className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 hover:text-rose-600 dark:border-rose-500/30 dark:text-rose-400 font-semibold gap-1.5"
+              onClick={() => {
+                onDeleteAccount(account.id);
+                onClose();
+              }}
             >
-              Cancel
+              <Trash2 className="h-4 w-4" /> Delete Account
             </Button>
-            <Button type="submit" variant="gradient">
-              Add Account
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={onClose}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" variant="gradient">
+                Save Changes
+              </Button>
+            </div>
           </DialogFooter>
         </form>
       </DialogContent>

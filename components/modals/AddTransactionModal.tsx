@@ -53,8 +53,25 @@ export function AddTransactionModal({
   const [categoryId, setCategoryId] = useState(categories[0]?.id || "");
   const [payee, setPayee] = useState("");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
+  const [isPending, setIsPending] = useState(false);
 
-  const selectedFromAccount = accounts.find((a) => a.id === accountId);
+  React.useEffect(() => {
+    if ((!accountId || !accounts.some((a) => a.id === accountId)) && accounts.length > 0) {
+      setAccountId(accounts[0].id);
+    }
+    if ((!toAccountId || !accounts.some((a) => a.id === toAccountId)) && accounts.length > 0) {
+      setToAccountId(accounts[1]?.id || accounts[0].id);
+    }
+  }, [accounts, accountId, toAccountId]);
+
+  React.useEffect(() => {
+    if ((!categoryId || !categories.some((c) => c.id === categoryId)) && categories.length > 0) {
+      setCategoryId(categories[0].id);
+    }
+  }, [categories, categoryId]);
+
+  const effectiveAccountId = accountId || accounts[0]?.id || "";
+  const selectedFromAccount = accounts.find((a) => a.id === effectiveAccountId);
   const selectedToAccount = accounts.find((a) => a.id === toAccountId);
 
   const parsedAmount = parseFloat(amount);
@@ -89,12 +106,14 @@ export function AddTransactionModal({
       description: description || (type === "TRANSFER" ? `Transfer to ${toAccount?.name || "Account"}` : "Transaction"),
       date: date || new Date().toISOString().split("T")[0],
       payee,
+      isPending,
     });
 
     // Reset fields
     setAmount("");
     setDescription("");
     setPayee("");
+    setIsPending(false);
     onClose();
   };
 
@@ -304,6 +323,26 @@ export function AddTransactionModal({
                   onChange={(e) => setDate(e.target.value)}
                 />
               </div>
+            </div>
+
+            {/* Pending Payment Toggle */}
+            <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/20 space-y-1.5">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={isPending}
+                  onChange={(e) => setIsPending(e.target.checked)}
+                  className="h-4 w-4 rounded border-amber-500/40 text-amber-600 focus:ring-amber-500 accent-amber-500 cursor-pointer"
+                />
+                <span className="text-xs font-semibold text-amber-700 dark:text-amber-300">
+                  Mark as Pending / Unpaid (Accounts Receivable)
+                </span>
+              </label>
+              <p className="text-[11px] text-amber-700/80 dark:text-amber-300/80 pl-6 leading-relaxed">
+                {isPending
+                  ? "This transaction will be recorded under Expected Income and won't affect active account balance until marked as paid."
+                  : "Check this if you haven't received payment yet (e.g. freelance work, pending invoice)."}
+              </p>
             </div>
           </div>
 
