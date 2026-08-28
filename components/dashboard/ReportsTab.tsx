@@ -20,6 +20,7 @@ import { formatCurrency, formatDate, exportToCSV } from "../../lib/utils";
 import { useFinance } from "@/lib/finance-context";
 import { PageHeader } from "../ui/page-header";
 import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
+import { toast } from "@/components/ui/sonner";
 
 export function ReportsTab() {
   const { transactions = [], isInitialized } = useFinance();
@@ -65,6 +66,7 @@ export function ReportsTab() {
       `financial_report_${startDate}_to_${endDate}.csv`,
       dataToExport,
     );
+    toast.success(`Exported ${dataToExport.length} transactions to CSV!`);
   };
 
   return (

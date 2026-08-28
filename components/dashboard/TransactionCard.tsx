@@ -159,10 +159,6 @@ export function TransactionCard({
       {/* Bottom Action Controls */}
       {showActions && (onCollect || onTogglePending || onDelete) && (
         <div className="flex items-center justify-between gap-2 pt-2.5 border-t border-slate-200/70 dark:border-zinc-800/70">
-          <div className="text-[11px] text-muted-foreground font-mono">
-            ID: <span className="uppercase">{id.slice(0, 8)}</span>
-          </div>
-
           <div className="flex items-center gap-2">
             {isPending && onCollect && (
               <Button
@@ -174,19 +170,7 @@ export function TransactionCard({
               </Button>
             )}
 
-            {isPending && onTogglePending && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 text-xs px-2.5 text-slate-700 dark:text-zinc-300 font-semibold gap-1 rounded-xl"
-                onClick={() => onTogglePending(id)}
-              >
-                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" /> Mark
-                Paid
-              </Button>
-            )}
-
-            {!isPending && onTogglePending && (
+            {/* {!isPending && onTogglePending && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -196,7 +180,7 @@ export function TransactionCard({
               >
                 Unpay
               </Button>
-            )}
+            )} */}
 
             {onDelete && (
               <Button

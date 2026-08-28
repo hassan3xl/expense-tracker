@@ -11,6 +11,7 @@ import {
 } from "./mock-data";
 import { Database, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { toast } from "@/components/ui/sonner";
 
 interface FinanceContextType {
   accounts: AccountItem[];
@@ -145,7 +146,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   }, [isLoaded, user?.id]);
 
   // Action helpers that talk directly to PostgreSQL database
-  const executeDbAction = async (action: string, payload: any) => {
+  const executeDbAction = async (action: string, payload: any): Promise<boolean> => {
     try {
       const res = await fetch("/api/sync/action", {
         method: "POST",
@@ -157,65 +158,116 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         const errJson = await res.json().catch(() => ({}));
         const errorMsg = errJson.error || `PostgreSQL database action ${action} failed`;
         console.error(`DB Action Error [${action}]:`, errorMsg);
+        toast.error(errorMsg);
         if (res.status === 503) {
           setDbError(errorMsg);
         }
-        return;
+        return false;
       }
 
       // Refresh state from DB to reflect exact database state
       await fetchDbData();
+      return true;
     } catch (err: any) {
       console.error(`Failed to execute DB action [${action}]:`, err);
+      toast.error(err.message || "An unexpected error occurred");
+      return false;
     }
   };
 
   const handleAddTransaction = async (newTx: Omit<TransactionItem, "id">) => {
-    await executeDbAction("ADD_TRANSACTION", newTx);
+    const success = await executeDbAction("ADD_TRANSACTION", newTx);
+    if (success) {
+      toast.success(
+        newTx.type === "INCOME"
+          ? "Income transaction recorded!"
+          : newTx.type === "EXPENSE"
+          ? "Expense transaction recorded!"
+          : "Transfer transaction recorded!"
+      );
+    }
   };
 
   const handleDeleteTransaction = async (id: string) => {
-    await executeDbAction("DELETE_TRANSACTION", { id });
+    const success = await executeDbAction("DELETE_TRANSACTION", { id });
+    if (success) {
+      toast.success("Transaction deleted successfully");
+    }
   };
 
   const handleAddCategory = async (newCat: Omit<CategoryItem, "id">) => {
-    await executeDbAction("ADD_CATEGORY", newCat);
+    const success = await executeDbAction("ADD_CATEGORY", newCat);
+    if (success) {
+      toast.success(`Category "${newCat.name}" created!`);
+    }
   };
 
   const handleEditCategory = async (id: string, updated: Partial<CategoryItem>) => {
-    await executeDbAction("EDIT_CATEGORY", { id, ...updated });
+    const success = await executeDbAction("EDIT_CATEGORY", { id, ...updated });
+    if (success) {
+      toast.success("Category updated successfully");
+    }
   };
 
   const handleDeleteCategory = async (id: string) => {
-    await executeDbAction("DELETE_CATEGORY", { id });
+    const success = await executeDbAction("DELETE_CATEGORY", { id });
+    if (success) {
+      toast.success("Category deleted");
+    }
   };
 
   const handleAddAccount = async (newAcc: Omit<AccountItem, "id">) => {
-    await executeDbAction("ADD_ACCOUNT", newAcc);
+    const success = await executeDbAction("ADD_ACCOUNT", newAcc);
+    if (success) {
+      toast.success(`Account "${newAcc.name}" created!`);
+    }
   };
 
   const handleEditAccount = async (id: string, updated: Partial<AccountItem>) => {
-    await executeDbAction("EDIT_ACCOUNT", { id, ...updated });
+    const success = await executeDbAction("EDIT_ACCOUNT", { id, ...updated });
+    if (success) {
+      toast.success("Account details updated");
+    }
   };
 
   const handleDeleteAccount = async (id: string) => {
-    await executeDbAction("DELETE_ACCOUNT", { id });
+    const success = await executeDbAction("DELETE_ACCOUNT", { id });
+    if (success) {
+      toast.success("Account deleted");
+    }
   };
 
   const handleAddBudget = async (newB: Omit<BudgetItem, "id">) => {
-    await executeDbAction("ADD_BUDGET", newB);
+    const success = await executeDbAction("ADD_BUDGET", newB);
+    if (success) {
+      toast.success("Budget target saved!");
+    }
   };
 
   const handleAddGoal = async (newG: Omit<GoalItem, "id">) => {
-    await executeDbAction("ADD_GOAL", newG);
+    const success = await executeDbAction("ADD_GOAL", newG);
+    if (success) {
+      toast.success(`Savings goal "${newG.name}" created!`);
+    }
   };
 
   const handleUpdateGoalDeposit = async (goalId: string, amount: number) => {
-    await executeDbAction("UPDATE_GOAL_DEPOSIT", { goalId, amount });
+    const success = await executeDbAction("UPDATE_GOAL_DEPOSIT", { goalId, amount });
+    if (success) {
+      toast.success(`Added deposit of $${amount} to savings goal!`);
+    }
   };
 
   const handleTogglePendingTransaction = async (id: string) => {
-    await executeDbAction("TOGGLE_PENDING_TRANSACTION", { id });
+    const tx = transactions.find((t) => t.id === id);
+    const success = await executeDbAction("TOGGLE_PENDING_TRANSACTION", { id });
+    if (success) {
+      toast.success(
+        tx?.isPending
+          ? "Transaction marked as Paid!"
+          : "Transaction reverted to Pending"
+      );
+    }
   };
 
   const handlePartialCollectTransaction = async (
@@ -223,11 +275,14 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     amountCollected: number,
     accountId: string
   ) => {
-    await executeDbAction("PARTIAL_COLLECT_TRANSACTION", {
+    const success = await executeDbAction("PARTIAL_COLLECT_TRANSACTION", {
       id,
       amountCollected,
       accountId,
     });
+    if (success) {
+      toast.success(`Collected payment of $${amountCollected}!`);
+    }
   };
 
   // If database fails, render Database Error screen
