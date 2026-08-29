@@ -13,13 +13,13 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Finance Tracker - Expense Monitoring & Budget Management System",
-  description: "Web-based finance tracker for recording income/expenses, monthly budget planning, automatic alert monitoring (Uma & Bhuvana 2026), category management, and CSV financial reporting.",
+  title: "Pennywise - Personal Finance Tracker",
+  description: "Web-based finance tracker for recording income/expenses, monthly budget planning, automatic alert monitoring, category management, and CSV financial reporting.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Finance Tracker",
+    title: "Pennywise",
   },
   icons: {
     icon: [

@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 2200",
     "build": "next build",
-    "start": "next start",
+    "start": "next start -p 2200",
     "lint": "eslint",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",

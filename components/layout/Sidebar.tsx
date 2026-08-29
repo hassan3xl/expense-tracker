@@ -52,10 +52,10 @@ export function Sidebar({ isOpenMobile, onCloseMobile }: SidebarProps) {
       {/* Brand Header */}
       <div className="flex items-center justify-between px-2 py-1 mb-4 border-b border-border/60">
         <div>
-          <h1 className="font-extrabold text-xl tracking-tight text-foreground flex items-center gap-1.5">
-            Finance
+          <h1 className="font-extrabold text-xl tracking-tight text-foreground flex items-center gap-1.5 font-mono">
+            Penny
             <span className="text-emerald-500 dark:text-emerald-400">
-              Tracker
+              wise
             </span>
           </h1>
         </div>

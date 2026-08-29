@@ -1,7 +1,7 @@
 {
-  "name": "Personal Finance Tracker",
-  "short_name": "FinanceTracker",
-  "description": "Web-based personal expense monitoring and budget management system",
+  "name": "Pennywise",
+  "short_name": "Pennywise",
+  "description": "Smart personal expense monitoring, transaction tracking & budget management system",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

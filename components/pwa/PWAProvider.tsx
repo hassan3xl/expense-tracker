@@ -77,7 +77,7 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
     if (outcome === "accepted") {
-      toast.success("Thank you for installing Finance Tracker PWA!");
+      toast.success("Thank you for installing Pennywise!");
     }
     setDeferredPrompt(null);
     setShowInstallPrompt(false);
@@ -134,9 +134,9 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
                 <Download className="h-5 w-5" />
               </div>
               <div>
-                <h4 className="font-bold text-xs text-white">Install App Experience</h4>
+                <h4 className="font-bold text-xs text-white">Install Pennywise App</h4>
                 <p className="text-[11px] text-slate-300">
-                  Install Finance Tracker for quick desktop/mobile access & online-first caching.
+                  Install Pennywise for quick desktop & mobile access with online-first caching.
                 </p>
               </div>
             </div>
