@@ -13,14 +13,31 @@ import { Database, AlertTriangle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/sonner";
 
+export interface AppNotification {
+  id: string;
+  title: string;
+  body: string;
+  type: "info" | "warning" | "success";
+  time: string;
+  read: boolean;
+  category?: "system" | "alert" | "transaction";
+}
+
 interface FinanceContextType {
   accounts: AccountItem[];
   categories: CategoryItem[];
   transactions: TransactionItem[];
   budgets: BudgetItem[];
   goals: GoalItem[];
+  notifications: AppNotification[];
   isInitialized: boolean;
   dbError: string | null;
+
+  // Notification actions
+  addNotification: (title: string, body: string, type?: "info" | "warning" | "success", category?: "system" | "alert" | "transaction") => void;
+  markNotificationRead: (id: string) => void;
+  markAllNotificationsRead: () => void;
+  clearNotifications: () => void;
 
   // Modals state
   isAddTransactionOpen: boolean;
@@ -60,8 +77,13 @@ const DEFAULT_FINANCE_CONTEXT: FinanceContextType = {
   transactions: [],
   budgets: [],
   goals: [],
+  notifications: [],
   isInitialized: false,
   dbError: null,
+  addNotification: () => {},
+  markNotificationRead: () => {},
+  markAllNotificationsRead: () => {},
+  clearNotifications: () => {},
   isAddTransactionOpen: false,
   setIsAddTransactionOpen: () => {},
   isAddAccountOpen: false,
@@ -97,8 +119,72 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const [transactions, setTransactions] = useState<TransactionItem[]>([]);
   const [budgets, setBudgets] = useState<BudgetItem[]>([]);
   const [goals, setGoals] = useState<GoalItem[]>([]);
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const [isInitialized, setIsInitialized] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
+
+  // Load persistent notifications from localStorage on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("user_real_notifications");
+      if (saved) {
+        setNotifications(JSON.parse(saved));
+      }
+    } catch (e) {
+      console.error("Failed to load saved notifications", e);
+    }
+  }, []);
+
+  const addNotification = (
+    title: string,
+    body: string,
+    type: "info" | "warning" | "success" = "success",
+    category: "system" | "alert" | "transaction" = "transaction"
+  ) => {
+    const newItem: AppNotification = {
+      id: `notif-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+      title,
+      body,
+      type,
+      time: "Just now",
+      read: false,
+      category,
+    };
+    setNotifications((prev) => {
+      const updated = [newItem, ...prev].slice(0, 50); // Keep latest 50 notifications
+      try {
+        localStorage.setItem("user_real_notifications", JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+  };
+
+  const markNotificationRead = (id: string) => {
+    setNotifications((prev) => {
+      const updated = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
+      try {
+        localStorage.setItem("user_real_notifications", JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+  };
+
+  const markAllNotificationsRead = () => {
+    setNotifications((prev) => {
+      const updated = prev.map((n) => ({ ...n, read: true }));
+      try {
+        localStorage.setItem("user_real_notifications", JSON.stringify(updated));
+      } catch (e) {}
+      return updated;
+    });
+  };
+
+  const clearNotifications = () => {
+    setNotifications([]);
+    try {
+      localStorage.removeItem("user_real_notifications");
+    } catch (e) {}
+  };
 
   // Modal open states
   const [isAddTransactionOpen, setIsAddTransactionOpen] = useState(false);
@@ -143,6 +229,17 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         setIsInitialized(true);
       }
     }
+
+    const handleOnlineResync = () => {
+      if (user) {
+        fetchDbData();
+      }
+    };
+
+    window.addEventListener("online", handleOnlineResync);
+    return () => {
+      window.removeEventListener("online", handleOnlineResync);
+    };
   }, [isLoaded, user?.id]);
 
   // Action helpers that talk directly to PostgreSQL database
@@ -178,20 +275,28 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
   const handleAddTransaction = async (newTx: Omit<TransactionItem, "id">) => {
     const success = await executeDbAction("ADD_TRANSACTION", newTx);
     if (success) {
-      toast.success(
-        newTx.type === "INCOME"
-          ? "Income transaction recorded!"
-          : newTx.type === "EXPENSE"
-          ? "Expense transaction recorded!"
-          : "Transfer transaction recorded!"
+      const typeLabel = newTx.type === "INCOME" ? "Income" : newTx.type === "EXPENSE" ? "Expense" : "Transfer";
+      toast.success(`${typeLabel} transaction recorded!`);
+      addNotification(
+        `Transaction Added: ${newTx.description}`,
+        `${typeLabel} of ₦${newTx.amount.toLocaleString("en-US", { minimumFractionDigits: 2 })} recorded.`,
+        "success",
+        "transaction"
       );
     }
   };
 
   const handleDeleteTransaction = async (id: string) => {
+    const target = transactions.find((t) => t.id === id);
     const success = await executeDbAction("DELETE_TRANSACTION", { id });
     if (success) {
       toast.success("Transaction deleted successfully");
+      addNotification(
+        "Transaction Removed",
+        `Deleted entry "${target?.description || "Transaction"}" from records.`,
+        "info",
+        "transaction"
+      );
     }
   };
 
@@ -199,6 +304,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const success = await executeDbAction("ADD_CATEGORY", newCat);
     if (success) {
       toast.success(`Category "${newCat.name}" created!`);
+      addNotification("New Category", `Created category "${newCat.name}".`, "success", "system");
     }
   };
 
@@ -206,6 +312,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const success = await executeDbAction("EDIT_CATEGORY", { id, ...updated });
     if (success) {
       toast.success("Category updated successfully");
+      addNotification("Category Updated", `Updated category details.`, "info", "system");
     }
   };
 
@@ -213,6 +320,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const success = await executeDbAction("DELETE_CATEGORY", { id });
     if (success) {
       toast.success("Category deleted");
+      addNotification("Category Deleted", `Removed category entry.`, "info", "system");
     }
   };
 
@@ -220,6 +328,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const success = await executeDbAction("ADD_ACCOUNT", newAcc);
     if (success) {
       toast.success(`Account "${newAcc.name}" created!`);
+      addNotification(
+        "Account Created",
+        `Created account "${newAcc.name}" with starting balance ₦${newAcc.balance.toLocaleString("en-US", { minimumFractionDigits: 2 })}.`,
+        "success",
+        "system"
+      );
     }
   };
 
@@ -227,6 +341,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const success = await executeDbAction("EDIT_ACCOUNT", { id, ...updated });
     if (success) {
       toast.success("Account details updated");
+      addNotification("Account Updated", `Updated account details.`, "info", "system");
     }
   };
 
@@ -234,6 +349,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const success = await executeDbAction("DELETE_ACCOUNT", { id });
     if (success) {
       toast.success("Account deleted");
+      addNotification("Account Removed", `Deleted account entry.`, "info", "system");
     }
   };
 
@@ -241,6 +357,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const success = await executeDbAction("ADD_BUDGET", newB);
     if (success) {
       toast.success("Budget target saved!");
+      addNotification("Budget Saved", `Updated monthly spending limit to ₦${newB.amount.toLocaleString("en-US")}.`, "success", "system");
     }
   };
 
@@ -248,6 +365,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const success = await executeDbAction("ADD_GOAL", newG);
     if (success) {
       toast.success(`Savings goal "${newG.name}" created!`);
+      addNotification("Goal Created", `Started savings goal "${newG.name}" with target ₦${newG.targetAmount.toLocaleString("en-US")}.`, "success", "system");
     }
   };
 
@@ -255,6 +373,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     const success = await executeDbAction("UPDATE_GOAL_DEPOSIT", { goalId, amount });
     if (success) {
       toast.success(`Added deposit of $${amount} to savings goal!`);
+      addNotification("Deposit Added", `Added ₦${amount.toLocaleString("en-US")} deposit to goal.`, "success", "system");
     }
   };
 
@@ -267,6 +386,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
           ? "Transaction marked as Paid!"
           : "Transaction reverted to Pending"
       );
+      addNotification(
+        "Payment Status Updated",
+        `Marked "${tx?.description || "Transaction"}" as ${tx?.isPending ? "Paid/Cleared" : "Pending"}.`,
+        "success",
+        "transaction"
+      );
     }
   };
 
@@ -275,6 +400,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     amountCollected: number,
     accountId: string
   ) => {
+    const tx = transactions.find((t) => t.id === id);
     const success = await executeDbAction("PARTIAL_COLLECT_TRANSACTION", {
       id,
       amountCollected,
@@ -282,6 +408,12 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
     });
     if (success) {
       toast.success(`Collected payment of $${amountCollected}!`);
+      addNotification(
+        "Payment Collected",
+        `Collected payment of ₦${amountCollected.toLocaleString("en-US", { minimumFractionDigits: 2 })} for "${tx?.description || "Invoice"}".`,
+        "success",
+        "transaction"
+      );
     }
   };
 
@@ -319,8 +451,13 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
         transactions: transactions || [],
         budgets: budgets || [],
         goals: goals || [],
+        notifications: notifications || [],
         isInitialized,
         dbError,
+        addNotification,
+        markNotificationRead,
+        markAllNotificationsRead,
+        clearNotifications,
         isAddTransactionOpen,
         setIsAddTransactionOpen,
         isAddAccountOpen,

@@ -128,6 +128,13 @@ export function OverviewTab() {
     }),
   );
 
+  const recentlyAddedTransactions = [...transactions].sort((a, b) => {
+    const timeA = new Date(a.date).getTime();
+    const timeB = new Date(b.date).getTime();
+    if (timeB !== timeA) return timeB - timeA;
+    return (b.id || "").localeCompare(a.id || "");
+  });
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <PageHeader
@@ -379,7 +386,7 @@ export function OverviewTab() {
               <>
                 {/* Mobile View */}
                 <div className="block md:hidden space-y-3">
-                  {transactions.slice(0, 5).map((tx) => (
+                  {recentlyAddedTransactions.slice(0, 5).map((tx) => (
                     <TransactionCard
                       key={tx.id}
                       transaction={tx}
@@ -402,7 +409,7 @@ export function OverviewTab() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {transactions.slice(0, 5).map((tx) => (
+                      {recentlyAddedTransactions.slice(0, 5).map((tx) => (
                         <TableRow key={tx.id}>
                           <TableCell className="font-semibold text-foreground">
                             <div>{tx.description}</div>

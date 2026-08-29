@@ -1,12 +1,33 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "@/components/theme-provider";
+import { PWAProvider } from "@/components/pwa/PWAProvider";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  themeColor: "#10b981",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+};
 
 export const metadata: Metadata = {
   title: "Finance Tracker - Expense Monitoring & Budget Management System",
   description: "Web-based finance tracker for recording income/expenses, monthly budget planning, automatic alert monitoring (Uma & Bhuvana 2026), category management, and CSV financial reporting.",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Finance Tracker",
+  },
+  icons: {
+    icon: [
+      { url: "/icons/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "32x32" },
+    ],
+    apple: "/icons/icon.svg",
+  },
 };
 
 const isClerkKeyValid =
@@ -29,12 +50,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {isClerkKeyValid ? (
-            <ClerkProvider>{children}</ClerkProvider>
-          ) : (
-            <div>{children}</div>
-          )}
-          <Toaster />
+          <PWAProvider>
+            {isClerkKeyValid ? (
+              <ClerkProvider>{children}</ClerkProvider>
+            ) : (
+              <div>{children}</div>
+            )}
+            <Toaster />
+          </PWAProvider>
         </ThemeProvider>
       </body>
     </html>

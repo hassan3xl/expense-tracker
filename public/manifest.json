@@ -1,0 +1,18 @@
+{
+  "name": "Personal Finance Tracker",
+  "short_name": "FinanceTracker",
+  "description": "Web-based personal expense monitoring and budget management system",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#090d16",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

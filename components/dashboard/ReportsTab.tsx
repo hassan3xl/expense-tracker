@@ -23,7 +23,7 @@ import { DashboardSkeleton } from "@/components/loading/DashboardSkeleton";
 import { toast } from "@/components/ui/sonner";
 
 export function ReportsTab() {
-  const { transactions = [], isInitialized } = useFinance();
+  const { transactions = [], isInitialized, addNotification } = useFinance();
   const [startDate, setStartDate] = useState("2026-08-01");
   const [endDate, setEndDate] = useState("2026-08-31");
 
@@ -67,6 +67,12 @@ export function ReportsTab() {
       dataToExport,
     );
     toast.success(`Exported ${dataToExport.length} transactions to CSV!`);
+    addNotification(
+      "Financial Report Exported",
+      `Exported ${dataToExport.length} transaction records to CSV file.`,
+      "info",
+      "system"
+    );
   };
 
   return (

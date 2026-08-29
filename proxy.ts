@@ -1,13 +1,15 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-
-const isPublicRoute = createRouteMatcher([
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/api/webhooks(.*)",
-]);
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
 export default clerkMiddleware(async (auth, req) => {
-  if (!isPublicRoute(req)) {
+  const { pathname } = req.nextUrl;
+  
+  // Public routes that bypass auth protection
+  const isPublicRoute =
+    pathname.startsWith("/sign-in") ||
+    pathname.startsWith("/sign-up") ||
+    pathname.startsWith("/api/webhooks");
+
+  if (!isPublicRoute) {
     // If clerk publishable key is not set or placeholder in dev, allow passage so demo mode works seamlessly
     const isClerkConfigured =
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&

@@ -26,44 +26,58 @@ export interface NotificationItem {
   category?: "system" | "alert" | "transaction";
 }
 
-const INITIAL_NOTIFICATIONS: NotificationItem[] = [
-  {
-    id: "notif-welcome",
-    title: "Financial Engine Ready",
-    body: "Personal finance tracker is live and connected to your database.",
-    type: "success",
-    time: "Just now",
-    read: false,
-    category: "system",
-  },
-  {
-    id: "notif-qstack",
-    title: "QStack Notification API",
-    body: "Ready to dispatch instant push notifications via API Key.",
-    type: "info",
-    time: "5m ago",
-    read: false,
-    category: "system",
-  },
-];
-
 export function NotificationCenter() {
-  const { accounts, budgets, transactions } = useFinance();
+  const {
+    accounts,
+    budgets,
+    transactions,
+    notifications: userNotifications = [],
+    markNotificationRead,
+    markAllNotificationsRead,
+    clearNotifications,
+  } = useFinance();
+
   const [isOpen, setIsOpen] = useState(false);
-  const [notifications, setNotifications] = useState<NotificationItem[]>(
-    INITIAL_NOTIFICATIONS
-  );
   const [filterType, setFilterType] = useState<"all" | "unread" | "alerts">("all");
 
-  // Calculate dynamic auto-event notifications based on live financial state
+  const [readIds, setReadIds] = useState<string[]>([]);
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
+
+  // Load readIds and deletedIds from localStorage on mount
   useEffect(() => {
-    const dynamicNotifs: NotificationItem[] = [...INITIAL_NOTIFICATIONS];
+    try {
+      const r = localStorage.getItem("user_read_notif_ids");
+      if (r) setReadIds(JSON.parse(r));
+      const d = localStorage.getItem("user_deleted_notif_ids");
+      if (d) setDeletedIds(JSON.parse(d));
+    } catch (e) {}
+  }, []);
+
+  const saveReadIds = (ids: string[]) => {
+    setReadIds(ids);
+    try {
+      localStorage.setItem("user_read_notif_ids", JSON.stringify(ids));
+    } catch (e) {}
+  };
+
+  const saveDeletedIds = (ids: string[]) => {
+    setDeletedIds(ids);
+    try {
+      localStorage.setItem("user_deleted_notif_ids", JSON.stringify(ids));
+    } catch (e) {}
+  };
+
+  // Combine real action notifications with dynamic live system alerts
+  const [displayNotifications, setDisplayNotifications] = useState<NotificationItem[]>([]);
+
+  useEffect(() => {
+    const rawList: NotificationItem[] = [...userNotifications];
 
     // 1. Low balance alert (< ₦5,000)
     if (accounts && accounts.length > 0) {
       accounts.forEach((acc) => {
         if (acc.balance < 5000 && acc.type !== "CREDIT_CARD") {
-          dynamicNotifs.push({
+          rawList.push({
             id: `low-bal-${acc.id}`,
             title: `Low Balance: ${acc.name}`,
             body: `Current balance is ${formatCurrency(acc.balance)}. Consider topping up this account soon.`,
@@ -81,7 +95,7 @@ export function NotificationCenter() {
       const pendingTxs = transactions.filter((t) => t.isPending);
       if (pendingTxs.length > 0) {
         const totalPending = pendingTxs.reduce((sum, t) => sum + t.amount, 0);
-        dynamicNotifs.push({
+        rawList.push({
           id: "pending-invoices-alert",
           title: "Pending Expected Income",
           body: `You have ${pendingTxs.length} pending payments totaling ${formatCurrency(totalPending)}.`,
@@ -98,7 +112,7 @@ export function NotificationCenter() {
       budgets.forEach((b) => {
         const percent = b.amount > 0 ? (b.spent / b.amount) * 100 : 0;
         if (percent >= 80) {
-          dynamicNotifs.push({
+          rawList.push({
             id: `budget-warn-${b.id}`,
             title: `Budget Limit: ${b.categoryName}`,
             body: `You have spent ${percent.toFixed(0)}% of your allocated budget (${formatCurrency(b.spent)} / ${formatCurrency(b.amount)}).`,
@@ -111,26 +125,41 @@ export function NotificationCenter() {
       });
     }
 
-    setNotifications(dynamicNotifs);
-  }, [accounts, budgets, transactions]);
+    // Process read status and deleted filters
+    const processed = rawList
+      .filter((n) => !deletedIds.includes(n.id))
+      .map((n) => ({
+        ...n,
+        read: n.read || readIds.includes(n.id),
+      }));
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+    setDisplayNotifications(processed);
+  }, [userNotifications, accounts, budgets, transactions, readIds, deletedIds]);
+
+  const unreadCount = displayNotifications.filter((n) => !n.read).length;
 
   const markAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    markAllNotificationsRead();
+    const allIds = displayNotifications.map((n) => n.id);
+    const combined = Array.from(new Set([...readIds, ...allIds]));
+    saveReadIds(combined);
   };
 
   const markSingleAsRead = (id: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
-    );
+    markNotificationRead(id);
+    if (!readIds.includes(id)) {
+      saveReadIds([...readIds, id]);
+    }
   };
 
   const clearAllNotifications = () => {
-    setNotifications([]);
+    clearNotifications();
+    const currentIds = displayNotifications.map((n) => n.id);
+    const combined = Array.from(new Set([...deletedIds, ...currentIds]));
+    saveDeletedIds(combined);
   };
 
-  const filteredNotifications = notifications.filter((n) => {
+  const filteredNotifications = displayNotifications.filter((n) => {
     if (filterType === "unread") return !n.read;
     if (filterType === "alerts") return n.category === "alert" || n.type === "warning";
     return true;
@@ -163,7 +192,10 @@ export function NotificationCenter() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={markAllAsRead}
+              onClick={(e) => {
+                e.stopPropagation();
+                markAllAsRead();
+              }}
               className="text-[11px] h-7 px-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold"
             >
               Mark all read
@@ -189,17 +221,23 @@ export function NotificationCenter() {
       <div className="flex items-center gap-1.5 px-3 py-2 border-b border-slate-100 dark:border-zinc-800/60 text-[11px] shrink-0 bg-slate-50/50 dark:bg-zinc-900/30">
         <Filter className="h-3 w-3 text-muted-foreground" />
         <button
-          onClick={() => setFilterType("all")}
+          onClick={(e) => {
+            e.stopPropagation();
+            setFilterType("all");
+          }}
           className={`px-2.5 py-0.5 rounded-md font-semibold transition-colors ${
             filterType === "all"
               ? "bg-emerald-500 text-white"
               : "bg-slate-200/60 dark:bg-zinc-800 text-slate-600 dark:text-zinc-400"
           }`}
         >
-          All ({notifications.length})
+          All ({displayNotifications.length})
         </button>
         <button
-          onClick={() => setFilterType("unread")}
+          onClick={(e) => {
+            e.stopPropagation();
+            setFilterType("unread");
+          }}
           className={`px-2.5 py-0.5 rounded-md font-semibold transition-colors ${
             filterType === "unread"
               ? "bg-emerald-500 text-white"
@@ -209,7 +247,10 @@ export function NotificationCenter() {
           Unread ({unreadCount})
         </button>
         <button
-          onClick={() => setFilterType("alerts")}
+          onClick={(e) => {
+            e.stopPropagation();
+            setFilterType("alerts");
+          }}
           className={`px-2.5 py-0.5 rounded-md font-semibold transition-colors ${
             filterType === "alerts"
               ? "bg-amber-500 text-white"
@@ -231,7 +272,10 @@ export function NotificationCenter() {
           filteredNotifications.map((notif) => (
             <div
               key={notif.id}
-              onClick={() => markSingleAsRead(notif.id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                markSingleAsRead(notif.id);
+              }}
               className={`p-3 rounded-xl transition-all border flex items-start gap-3 cursor-pointer ${
                 !notif.read
                   ? "bg-emerald-500/10 dark:bg-emerald-500/15 border-emerald-500/30 shadow-sm"
@@ -280,15 +324,18 @@ export function NotificationCenter() {
       </div>
 
       {/* Footer Actions: Delete Notifications */}
-      {notifications.length > 0 && (
+      {displayNotifications.length > 0 && (
         <div className="p-3 border-t border-slate-200 dark:border-zinc-800 shrink-0 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-900/50">
           <span className="text-[11px] text-muted-foreground font-medium">
-            {notifications.length} total items
+            {displayNotifications.length} total items
           </span>
           <Button
             variant="ghost"
             size="sm"
-            onClick={clearAllNotifications}
+            onClick={(e) => {
+              e.stopPropagation();
+              clearAllNotifications();
+            }}
             className="text-xs font-semibold text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 h-7 gap-1.5"
           >
             <Trash2 className="h-3.5 w-3.5" /> Delete Notifications
@@ -336,6 +383,9 @@ export function NotificationCenter() {
         {/* Desktop Floating Dropdown */}
         <PopoverContent
           align="end"
+          onPointerDownOutside={(e) => e.preventDefault()}
+          onFocusOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
           className="hidden sm:block w-96 h-[520px] p-0 bg-white dark:bg-zinc-950 border-slate-200 dark:border-zinc-800 shadow-2xl rounded-2xl overflow-hidden"
         >
           {renderContent(false)}

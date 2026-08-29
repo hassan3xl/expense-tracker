@@ -4,22 +4,11 @@ import React from "react";
 
 export function Footer() {
   return (
-    <footer className="border-t border-border/80 bg-background/90 backdrop-blur-xl mt-auto py-5 px-6 text-muted-foreground text-xs transition-colors">
+    <footer className="border-t border-border/80 bg-background/90 backdrop-blur-xl mt-auto py-3 px-6 text-muted-foreground text-xs transition-colors">
       <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-        {/* Element 1: Brand & Purpose */}
-        <div>
-          <h3 className="font-bold text-sm text-foreground tracking-tight">
-            Finance Tracker
-          </h3>
-          <p className="text-[11px] text-muted-foreground mt-0.5">
-            Web-based personal expense monitoring and budget management system.
-          </p>
-        </div>
-
-        {/* Element 2: GitHub Source Code */}
         <div>
           <a
-            href="https://github.com"
+            href="https://github.com/hassan3xl/expense-tracker"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-muted/60 hover:bg-muted text-foreground transition-colors font-medium text-xs border border-border/60"

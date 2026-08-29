@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Search,
   Plus,
@@ -11,6 +11,12 @@ import {
   LayoutGrid,
   List,
   Store,
+  ChevronLeft,
+  ChevronRight,
+  TrendingUp,
+  TrendingDown,
+  Scale,
+  Receipt,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "../ui/card";
 import { Button } from "../ui/button";
@@ -63,6 +69,13 @@ export function TransactionsTab() {
   const [accountFilter, setAccountFilter] = useState<string>("ALL");
   const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
+  // Reset pagination to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, typeFilter, accountFilter, statusFilter]);
 
   if (!isInitialized) {
     return <DashboardSkeleton />;
@@ -98,6 +111,26 @@ export function TransactionsTab() {
       return (b.id || "").localeCompare(a.id || "");
     });
 
+  // Evaluation calculations for current filtered transactions
+  const filteredIncomeTotal = filteredTransactions
+    .filter((tx) => tx.type === "INCOME")
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const filteredExpenseTotal = filteredTransactions
+    .filter((tx) => tx.type === "EXPENSE")
+    .reduce((sum, tx) => sum + tx.amount, 0);
+
+  const filteredNetTotal = filteredIncomeTotal - filteredExpenseTotal;
+  const filteredPendingCount = filteredTransactions.filter((tx) => tx.isPending).length;
+
+  // Pagination calculation (10 records per page)
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage));
+  const validPage = Math.min(currentPage, totalPages);
+  const paginatedTransactions = filteredTransactions.slice(
+    (validPage - 1) * itemsPerPage,
+    validPage * itemsPerPage
+  );
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <PageHeader
@@ -115,7 +148,7 @@ export function TransactionsTab() {
       />
       {/* Header controls & filters */}
       <Card className="glass-card">
-        <CardContent className="p-1 sm:p-2 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+        <CardContent className="p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
           {/* Search box */}
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
@@ -168,18 +201,73 @@ export function TransactionsTab() {
                 <SelectItem value="PENDING">Pending Payment</SelectItem>
               </SelectContent>
             </Select>
-
-            <Button
-              onClick={() => setIsAddTransactionOpen(true)}
-              variant="gradient"
-              size="sm"
-              className="col-span-2 sm:col-span-1 h-10"
-            >
-              <Plus className="h-4 w-4" /> Add Transaction
-            </Button>
           </div>
         </CardContent>
       </Card>
+
+      {/* Dynamic Filter Evaluation Feature Summary Cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        {/* Filtered Income Evaluation */}
+        <Card className="glass-card border-emerald-500/20 bg-emerald-500/5 p-3 sm:p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">Filtered Income</span>
+            <div className="h-7 w-7 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+              <TrendingUp className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <p className="text-base sm:text-lg font-extrabold text-emerald-600 dark:text-emerald-400 mt-2 font-mono">
+            +{formatCurrency(filteredIncomeTotal)}
+          </p>
+        </Card>
+
+        {/* Filtered Expense Evaluation */}
+        <Card className="glass-card border-rose-500/20 bg-rose-500/5 p-3 sm:p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">Filtered Expense</span>
+            <div className="h-7 w-7 rounded-lg bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+              <TrendingDown className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <p className="text-base sm:text-lg font-extrabold text-rose-600 dark:text-rose-400 mt-2 font-mono">
+            -{formatCurrency(filteredExpenseTotal)}
+          </p>
+        </Card>
+
+        {/* Filtered Net Evaluation */}
+        <Card className="glass-card border-slate-500/20 bg-slate-500/5 p-3 sm:p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">Filtered Net Balance</span>
+            <div className="h-7 w-7 rounded-lg bg-slate-500/15 text-slate-600 dark:text-slate-300 flex items-center justify-center">
+              <Scale className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <p className={`text-base sm:text-lg font-extrabold mt-2 font-mono ${
+            filteredNetTotal >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
+          }`}>
+            {filteredNetTotal >= 0 ? "+" : ""}{formatCurrency(filteredNetTotal)}
+          </p>
+        </Card>
+
+        {/* Filtered Record Count Evaluation */}
+        <Card className="glass-card border-cyan-500/20 bg-cyan-500/5 p-3 sm:p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold text-muted-foreground">Filtered Count</span>
+            <div className="h-7 w-7 rounded-lg bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
+              <Receipt className="h-3.5 w-3.5" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 mt-2">
+            <span className="text-base sm:text-lg font-extrabold text-foreground font-mono">
+              {filteredTransactions.length} items
+            </span>
+            {filteredPendingCount > 0 && (
+              <Badge className="bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30 text-[10px] px-1.5 py-0">
+                {filteredPendingCount} pending
+              </Badge>
+            )}
+          </div>
+        </Card>
+      </div>
 
       {/* Pending Income Alert Banner */}
       {pendingIncomeTotal > 0 && (
@@ -210,13 +298,12 @@ export function TransactionsTab() {
           <div>
             <CardTitle className="text-base">Transactions List</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Showing {filteredTransactions.length} of {transactions.length}{" "}
-              records (Sorted most recent first)
+              Showing {paginatedTransactions.length} of {filteredTransactions.length} filtered records (Page {validPage} of {totalPages})
             </p>
           </div>
 
-          {/* Cards / Table View Toggle Switcher */}
-          <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-900/90 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 self-start sm:self-auto">
+          {/* Cards / Table View Toggle Switcher (Desktop Only: hidden on mobile) */}
+          <div className="hidden md:flex items-center gap-1 bg-slate-100 dark:bg-zinc-900/90 p-1 rounded-xl border border-slate-200 dark:border-zinc-800">
             <Button
               variant={viewMode === "cards" ? "secondary" : "ghost"}
               size="sm"
@@ -249,9 +336,9 @@ export function TransactionsTab() {
               No transactions found matching your filters.
             </div>
           ) : viewMode === "cards" ? (
-            /* Cards View (Grid for both Mobile and Desktop) */
+            /* Cards View (Grid for Mobile & Desktop) */
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-4">
-              {filteredTransactions.map((tx) => (
+              {paginatedTransactions.map((tx) => (
                 <TransactionCard
                   key={tx.id}
                   transaction={tx}
@@ -277,7 +364,7 @@ export function TransactionsTab() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredTransactions.map((tx) => (
+                  {paginatedTransactions.map((tx) => (
                     <TableRow
                       key={tx.id}
                       className={`transition-colors ${
@@ -406,6 +493,40 @@ export function TransactionsTab() {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+          )}
+
+          {/* 10 Records Per Page Pagination Control Bar */}
+          {totalPages > 1 && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-200 dark:border-zinc-800">
+              <p className="text-xs text-muted-foreground">
+                Showing <span className="font-semibold text-foreground font-mono">{(validPage - 1) * itemsPerPage + 1}</span> to{" "}
+                <span className="font-semibold text-foreground font-mono">{Math.min(validPage * itemsPerPage, filteredTransactions.length)}</span> of{" "}
+                <span className="font-semibold text-foreground font-mono">{filteredTransactions.length}</span> filtered records
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={validPage === 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  className="h-8 text-xs font-semibold gap-1"
+                >
+                  <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                </Button>
+                <div className="flex items-center gap-1 font-mono text-xs font-semibold px-2">
+                  Page {validPage} of {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={validPage === totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  className="h-8 text-xs font-semibold gap-1"
+                >
+                  Next <ChevronRight className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           )}
         </CardContent>

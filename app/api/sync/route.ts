@@ -29,7 +29,7 @@ export async function GET() {
             toAccount: true,
             category: true,
           },
-          orderBy: { date: "desc" },
+          orderBy: [{ createdAt: "desc" }, { date: "desc" }],
         },
         budgets: {
           include: {
@@ -63,7 +63,7 @@ export async function GET() {
                 toAccount: true,
                 category: true,
               },
-              orderBy: { date: "desc" },
+              orderBy: [{ createdAt: "desc" }, { date: "desc" }],
             },
             budgets: {
               include: {
@@ -125,7 +125,7 @@ export async function GET() {
               toAccount: true,
               category: true,
             },
-            orderBy: { date: "desc" },
+            orderBy: [{ createdAt: "desc" }, { date: "desc" }],
           },
           budgets: {
             include: {
