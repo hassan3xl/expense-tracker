@@ -1,6 +1,6 @@
 // Service Worker for Pennywise PWA - Online-First Strategy
-const CACHE_NAME = "pennywise-v2";
-const STATIC_CACHE_NAME = "pennywise-static-v2";
+const CACHE_NAME = "pennywise-v3";
+const STATIC_CACHE_NAME = "pennywise-static-v3";
 
 const PRECACHE_ASSETS = [
   "/",
@@ -16,11 +16,11 @@ self.addEventListener("install", (event) => {
       .open(STATIC_CACHE_NAME)
       .then((cache) => cache.addAll(PRECACHE_ASSETS))
       .then(() => self.skipWaiting())
-      .catch((err) => console.error("PWA cache install error:", err))
+      .catch((err) => console.log("Pre-cache asset info:", err))
   );
 });
 
-// Activate Event - Clean up old caches
+// Activate Event - Clean up old caches and take control immediately
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches
@@ -38,59 +38,60 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Fetch Event - Handle requests safely without causing ERR_FAILED
+// Fetch Event - Prevent ERR_FAILED by passing request.url to fetch()
 self.addEventListener("fetch", (event) => {
-  const { request } = event;
+  const request = event.request;
   const url = new URL(request.url);
 
-  // 1. Ignore non-GET requests, non-http(s), and cross-origin requests (e.g. Clerk Auth, external APIs)
+  // 1. Ignore non-GET, non-http(s), and cross-origin requests
   if (
     request.method !== "GET" ||
     !url.protocol.startsWith("http") ||
     url.origin !== self.location.origin
   ) {
-    return; // Allow browser to handle normally
+    return;
   }
 
-  // 2. Navigation Requests (Page Loads / Standalone PWA Window) -> Network First
+  // 2. Navigation Requests (Page loads, SSR, Clerk Auth redirects)
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      fetch(request.url)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const copy = networkResponse.clone();
-            caches.open(STATIC_CACHE_NAME).then((cache) => cache.put(request, copy));
+            caches.open(STATIC_CACHE_NAME).then((cache) => cache.put("/", copy));
           }
           return networkResponse;
         })
         .catch(async () => {
-          // If offline/failed, fallback to cached page or cached root /
-          const cached = await caches.match(request);
-          if (cached) return cached;
+          // Offline fallback
           const cachedRoot = await caches.match("/");
           if (cachedRoot) return cachedRoot;
-          return new Response("Offline - Pennywise", {
-            status: 503,
-            headers: { "Content-Type": "text/html" },
-          });
+          return new Response(
+            "<!DOCTYPE html><html><head><title>Pennywise Offline</title></head><body style='font-family:sans-serif;text-align:center;padding:40px;background:#090d16;color:#fff;'><h1>Pennywise Offline</h1><p>Please reconnect to the internet to access your account.</p></body></html>",
+            {
+              status: 503,
+              headers: { "Content-Type": "text/html" },
+            }
+          );
         })
     );
     return;
   }
 
-  // 3. API Requests (/api/*) -> Online-First with Cached API Fallback
+  // 3. API Requests (/api/*) -> Online-First with cache fallback
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
-      fetch(request)
+      fetch(request.url)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const copy = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            caches.open(CACHE_NAME).then((cache) => cache.put(request.url, copy));
           }
           return networkResponse;
         })
         .catch(async () => {
-          const cached = await caches.match(request);
+          const cached = await caches.match(request.url);
           if (cached) return cached;
           return new Response(
             JSON.stringify({ error: "Offline mode active", offline: true }),
@@ -101,12 +102,12 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 4. Static Assets (_next/static, icons, images, styles) -> Cache First / Stale-While-Revalidate
+  // 4. Static Assets (_next/static, images, icons)
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
-        // Return cached and update in background
-        fetch(request)
+        // Revalidate in background
+        fetch(request.url)
           .then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
               caches.open(STATIC_CACHE_NAME).then((cache) => cache.put(request, networkResponse));
@@ -115,7 +116,7 @@ self.addEventListener("fetch", (event) => {
           .catch(() => {});
         return cachedResponse;
       }
-      return fetch(request).catch(() => new Response("", { status: 404 }));
+      return fetch(request.url).catch(() => new Response("", { status: 404 }));
     })
   );
 });

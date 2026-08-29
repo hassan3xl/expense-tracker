@@ -21,12 +21,13 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    // 2. Register Service Worker
+    // 2. Register Service Worker & Force Update
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker
         .register("/sw.js")
         .then((reg) => {
-          console.log("Service Worker registered successfully with scope:", reg.scope);
+          console.log("Service Worker registered with scope:", reg.scope);
+          reg.update();
         })
         .catch((err) => {
           console.log("Service Worker registration failed:", err);

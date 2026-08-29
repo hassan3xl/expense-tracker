@@ -170,18 +170,6 @@ export function TransactionCard({
               </Button>
             )}
 
-            {/* {!isPending && onTogglePending && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 text-xs px-2.5 text-muted-foreground hover:text-amber-500 hover:bg-amber-500/10 rounded-xl"
-                onClick={() => onTogglePending(id)}
-                title="Revert to Pending status"
-              >
-                Unpay
-              </Button>
-            )} */}
-
             {onDelete && (
               <Button
                 variant="ghost"

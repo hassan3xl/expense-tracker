@@ -62,7 +62,9 @@ export function TransactionsTab() {
     name: string;
   } | null>(null);
 
-  const [collectTarget, setCollectTarget] = useState<TransactionItem | null>(null);
+  const [collectTarget, setCollectTarget] = useState<TransactionItem | null>(
+    null,
+  );
 
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<string>("ALL");
@@ -121,14 +123,19 @@ export function TransactionsTab() {
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   const filteredNetTotal = filteredIncomeTotal - filteredExpenseTotal;
-  const filteredPendingCount = filteredTransactions.filter((tx) => tx.isPending).length;
+  const filteredPendingCount = filteredTransactions.filter(
+    (tx) => tx.isPending,
+  ).length;
 
   // Pagination calculation (10 records per page)
-  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / itemsPerPage));
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredTransactions.length / itemsPerPage),
+  );
   const validPage = Math.min(currentPage, totalPages);
   const paginatedTransactions = filteredTransactions.slice(
     (validPage - 1) * itemsPerPage,
-    validPage * itemsPerPage
+    validPage * itemsPerPage,
   );
 
   return (
@@ -148,7 +155,7 @@ export function TransactionsTab() {
       />
       {/* Header controls & filters */}
       <Card className="glass-card">
-        <CardContent className="p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+        <CardContent className="sm:p-3 sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
           {/* Search box */}
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
@@ -210,7 +217,9 @@ export function TransactionsTab() {
         {/* Filtered Income Evaluation */}
         <Card className="glass-card border-emerald-500/20 bg-emerald-500/5 p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Filtered Income</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              Filtered Income
+            </span>
             <div className="h-7 w-7 rounded-lg bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <TrendingUp className="h-3.5 w-3.5" />
             </div>
@@ -223,7 +232,9 @@ export function TransactionsTab() {
         {/* Filtered Expense Evaluation */}
         <Card className="glass-card border-rose-500/20 bg-rose-500/5 p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Filtered Expense</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              Filtered Expense
+            </span>
             <div className="h-7 w-7 rounded-lg bg-rose-500/15 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <TrendingDown className="h-3.5 w-3.5" />
             </div>
@@ -236,22 +247,31 @@ export function TransactionsTab() {
         {/* Filtered Net Evaluation */}
         <Card className="glass-card border-slate-500/20 bg-slate-500/5 p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Filtered Net Balance</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              Filtered Net Balance
+            </span>
             <div className="h-7 w-7 rounded-lg bg-slate-500/15 text-slate-600 dark:text-slate-300 flex items-center justify-center">
               <Scale className="h-3.5 w-3.5" />
             </div>
           </div>
-          <p className={`text-base sm:text-lg font-extrabold mt-2 font-mono ${
-            filteredNetTotal >= 0 ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"
-          }`}>
-            {filteredNetTotal >= 0 ? "+" : ""}{formatCurrency(filteredNetTotal)}
+          <p
+            className={`text-base sm:text-lg font-extrabold mt-2 font-mono ${
+              filteredNetTotal >= 0
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-rose-600 dark:text-rose-400"
+            }`}
+          >
+            {filteredNetTotal >= 0 ? "+" : ""}
+            {formatCurrency(filteredNetTotal)}
           </p>
         </Card>
 
         {/* Filtered Record Count Evaluation */}
         <Card className="glass-card border-cyan-500/20 bg-cyan-500/5 p-3 sm:p-4">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-muted-foreground">Filtered Count</span>
+            <span className="text-xs font-semibold text-muted-foreground">
+              Filtered Count
+            </span>
             <div className="h-7 w-7 rounded-lg bg-cyan-500/15 text-cyan-600 dark:text-cyan-400 flex items-center justify-center">
               <Receipt className="h-3.5 w-3.5" />
             </div>
@@ -298,7 +318,8 @@ export function TransactionsTab() {
           <div>
             <CardTitle className="text-base">Transactions List</CardTitle>
             <p className="text-xs text-muted-foreground">
-              Showing {paginatedTransactions.length} of {filteredTransactions.length} filtered records (Page {validPage} of {totalPages})
+              Showing {paginatedTransactions.length} of{" "}
+              {filteredTransactions.length} records
             </p>
           </div>
 
@@ -371,8 +392,8 @@ export function TransactionsTab() {
                         tx.type === "INCOME"
                           ? "border-l-4 border-l-emerald-500"
                           : tx.type === "EXPENSE"
-                          ? "border-l-4 border-l-rose-500"
-                          : "border-l-4 border-l-cyan-500"
+                            ? "border-l-4 border-l-rose-500"
+                            : "border-l-4 border-l-cyan-500"
                       }`}
                     >
                       <TableCell>
@@ -403,7 +424,8 @@ export function TransactionsTab() {
                         </div>
                         {tx.payee ? (
                           <div className="text-xs text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1 mt-0.5">
-                            <Store className="h-3 w-3 shrink-0" /> Payee / Merchant: {tx.payee}
+                            <Store className="h-3 w-3 shrink-0" /> Payee /
+                            Merchant: {tx.payee}
                           </div>
                         ) : (
                           <div className="text-xs text-muted-foreground italic mt-0.5">
@@ -427,15 +449,15 @@ export function TransactionsTab() {
                           tx.type === "INCOME"
                             ? "text-emerald-600 dark:text-emerald-400"
                             : tx.type === "EXPENSE"
-                            ? "text-rose-600 dark:text-rose-400"
-                            : "text-foreground"
+                              ? "text-rose-600 dark:text-rose-400"
+                              : "text-foreground"
                         }`}
                       >
                         {tx.type === "INCOME"
                           ? "+"
                           : tx.type === "EXPENSE"
-                          ? "-"
-                          : ""}
+                            ? "-"
+                            : ""}
                         {formatCurrency(tx.amount)}
                       </TableCell>
                       <TableCell className="text-right">
@@ -500,9 +522,22 @@ export function TransactionsTab() {
           {totalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 mt-4 border-t border-slate-200 dark:border-zinc-800">
               <p className="text-xs text-muted-foreground">
-                Showing <span className="font-semibold text-foreground font-mono">{(validPage - 1) * itemsPerPage + 1}</span> to{" "}
-                <span className="font-semibold text-foreground font-mono">{Math.min(validPage * itemsPerPage, filteredTransactions.length)}</span> of{" "}
-                <span className="font-semibold text-foreground font-mono">{filteredTransactions.length}</span> filtered records
+                Showing{" "}
+                <span className="font-semibold text-foreground font-mono">
+                  {(validPage - 1) * itemsPerPage + 1}
+                </span>{" "}
+                to{" "}
+                <span className="font-semibold text-foreground font-mono">
+                  {Math.min(
+                    validPage * itemsPerPage,
+                    filteredTransactions.length,
+                  )}
+                </span>{" "}
+                of{" "}
+                <span className="font-semibold text-foreground font-mono">
+                  {filteredTransactions.length}
+                </span>{" "}
+                records
               </p>
               <div className="flex items-center gap-2">
                 <Button
@@ -512,7 +547,9 @@ export function TransactionsTab() {
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                   className="h-8 text-xs font-semibold gap-1"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" /> Previous
+                  <ChevronLeft className="h-3.5 w-3.5" />
+                  <span className="sm:hidden">Prev</span>
+                  <span className="hidden sm:block">Previous</span>
                 </Button>
                 <div className="flex items-center gap-1 font-mono text-xs font-semibold px-2">
                   Page {validPage} of {totalPages}
@@ -521,10 +558,14 @@ export function TransactionsTab() {
                   variant="outline"
                   size="sm"
                   disabled={validPage === totalPages}
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
                   className="h-8 text-xs font-semibold gap-1"
                 >
-                  Next <ChevronRight className="h-3.5 w-3.5" />
+                  <span className="sm:hidden">Next</span>
+                  <span className="hidden sm:block">Next</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </Button>
               </div>
             </div>
