@@ -1,6 +1,8 @@
 import { clerkMiddleware } from "@clerk/nextjs/server";
 
-export default clerkMiddleware(async (auth, req) => {
+// Next.js 16 requires proxy.ts to export a named `proxy` function (or default export).
+// clerkMiddleware returns the handler we re-export as the named `proxy` export.
+export const proxy = clerkMiddleware(async (auth, req) => {
   const { pathname } = req.nextUrl;
   
   // Public routes that bypass auth protection

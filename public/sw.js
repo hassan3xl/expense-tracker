@@ -1,9 +1,10 @@
 // Service Worker for Pennywise PWA - Online-First Strategy
-const CACHE_NAME = "pennywise-v3";
-const STATIC_CACHE_NAME = "pennywise-static-v3";
+// v4: Fix ERR_FAILED in standalone PWA mode
+const CACHE_NAME = "pennywise-v4";
+const STATIC_CACHE_NAME = "pennywise-static-v4";
 
+// Only pre-cache truly static assets (NOT pages that may redirect or require auth)
 const PRECACHE_ASSETS = [
-  "/",
   "/manifest.json",
   "/favicon.ico",
   "/icons/icon.svg",
@@ -38,12 +39,12 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-// Fetch Event - Prevent ERR_FAILED by passing request.url to fetch()
+// Fetch Event - Online-first with safe offline fallbacks
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
 
-  // 1. Ignore non-GET, non-http(s), and cross-origin requests
+  // 1. Ignore non-GET, non-http(s), and cross-origin requests — let them pass through
   if (
     request.method !== "GET" ||
     !url.protocol.startsWith("http") ||
@@ -52,23 +53,33 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 2. Navigation Requests (Page loads, SSR, Clerk Auth redirects)
+  // 2. Navigation Requests (Page loads) — ALWAYS go to network first
+  //    Never serve a cached navigation response that could be stale auth redirect
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request.url)
+      fetch(request)
         .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
+          // Only cache successful HTML responses (not redirects or errors)
+          if (
+            networkResponse &&
+            networkResponse.status === 200 &&
+            networkResponse.headers.get("content-type")?.includes("text/html")
+          ) {
             const copy = networkResponse.clone();
-            caches.open(STATIC_CACHE_NAME).then((cache) => cache.put("/", copy));
+            caches
+              .open(STATIC_CACHE_NAME)
+              .then((cache) => cache.put(request.url, copy));
           }
           return networkResponse;
         })
         .catch(async () => {
-          // Offline fallback
-          const cachedRoot = await caches.match("/");
-          if (cachedRoot) return cachedRoot;
+          // Offline fallback — try cache first, then show offline page
+          const cachedPage = await caches.match(request.url);
+          if (cachedPage) return cachedPage;
+
+          // Generic offline fallback
           return new Response(
-            "<!DOCTYPE html><html><head><title>Pennywise Offline</title></head><body style='font-family:sans-serif;text-align:center;padding:40px;background:#090d16;color:#fff;'><h1>Pennywise Offline</h1><p>Please reconnect to the internet to access your account.</p></body></html>",
+            `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pennywise Offline</title></head><body style="font-family:system-ui,sans-serif;text-align:center;padding:40px;background:#090d16;color:#fff;"><h1 style="color:#10b981;">Pennywise</h1><p>Please reconnect to the internet to access your account.</p><button onclick="location.reload()" style="margin-top:20px;padding:12px 24px;background:#10b981;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;">Retry</button></body></html>`,
             {
               status: 503,
               headers: { "Content-Type": "text/html" },
@@ -82,7 +93,7 @@ self.addEventListener("fetch", (event) => {
   // 3. API Requests (/api/*) -> Online-First with cache fallback
   if (url.pathname.startsWith("/api/")) {
     event.respondWith(
-      fetch(request.url)
+      fetch(request)
         .then((networkResponse) => {
           if (networkResponse && networkResponse.status === 200) {
             const copy = networkResponse.clone();
@@ -102,21 +113,34 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // 4. Static Assets (_next/static, images, icons)
+  // 4. Static Assets (_next/static, images, icons) — Cache-first with background revalidation
   event.respondWith(
     caches.match(request).then((cachedResponse) => {
       if (cachedResponse) {
         // Revalidate in background
-        fetch(request.url)
+        fetch(request)
           .then((networkResponse) => {
             if (networkResponse && networkResponse.status === 200) {
-              caches.open(STATIC_CACHE_NAME).then((cache) => cache.put(request, networkResponse));
+              caches
+                .open(STATIC_CACHE_NAME)
+                .then((cache) => cache.put(request, networkResponse));
             }
           })
           .catch(() => {});
         return cachedResponse;
       }
-      return fetch(request.url).catch(() => new Response("", { status: 404 }));
+      // Not in cache — fetch from network and cache for next time
+      return fetch(request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const copy = networkResponse.clone();
+            caches
+              .open(STATIC_CACHE_NAME)
+              .then((cache) => cache.put(request, copy));
+          }
+          return networkResponse;
+        })
+        .catch(() => new Response("", { status: 404 }));
     })
   );
 });
