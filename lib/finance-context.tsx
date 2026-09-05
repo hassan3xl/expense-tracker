@@ -146,7 +146,7 @@ export function FinanceProvider({ children }: { children: React.ReactNode }) {
       title,
       body,
       type,
-      time: "Just now",
+      time: new Date().toISOString(),
       read: false,
       category,
     };

@@ -154,8 +154,8 @@ export function TransactionsTab() {
         }
       />
       {/* Header controls & filters */}
-      <Card className="glass-card">
-        <CardContent className="sm:p-4 flex flex-col md:flex-row items-center justify-between gap-3 sm:gap-4">
+      <Card className="glass-card p-2.5 sm:p-6">
+        <CardContent className="p-0 flex flex-col md:flex-row items-center justify-between gap-2.5 sm:gap-4">
           {/* Search box */}
           <div className="relative w-full md:w-80">
             <Search className="absolute left-3.5 top-3 h-4 w-4 text-slate-400" />
@@ -545,11 +545,11 @@ export function TransactionsTab() {
                   size="sm"
                   disabled={validPage === 1}
                   onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  className="h-8 text-xs font-semibold gap-1"
+                  className="h-8 px-2.5 text-xs font-semibold gap-1"
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" />
-                  <span className="sm:hidden">Prev</span>
-                  <span className="hidden sm:block">Previous</span>
+                  <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
+                  <span className="inline sm:hidden">Prev</span>
+                  <span className="hidden sm:inline">Previous</span>
                 </Button>
                 <div className="flex items-center gap-1 font-mono text-xs font-semibold px-2">
                   Page {validPage} of {totalPages}
@@ -561,11 +561,11 @@ export function TransactionsTab() {
                   onClick={() =>
                     setCurrentPage((p) => Math.min(totalPages, p + 1))
                   }
-                  className="h-8 text-xs font-semibold gap-1"
+                  className="h-8 px-2.5 text-xs font-semibold gap-1"
                 >
-                  <span className="sm:hidden">Next</span>
-                  <span className="hidden sm:block">Next</span>
-                  <ChevronRight className="h-3.5 w-3.5" />
+                  <span className="inline sm:hidden">Next</span>
+                  <span className="hidden sm:inline">Next</span>
+                  <ChevronRight className="h-3.5 w-3.5 shrink-0" />
                 </Button>
               </div>
             </div>

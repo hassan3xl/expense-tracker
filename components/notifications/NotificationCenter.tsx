@@ -26,6 +26,49 @@ export interface NotificationItem {
   category?: "system" | "alert" | "transaction";
 }
 
+function formatNotificationTime(timeStr?: string, id?: string): string {
+  if (!timeStr) return "Today";
+
+  let date: Date | null = null;
+
+  if (timeStr && !isNaN(Date.parse(timeStr)) && timeStr.length > 10) {
+    date = new Date(timeStr);
+  } else if (id && id.startsWith("notif-")) {
+    const timestampPart = id.split("-")[1];
+    const ts = parseInt(timestampPart, 10);
+    if (!isNaN(ts) && ts > 1000000000000) {
+      date = new Date(ts);
+    }
+  }
+
+  if (!date || isNaN(date.getTime())) {
+    if (timeStr === "Active alert") return "Active alert";
+    return timeStr || "Today";
+  }
+
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffSecs = Math.floor(diffMs / 1000);
+  const diffMins = Math.floor(diffSecs / 60);
+  const diffHours = Math.floor(diffMins / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSecs < 60 && diffSecs >= 0) return "Just now";
+  if (diffMins < 60 && diffMins > 0) return `${diffMins}m ago`;
+  if (diffHours < 24 && diffHours > 0) return `${diffHours}h ago`;
+  if (diffDays === 1) {
+    return `Yesterday, ${date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`;
+  }
+  if (diffDays < 7 && diffDays > 1) return `${diffDays}d ago`;
+
+  return date.toLocaleDateString("en-US", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function NotificationCenter() {
   const {
     accounts,
@@ -170,7 +213,7 @@ export function NotificationCenter() {
       className="flex flex-col h-full w-full max-w-full overflow-hidden bg-white dark:bg-zinc-950 text-foreground"
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Header with explicit Close button */}
+      {/* Header with explicit Close button & Delete icon */}
       <div className="flex items-center justify-between px-4 py-3.5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/80 shrink-0">
         <div className="flex items-center gap-2">
           <div className="h-7 w-7 rounded-lg bg-emerald-500/10 flex items-center justify-center text-emerald-500 border border-emerald-500/20">
@@ -187,7 +230,7 @@ export function NotificationCenter() {
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {unreadCount > 0 && (
             <Button
               variant="ghost"
@@ -199,6 +242,21 @@ export function NotificationCenter() {
               className="text-[11px] h-7 px-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 font-semibold"
             >
               Mark all read
+            </Button>
+          )}
+          {displayNotifications.length > 0 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={(e) => {
+                e.stopPropagation();
+                clearAllNotifications();
+              }}
+              className="h-8 w-8 rounded-lg text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
+              title="Delete all notifications"
+              aria-label="Delete all notifications"
+            >
+              <Trash2 className="h-4 w-4" />
             </Button>
           )}
           {/* Explicit Close Button */}
@@ -306,7 +364,7 @@ export function NotificationCenter() {
                     {notif.title}
                   </h4>
                   <span className="text-[10px] text-slate-400 shrink-0 font-mono">
-                    {notif.time}
+                    {formatNotificationTime(notif.time, notif.id)}
                   </span>
                 </div>
                 <p className="text-xs text-slate-600 dark:text-zinc-300 leading-relaxed">
@@ -322,26 +380,6 @@ export function NotificationCenter() {
           ))
         )}
       </div>
-
-      {/* Footer Actions: Delete Notifications */}
-      {displayNotifications.length > 0 && (
-        <div className="p-3 border-t border-slate-200 dark:border-zinc-800 shrink-0 flex items-center justify-between bg-slate-50/50 dark:bg-zinc-900/50">
-          <span className="text-[11px] text-muted-foreground font-medium">
-            {displayNotifications.length} total items
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={(e) => {
-              e.stopPropagation();
-              clearAllNotifications();
-            }}
-            className="text-xs font-semibold text-rose-500 hover:text-rose-600 hover:bg-rose-500/10 h-7 gap-1.5"
-          >
-            <Trash2 className="h-3.5 w-3.5" /> Delete Notifications
-          </Button>
-        </div>
-      )}
 
       {/* Mobile-only Bottom Close Button */}
       {isMobile && (
